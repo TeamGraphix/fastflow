@@ -1,0 +1,13 @@
+[build-system]
+requires = ["maturin>=1,<2"]
+build-backend = "maturin"
+
+[project]
+name = "fastflow"
+# Must be consistent with Cargo.toml
+version = "0.1.0"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+python-source = "python"
+module-name = "fastflow._impl"
