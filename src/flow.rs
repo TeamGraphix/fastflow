@@ -4,7 +4,6 @@ use std::collections::{HashMap, HashSet};
 use crate::common::{Flow, Layer};
 
 #[pyfunction]
-#[pyo3(name = "find")]
 pub fn find(
     g: Vec<HashSet<usize>>,
     iset: HashSet<usize>,
