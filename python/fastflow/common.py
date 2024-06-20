@@ -1,9 +1,13 @@
 """Common data for fastflow package."""
 
+from __future__ import annotations
+
 import warnings
-from collections.abc import Collection
-from collections.abc import Set as AbstractSet
-from typing import NamedTuple
+from typing import TYPE_CHECKING, NamedTuple
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
+    from collections.abc import Set as AbstractSet
 
 
 class FlowResult(NamedTuple):
