@@ -1,6 +1,6 @@
-"""Use the raw binding."""
+"""Compute the flow."""
 
-from fastflow._impl import flow
+from fastflow import flow
 
 # graph with flow and gflow
 # 0 - 2 - 4
