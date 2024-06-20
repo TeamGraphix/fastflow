@@ -1,0 +1,1 @@
+"""Initialize the fastflow package."""
