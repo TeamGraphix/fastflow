@@ -10,20 +10,20 @@ pub fn find(
     mut oset: HashSet<usize>,
 ) -> Option<(Flow, Layer)> {
     let n = g.len();
-    let mut f = HashMap::new();
-    let mut layer = vec![0_usize; n];
     let vset = (0..n).collect::<HashSet<_>>();
     let mut cset = oset.difference(&iset).copied().collect::<HashSet<_>>();
     let icset = vset.difference(&iset).copied().collect::<HashSet<_>>();
     let ocset = vset.difference(&oset).copied().collect::<HashSet<_>>();
+    let mut f = HashMap::with_capacity(ocset.len());
+    let mut layer = vec![0_usize; n];
     // check[v] = g[v] & (vset - oset)
     let mut check = g
         .iter()
         .map(|x| x.intersection(&ocset).copied().collect::<HashSet<_>>())
         .collect::<Vec<_>>();
+    // Reuse working memory
     let mut oset_work = HashSet::new();
     let mut cset_work = HashSet::new();
-    f.reserve(ocset.len());
     for l in 1_usize.. {
         oset_work.clear();
         cset_work.clear();
