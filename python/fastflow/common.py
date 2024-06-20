@@ -2,39 +2,15 @@
 
 from __future__ import annotations
 
-import warnings
-from typing import TYPE_CHECKING, NamedTuple
+from collections.abc import Hashable
+from typing import Generic, NamedTuple, TypeVar
 
-if TYPE_CHECKING:
-    from collections.abc import Collection
-    from collections.abc import Set as AbstractSet
+# Vertex type
+V = TypeVar("V", bound=Hashable)
 
 
-class FlowResult(NamedTuple):
+class FlowResult(NamedTuple, Generic[V]):
     """MBQC flow."""
 
-    f: dict[int, int]
-    layer: list[int]
-
-
-def check_graph(g: Collection[AbstractSet[int]], iset: AbstractSet[int], oset: AbstractSet[int]) -> None:
-    """Check the graph."""
-    n = len(g)
-    for i, gi in enumerate(g):
-        if i in gi:
-            msg = "Self-loop detected."
-            raise ValueError(msg)
-        if all(0 <= gij < n for gij in gi):
-            continue
-        msg = "Neighboring vertices out of range."
-        raise ValueError(msg)
-    vset = set(range(n))
-    if not iset <= vset:
-        msg = "iset must be a subset of the vertices."
-        raise ValueError(msg)
-    if not oset <= vset:
-        msg = "oset must be a subset of the vertices."
-        raise ValueError(msg)
-    if 0 not in vset:
-        msg = "Vertices are assumed to be 0-based."
-        warnings.warn(msg, stacklevel=2)
+    f: dict[V, V]
+    layer: dict[V, int]
