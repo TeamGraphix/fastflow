@@ -13,7 +13,10 @@ class FlowResult(NamedTuple):
 def check_graph(g: list[set[int]], iset: set[int], oset: set[int]) -> None:
     """Check the graph."""
     n = len(g)
-    for gi in g:
+    for i, gi in enumerate(g):
+        if i in gi:
+            msg = "Self-loop detected."
+            raise ValueError(msg)
         if all(0 <= gij < n for gij in gi):
             continue
         msg = "Neighboring vertices out of range."
