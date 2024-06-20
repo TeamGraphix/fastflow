@@ -1,6 +1,6 @@
 """Use the raw binding."""
 
-from fastflow import _impl
+from fastflow._impl import flow
 
 # graph with flow and gflow
 # 0 - 2 - 4
@@ -14,4 +14,4 @@ g = [{2}, {3}, {0, 3, 4}, {1, 2, 5}, {2}, {3}]
 iset = {0, 1}
 oset = {4, 5}
 
-print(_impl.find(g, iset, oset))
+print(flow.find(g, iset, oset))
