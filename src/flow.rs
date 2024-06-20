@@ -50,6 +50,7 @@ pub fn find(
                 check[u].remove(&v);
             });
         }
+        // MEMO: May be refactored later using trait
         // oset |= oset_work
         oset.extend(oset_work.iter().copied());
         // cset -= cset_work
