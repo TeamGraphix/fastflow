@@ -1,6 +1,8 @@
 """Common data for fastflow package."""
 
 import warnings
+from collections.abc import Collection
+from collections.abc import Set as AbstractSet
 from typing import NamedTuple
 
 
@@ -11,7 +13,7 @@ class FlowResult(NamedTuple):
     layer: list[int]
 
 
-def check_graph(g: list[set[int]], iset: set[int], oset: set[int]) -> None:
+def check_graph(g: Collection[AbstractSet[int]], iset: AbstractSet[int], oset: AbstractSet[int]) -> None:
     """Check the graph."""
     n = len(g)
     for i, gi in enumerate(g):
