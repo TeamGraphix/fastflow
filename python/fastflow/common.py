@@ -1,5 +1,6 @@
 """Common data for fastflow package."""
 
+import warnings
 from typing import NamedTuple
 
 
@@ -28,3 +29,6 @@ def check_graph(g: list[set[int]], iset: set[int], oset: set[int]) -> None:
     if not oset <= vset:
         msg = "oset must be a subset of the vertices."
         raise ValueError(msg)
+    if 0 not in vset:
+        msg = "Vertices are assumed to be 0-based."
+        warnings.warn(msg, stacklevel=2)
