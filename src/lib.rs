@@ -1,6 +1,7 @@
 use pyo3::prelude::*;
 mod common;
 mod flow;
+mod gf2_linalg;
 
 // MEMO: Data verification is done in the Python layer.
 
