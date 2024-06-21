@@ -208,7 +208,7 @@ impl GF2Solver {
         self.eliminate_upper();
     }
 
-    pub fn solve_in_place(&mut self, out: &mut FixedBitSet, ieq: usize) -> Option<()> {
+    pub fn solve_in_place(&mut self, out: &mut FixedBitSet, ieq: usize) -> bool {
         // Eliminate if not done yet
         self.eliminate();
         if ieq >= self.neqs {
@@ -221,7 +221,7 @@ impl GF2Solver {
             for r in rank..self.rows {
                 // = 1 in the zeroed area
                 if self.work[r][c] {
-                    return None;
+                    return false;
                 }
             }
         }
@@ -233,15 +233,17 @@ impl GF2Solver {
                 out.insert(self.perm[i]);
             }
         }
-        Some(())
+        true
     }
 
     // Left for easier testing
     #[allow(dead_code)]
     pub fn solve(&mut self, ieq: usize) -> Option<FixedBitSet> {
         let mut out = FixedBitSet::with_capacity(self.cols);
-        self.solve_in_place(&mut out, ieq)?;
-        Some(out)
+        match self.solve_in_place(&mut out, ieq) {
+            false => None,
+            true => Some(out),
+        }
     }
 }
 

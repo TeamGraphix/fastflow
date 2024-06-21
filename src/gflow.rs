@@ -64,7 +64,7 @@ pub fn find(
         omivec.clear();
         omiset.iter().for_each(|&u| omivec.push(u));
         for (ieq, &u) in ocset.iter().enumerate() {
-            if let None = solver.solve_in_place(&mut x, ieq) {
+            if !solver.solve_in_place(&mut x, ieq) {
                 continue;
             }
             cset.insert(u);
