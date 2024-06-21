@@ -4,7 +4,7 @@ mod flow;
 mod gf2_linalg;
 mod gflow;
 
-// MEMO: Data verification is done in the Python layer.
+// MEMO: Data verification is done in the Python layer
 
 // fastflow._impl
 #[pymodule]

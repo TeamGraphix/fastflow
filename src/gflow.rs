@@ -15,22 +15,23 @@ pub fn find(
 ) -> Option<(GFlow, Layer)> {
     let n = g.len();
     let vset = (0..n).collect::<HashSet<_>>();
+    let mut cset = HashSet::new();
     // Need to use BTreeSet to get deterministic order
     let mut ocset = vset.difference(&oset).copied().collect::<BTreeSet<_>>();
-    let mut cset = HashSet::new();
     let mut omiset = oset.difference(&iset).copied().collect::<BTreeSet<_>>();
     let mut f = HashMap::with_capacity(ocset.len());
     let mut layer = vec![0_usize; n];
     let mut nrows;
     let mut ncols = omiset.len();
     let mut neqs = ocset.len();
+    // Reuse working memory
     let mut work = Vec::new();
     let mut x = FixedBitSet::with_capacity(ncols);
     work.resize_with(ocset.len(), || {
         // ncols + neqs monotonically decreases
         FixedBitSet::with_capacity(ncols + neqs)
     });
-    // Used to decode x
+    // omivec[i] = i'th node in O\I after sorting
     let mut omivec = Vec::new();
     for l in 1_usize.. {
         cset.clear();
@@ -38,6 +39,7 @@ pub fn find(
         work.truncate(nrows);
         ncols = omiset.len();
         neqs = ocset.len();
+        // MEMO: Need to break before attaching
         if nrows == 0 || ncols == 0 || neqs == 0 {
             break;
         }
@@ -47,9 +49,12 @@ pub fn find(
             x.grow(ncols + neqs);
             x.clear();
         });
+        // Encode node as one-hot vector
         for (r, &u) in ocset.iter().enumerate() {
+            // Initialize rhs
             work[r].insert(ncols + r);
             for (c, &v) in omiset.iter().enumerate() {
+                // Initialize adjacency matrix
                 if g[u].contains(&v) {
                     work[r].insert(c);
                 }
@@ -63,6 +68,7 @@ pub fn find(
                 continue;
             }
             cset.insert(u);
+            // Decode solution
             let fu = HashSet::from_iter(x.ones().map(|i| omivec[i]));
             f.insert(u, fu);
             layer[u] = l;
