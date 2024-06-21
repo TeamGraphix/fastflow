@@ -245,3 +245,222 @@ impl GF2Solver {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rand::prelude::*;
+    use rstest::rstest;
+    use rstest_reuse::{apply, template};
+
+    #[test]
+    fn test_new_from() {
+        let co = vec![
+            // 1000
+            FixedBitSet::with_capacity_and_blocks(4, vec![0b0001]),
+            // 0100
+            FixedBitSet::with_capacity_and_blocks(4, vec![0b0010]),
+            // 0010
+            FixedBitSet::with_capacity_and_blocks(4, vec![0b0100]),
+        ];
+        let rhs = vec![
+            // 100
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b001]),
+            // 110
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b011]),
+            // 111
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b111]),
+        ];
+        let sol = GF2Solver::new_from(&co, &rhs).unwrap();
+        assert_eq!(sol.rows, 3);
+        assert_eq!(sol.cols, 4);
+        assert_eq!(sol.neqs, 3);
+        assert_eq!(sol.rank, None);
+        assert_eq!(sol.perm, &[0, 1, 2, 3]);
+        assert_eq!(format!("{:}", sol.work[0]), "1000111");
+        assert_eq!(format!("{:}", sol.work[1]), "0100011");
+        assert_eq!(format!("{:}", sol.work[2]), "0010001");
+    }
+
+    #[test]
+    fn test_attach() {
+        let work = vec![
+            // 1000111
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b1110001]),
+            // 0100011
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b1100010]),
+            // 0010001
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b1000100]),
+        ];
+        let sol = GF2Solver::attach(work, 3).unwrap();
+        assert_eq!(sol.rows, 3);
+        assert_eq!(sol.cols, 4);
+        assert_eq!(sol.neqs, 3);
+        assert_eq!(sol.rank, None);
+        assert_eq!(sol.perm, &[0, 1, 2, 3]);
+        assert_eq!(format!("{:}", sol.work[0]), "1000111");
+        assert_eq!(format!("{:}", sol.work[1]), "0100011");
+        assert_eq!(format!("{:}", sol.work[2]), "0010001");
+    }
+
+    fn compute_lhs(co: &[FixedBitSet], x: &FixedBitSet) -> FixedBitSet {
+        let mut lhs = FixedBitSet::with_capacity(co.len());
+        for (r, row) in co.iter().enumerate() {
+            let mut sum = false;
+            for c in row.ones() {
+                sum ^= x[c];
+            }
+            lhs.set(r, sum);
+        }
+        lhs
+    }
+
+    fn rand_co(rows: usize, cols: usize, p: f64) -> GF2Matrix {
+        assert!(0.0 <= p && p <= 1.0);
+        let mut rng = thread_rng();
+        let mut co = Vec::with_capacity(rows);
+        for _ in 0..rows {
+            let mut row = FixedBitSet::with_capacity(cols);
+            for c in 0..cols {
+                if rng.gen::<f64>() < p {
+                    row.insert(c);
+                }
+            }
+            co.push(row);
+        }
+        co
+    }
+
+    fn rand_rhs(rows: usize, p: f64) -> FixedBitSet {
+        assert!(0.0 <= p && p <= 1.0);
+        let mut rng = thread_rng();
+        let mut rhs = FixedBitSet::with_capacity(rows);
+        for r in 0..rows {
+            if rng.gen::<f64>() < p {
+                rhs.insert(r);
+            }
+        }
+        rhs
+    }
+
+    const REP: usize = 1000;
+
+    #[template]
+    #[rstest]
+    fn template_tests(
+        #[values(1, 2, 7, 12)] rows: usize,
+        #[values(1, 2, 7, 12)] cols: usize,
+        #[values(1, 2, 7, 12)] neqs: usize,
+    ) {
+    }
+
+    #[apply(template_tests)]
+    fn test_eliminate_lower_random(rows: usize, cols: usize, neqs: usize) {
+        let mut rng = thread_rng();
+        for _ in 0..REP {
+            // Random p
+            let p1 = rng.gen::<f64>();
+            let p2 = rng.gen::<f64>();
+            let co = rand_co(rows, cols, p1);
+            let mut rhs = Vec::with_capacity(neqs);
+            rhs.resize_with(neqs, || rand_rhs(rows, p2));
+            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            sol.eliminate_lower();
+            assert!(sol.validate_afterlower());
+        }
+    }
+
+    #[apply(template_tests)]
+    fn test_eliminate_lower_special(rows: usize, cols: usize, neqs: usize) {
+        for p in [0.0, 1.0] {
+            // Special p
+            let co = rand_co(rows, cols, p);
+            let mut rhs = Vec::with_capacity(neqs);
+            rhs.resize_with(neqs, || rand_rhs(rows, 0.5));
+            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            sol.eliminate_lower();
+            assert!(sol.validate_afterlower());
+        }
+    }
+
+    #[apply(template_tests)]
+    fn test_eliminate_upper_random(rows: usize, cols: usize, neqs: usize) {
+        let mut rng = thread_rng();
+        for _ in 0..REP {
+            // Random p
+            let p1 = rng.gen::<f64>();
+            let p2 = rng.gen::<f64>();
+            let co = rand_co(rows, cols, p1);
+            let mut rhs = Vec::with_capacity(neqs);
+            rhs.resize_with(neqs, || rand_rhs(rows, p2));
+            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            sol.eliminate();
+            assert!(sol.validate_afterupper());
+        }
+    }
+
+    #[apply(template_tests)]
+    fn test_eliminate_upper_special(rows: usize, cols: usize, neqs: usize) {
+        for p in [0.0, 1.0] {
+            // Special p
+            let co = rand_co(rows, cols, p);
+            let mut rhs = Vec::with_capacity(neqs);
+            rhs.resize_with(neqs, || rand_rhs(rows, 0.5));
+            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            sol.eliminate();
+            assert!(sol.validate_afterupper());
+        }
+    }
+
+    #[apply(template_tests)]
+    fn test_solve_random(rows: usize, cols: usize, neqs: usize) {
+        let mut rng = thread_rng();
+        for _ in 0..REP {
+            // Random p
+            let p1 = rng.gen::<f64>();
+            let p2 = rng.gen::<f64>();
+            let co = rand_co(rows, cols, p1);
+            let mut rhs = Vec::with_capacity(neqs);
+            rhs.resize_with(neqs, || rand_rhs(rows, p2));
+            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            sol.eliminate();
+            for ieq in 0..neqs {
+                let x = sol.solve(ieq);
+                if x.is_none() {
+                    assert!(sol.rank.unwrap() < sol.rows);
+                    continue;
+                }
+                for i in sol.rank.unwrap()..sol.rows {
+                    assert!(sol.work[i].count_ones(..sol.cols) == 0);
+                    assert!(!sol.work[i][cols + ieq]);
+                }
+                let b = compute_lhs(&co, &x.unwrap());
+                assert_eq!(b, rhs[ieq]);
+            }
+        }
+    }
+
+    #[apply(template_tests)]
+    fn test_solve_special(rows: usize, cols: usize, neqs: usize) {
+        for (p1, p2) in [(0.0, 0.0), (0.0, 1.0), (1.0, 0.0), (1.0, 1.0)] {
+            // Special p
+            let co = rand_co(rows, cols, p1);
+            let mut rhs = Vec::with_capacity(neqs);
+            rhs.resize_with(neqs, || rand_rhs(rows, p2));
+            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            sol.eliminate();
+            for ieq in 0..neqs {
+                let x = sol.solve(ieq);
+                if x.is_none() {
+                    assert!(sol.rank.unwrap() < sol.rows);
+                    continue;
+                }
+                for i in sol.rank.unwrap()..sol.rows {
+                    assert!(sol.work[i].count_ones(..sol.cols) == 0);
+                    assert!(!sol.work[i][cols + ieq]);
+                }
+                let b = compute_lhs(&co, &x.unwrap());
+                assert_eq!(b, rhs[ieq]);
+            }
+        }
+    }
+}
