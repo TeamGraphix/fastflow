@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 import networkx as nx
 
+from fastflow import common
 from fastflow._impl import gflow
 from fastflow.common import GFlowResult, V
 
@@ -14,17 +15,7 @@ if TYPE_CHECKING:
 
 
 def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> GFlowResult[V] | None:
-    # BUG: Incorrect annotation
-    if nx.number_of_selfloops(g) > 0:  # type: ignore[arg-type]
-        msg = "Self-loop detected."
-        raise ValueError(msg)
-    vset = set(g.nodes)
-    if not (iset <= vset):
-        msg = "iset must be a subset of the vertices."
-        raise ValueError(msg)
-    if not (oset <= vset):
-        msg = "oset must be a subset of the vertices."
-        raise ValueError(msg)
+    common.check_graph(g, iset, oset)
     v2i = {v: i for i, v in enumerate(g.nodes)}
     i2v = {i: v for v, i in v2i.items()}
     n = len(g)
