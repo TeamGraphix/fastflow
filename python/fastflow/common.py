@@ -14,3 +14,10 @@ class FlowResult(NamedTuple, Generic[V]):
 
     f: dict[V, V]
     layer: dict[V, int]
+
+
+class GFlowResult(NamedTuple, Generic[V]):
+    """MBQC gflow."""
+
+    f: dict[V, set[V]]
+    layer: dict[V, int]
