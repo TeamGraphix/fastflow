@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import networkx as nx
-from fastflow import flow
+from fastflow import flow, gflow
 
 # Flow does not exist
+# Gflow exists
 #   ______
 #  /      |
 # 1 - 4   |
@@ -27,3 +28,4 @@ iset = {1, 2, 3}
 oset = {4, 5, 6}
 
 print(flow.find(g, iset, oset))
+print(gflow.find(g, iset, oset))
