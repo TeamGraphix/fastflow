@@ -32,7 +32,7 @@ pub fn find(
                 continue;
             }
             // Get the only element
-            let u = *check[v].iter().next().expect("One element here.");
+            let u = *check[v].iter().next().expect("one element here");
             f.insert(u, v);
             // MEMO: Typo in Mahlla's PP (2007)
             layer[u] = l;
