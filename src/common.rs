@@ -1,6 +1,7 @@
 //! Common functionalities for the flow/gflow algorithms.
 
 use std::{
+    borrow::Borrow,
     collections::{BTreeSet, HashSet},
     hash::Hash,
 };
@@ -44,34 +45,33 @@ pub fn odd_neighbors(g: &Graph, kset: &HashSet<usize>) -> HashSet<usize> {
 /// Helper trait for in-place set operations.
 pub trait InPlaceSetOp<T: Clone> {
     /// Extends self with the elements from `other`.
-    fn union_with<'a>(&'a mut self, other: impl Iterator<Item = &'a T>)
+    fn union_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        // Need to ensure that we can create &'a T from T
-        T: 'a;
+        U: Borrow<T>;
 
     /// Drops the elements from `other` from self.
-    fn difference_with<'a>(&'a mut self, other: impl Iterator<Item = &'a T>)
+    fn difference_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        T: 'a;
+        U: Borrow<T>;
 }
 
 impl<T> InPlaceSetOp<T> for HashSet<T>
 where
     T: Eq + Clone + Hash,
 {
-    fn union_with<'a>(&mut self, other: impl Iterator<Item = &'a T>)
+    fn union_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        T: 'a,
+        U: Borrow<T>,
     {
-        self.extend(other.cloned());
+        self.extend(other.map(|x| x.borrow().clone()));
     }
 
-    fn difference_with<'a>(&mut self, other: impl Iterator<Item = &'a T>)
+    fn difference_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        T: 'a,
+        U: Borrow<T>,
     {
         other.for_each(|x| {
-            self.remove(x);
+            self.remove(x.borrow());
         });
     }
 }
@@ -80,19 +80,19 @@ impl<T> InPlaceSetOp<T> for BTreeSet<T>
 where
     T: Eq + Clone + Ord,
 {
-    fn union_with<'a>(&mut self, other: impl Iterator<Item = &'a T>)
+    fn union_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        T: 'a,
+        U: Borrow<T>,
     {
-        self.extend(other.cloned());
+        self.extend(other.map(|x| x.borrow().clone()));
     }
 
-    fn difference_with<'a>(&mut self, other: impl Iterator<Item = &'a T>)
+    fn difference_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        T: 'a,
+        U: Borrow<T>,
     {
         other.for_each(|x| {
-            self.remove(x);
+            self.remove(x.borrow());
         });
     }
 }
