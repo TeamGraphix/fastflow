@@ -34,8 +34,7 @@ jobs:
         #  We need to test with debug build
         run: |
           python3 -m pip install -U pip
-          python3 -m venv .venv
-          source .venv/bin/activate
-          pip install maturin pytest
-          maturin develop
-          pytest
+          pip install pipenv
+          pipenv install maturin pytest
+          pipenv run maturin develop
+          pipenv run pytest
