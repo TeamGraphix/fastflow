@@ -54,7 +54,7 @@ where
     where
         T: 'a,
     {
-        self.extend(other.map(|x| x.clone()));
+        self.extend(other.cloned());
     }
 
     fn difference_with<'a>(&mut self, other: impl Iterator<Item = &'a T>)
@@ -75,7 +75,7 @@ where
     where
         T: 'a,
     {
-        self.extend(other.map(|x| x.clone()));
+        self.extend(other.cloned());
     }
 
     fn difference_with<'a>(&mut self, other: impl Iterator<Item = &'a T>)

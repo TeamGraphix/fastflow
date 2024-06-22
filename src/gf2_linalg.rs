@@ -1,4 +1,3 @@
-use anyhow;
 use fixedbitset::FixedBitSet;
 use itertools::Itertools;
 
@@ -303,7 +302,7 @@ mod tests {
     }
 
     fn rand_co(rows: usize, cols: usize, p: f64) -> GF2Matrix {
-        assert!(0.0 <= p && p <= 1.0);
+        assert!((0.0..=1.0).contains(&p));
         let mut rng = thread_rng();
         let mut co = Vec::with_capacity(rows);
         for _ in 0..rows {
@@ -319,7 +318,7 @@ mod tests {
     }
 
     fn rand_rhs(rows: usize, p: f64) -> FixedBitSet {
-        assert!(0.0 <= p && p <= 1.0);
+        assert!((0.0..=1.0).contains(&p));
         let mut rng = thread_rng();
         let mut rhs = FixedBitSet::with_capacity(rows);
         for r in 0..rows {
@@ -411,7 +410,7 @@ mod tests {
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
             let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
             sol.eliminate();
-            for ieq in 0..neqs {
+            for (ieq, rhsi) in rhs.iter().enumerate() {
                 let x = sol.solve(ieq);
                 if x.is_none() {
                     assert!(sol.rank.unwrap() < sol.rows);
@@ -422,7 +421,7 @@ mod tests {
                     assert!(!sol.work[i][cols + ieq]);
                 }
                 let b = compute_lhs(&co, &x.unwrap());
-                assert_eq!(b, rhs[ieq]);
+                assert_eq!(&b, rhsi);
             }
         }
     }
@@ -436,7 +435,7 @@ mod tests {
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
             let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
             sol.eliminate();
-            for ieq in 0..neqs {
+            for (ieq, rhsi) in rhs.iter().enumerate() {
                 let x = sol.solve(ieq);
                 if x.is_none() {
                     assert!(sol.rank.unwrap() < sol.rows);
@@ -447,7 +446,7 @@ mod tests {
                     assert!(!sol.work[i][cols + ieq]);
                 }
                 let b = compute_lhs(&co, &x.unwrap());
-                assert_eq!(b, rhs[ieq]);
+                assert_eq!(&b, rhsi);
             }
         }
     }

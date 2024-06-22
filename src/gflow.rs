@@ -125,10 +125,12 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
         omiset.union_with(cset.iter());
         work = solver.detach();
     }
-    debug_assert_eq!(check_domain(&f, &vset, &iset, &oset_orig).unwrap(), ());
     if oset == vset {
-        debug_assert_eq!(common::check_initial(&layer, &oset_orig).unwrap(), ());
-        debug_assert_eq!(check_definition(&f, &layer, &g).unwrap(), ());
+        if cfg!(debug_assertions) {
+            check_domain(&f, &vset, &iset, &oset_orig).unwrap();
+            common::check_initial(&layer, &oset_orig).unwrap();
+            check_definition(&f, &layer, &g).unwrap();
+        }
         Some((f, layer))
     } else {
         None
