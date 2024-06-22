@@ -1,9 +1,10 @@
 use anyhow;
 use fixedbitset::FixedBitSet;
+use itertools::Itertools;
 
 type GF2Matrix = Vec<FixedBitSet>;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GF2Solver {
     rows: usize,
     cols: usize,
@@ -18,31 +19,25 @@ impl GF2Solver {
     #[allow(dead_code)]
     pub fn new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> anyhow::Result<Self> {
         let rows = co.len();
-        if rows == 0 {
-            return Err(anyhow::anyhow!("co is empty"));
-        }
+        anyhow::ensure!(rows > 0, "co is empty");
         let neqs = rhs.len();
-        if neqs == 0 {
-            return Err(anyhow::anyhow!("rhs is empty"));
-        }
-        if rhs.iter().any(|rhsi| rhsi.len() != rows) {
-            return Err(anyhow::anyhow!("rhs size mismatch"));
-        }
-        let cols = co[0].len();
-        if co.iter().any(|coi| coi.len() != cols) {
-            return Err(anyhow::anyhow!("co is jagged"));
-        }
-        if cols == 0 {
-            return Err(anyhow::anyhow!("zero-length columns"));
-        }
+        anyhow::ensure!(neqs > 0, "rhs is empty");
+        anyhow::ensure!(
+            rhs.iter().map(|rhsi| rhsi.len()).all_equal_value() == Ok(rows),
+            "rhs size mismatch"
+        );
+        let Ok(cols) = co.iter().map(|row| row.len()).all_equal_value() else {
+            anyhow::bail!("co is jagged");
+        };
+        anyhow::ensure!(cols > 0, "zero-length columns");
         let mut work = vec![FixedBitSet::with_capacity(cols + neqs); rows];
         for (r, row) in co.iter().enumerate() {
             for c in row.ones() {
                 work[r].insert(c);
             }
         }
-        for (mut c, rhsc) in rhs.iter().enumerate() {
-            c += cols;
+        for (ieq, rhsc) in rhs.iter().enumerate() {
+            let c = cols + ieq;
             for r in rhsc.ones() {
                 work[r].insert(c);
             }
@@ -58,23 +53,14 @@ impl GF2Solver {
     }
 
     pub fn attach(work: GF2Matrix, neqs: usize) -> anyhow::Result<Self> {
-        if neqs == 0 {
-            return Err(anyhow::anyhow!("neqs is zero"));
-        }
+        anyhow::ensure!(neqs > 0, "neqs is zero");
         let rows = work.len();
-        if rows == 0 {
-            return Err(anyhow::anyhow!("work is empty"));
-        }
-        let width = work[0].len();
-        if work.iter().any(|worki| worki.len() != width) {
-            return Err(anyhow::anyhow!("work is jagged"));
-        }
-        if width == 0 {
-            return Err(anyhow::anyhow!("zero-length columns"));
-        }
-        if width <= neqs {
-            return Err(anyhow::anyhow!("neqs mismatch"));
-        }
+        anyhow::ensure!(rows > 0, "work is empty");
+        let Ok(width) = work.iter().map(|worki| worki.len()).all_equal_value() else {
+            anyhow::bail!("work is jagged");
+        };
+        anyhow::ensure!(width > 0, "zero-length columns");
+        anyhow::ensure!(width > neqs, "neqs too large");
         let cols = width - neqs;
         Ok(Self {
             rows,

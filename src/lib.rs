@@ -8,7 +8,8 @@ mod gflow;
 
 // fastflow._impl
 #[pymodule]
-fn _impl(m: &Bound<'_, PyModule>) -> PyResult<()> {
+#[pyo3(name = "_impl")]
+fn entrypoint(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // fastflow._impl.flow
     let mod_flow = PyModule::new_bound(m.py(), "flow")?;
     mod_flow.add_function(wrap_pyfunction!(flow::find, &mod_flow)?)?;

@@ -3,7 +3,7 @@ use pyo3::prelude::*;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::{
-    common::{GFlow, Layer},
+    common::{GFlow, InPlaceSetOp, Layer},
     gf2_linalg::GF2Solver,
 };
 
@@ -19,20 +19,16 @@ pub fn find(
     // Need to use BTreeSet to get deterministic order
     let mut ocset = vset.difference(&oset).copied().collect::<BTreeSet<_>>();
     let mut omiset = oset.difference(&iset).copied().collect::<BTreeSet<_>>();
+    // omivec[i] = i'th node in O\I after sorting
+    let mut omivec = Vec::new();
     let mut f = HashMap::with_capacity(ocset.len());
     let mut layer = vec![0_usize; n];
-    let mut nrows;
+    let mut nrows = ocset.len();
     let mut ncols = omiset.len();
     let mut neqs = ocset.len();
     // Reuse working memory
-    let mut work = Vec::new();
+    let mut work = vec![FixedBitSet::with_capacity(ncols + neqs); nrows];
     let mut x = FixedBitSet::with_capacity(ncols);
-    work.resize_with(ocset.len(), || {
-        // ncols + neqs monotonically decreases
-        FixedBitSet::with_capacity(ncols + neqs)
-    });
-    // omivec[i] = i'th node in O\I after sorting
-    let mut omivec = Vec::new();
     for l in 1_usize.. {
         cset.clear();
         nrows = ocset.len();
@@ -76,16 +72,14 @@ pub fn find(
         if cset.is_empty() {
             break;
         }
-        for &u in cset.iter() {
-            oset.insert(u);
-            ocset.remove(&u);
-            omiset.insert(u);
-        }
+        oset.union_with(cset.iter());
+        ocset.difference_with(cset.iter());
+        omiset.union_with(cset.iter());
         work = solver.detach();
     }
     if oset == vset {
-        return Some((f, layer));
+        Some((f, layer))
     } else {
-        return None;
+        None
     }
 }
