@@ -7,5 +7,5 @@ name = "pypi"
 fastflow = {file = ".", editable = true}
 
 [dev-packages]
-ruff = "*"
 mypy = "*"
+ruff = "*"
