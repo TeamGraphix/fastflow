@@ -4,8 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastflow = {file = ".", editable = true}
+fastflow = {extras = ["dev"], file = ".", editable = true}
 
 [dev-packages]
-mypy = "*"
-ruff = "*"
