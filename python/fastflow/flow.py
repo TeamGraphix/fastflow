@@ -69,4 +69,4 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResu
     f_, layer_ = ret_
     f = {i2v[i]: i2v[j] for i, j in f_.items()}
     layer = {i2v[i]: li for i, li in enumerate(layer_)}
-    return FlowResult[V](f, layer)
+    return FlowResult(f, layer)
