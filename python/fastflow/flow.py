@@ -1,4 +1,9 @@
-"""Maximally-delayed flow algorithm."""
+"""Maximally-delayed flow algorithm.
+
+For given undirected graph, input nodes, and output nodes, compute the causal flow having \
+the minimum number of layers.
+See Mhalla et al. (2008) for more details.
+"""
 
 from __future__ import annotations
 
@@ -15,6 +20,25 @@ if TYPE_CHECKING:
 
 
 def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResult[V] | None:
+    """Compute the maximally-delayed causal flow, if any.
+
+    Parameters
+    ----------
+    g : `nx.Graph[V]`
+        Undirected graph representing MBQC pattern.
+        Cannot have self-loops.
+    iset : `AbstractSet[V]`
+        Input nodes.
+        Must be a subset of `g.nodes`.
+    oset : `AbstractSet[V]`
+        Output nodes.
+        Must be a subset of `g.nodes`.
+
+    Returns
+    -------
+    If a flow exists, return a `FlowResult[V]` object.
+    Otherwise, return `None`.
+    """
     common.check_graph(g, iset, oset)
     v2i = {v: i for i, v in enumerate(g.nodes)}
     i2v = {i: v for v, i in v2i.items()}
