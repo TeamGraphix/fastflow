@@ -7,7 +7,9 @@ name = "fastflow"
 # Must be consistent with Cargo.toml
 version = "0.1.0"
 dependencies = ["networkx", "types-networkx", "pydantic"]
-optional-dependencies = { "dev" = ["mypy", "ruff"] }
+
+[project.optional-dependencies]
+dev = ["mypy", "pytest", "pytest-cov", "ruff"]
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
