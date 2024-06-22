@@ -27,4 +27,4 @@ jobs:
           python3 -m pip install -U pip
           pip install mypy
           pip install .
-          python3 -m mypy python/
+          mypy python/
