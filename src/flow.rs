@@ -5,7 +5,6 @@ use crate::common::{self, Graph, InPlaceSetOp, Layer};
 
 type Flow = HashMap<usize, usize>;
 
-#[cfg(debug_assertions)]
 fn check_domain(
     f: &Flow,
     vset: &HashSet<usize>,
@@ -27,7 +26,6 @@ fn check_domain(
     Ok(())
 }
 
-#[cfg(debug_assertions)]
 fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     for (&i, &fi) in f.iter() {
         if layer[i] <= layer[fi] {

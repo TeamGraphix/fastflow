@@ -9,7 +9,6 @@ use crate::{
 
 type GFlow = HashMap<usize, HashSet<usize>>;
 
-#[cfg(debug_assertions)]
 fn check_domain(
     f: &GFlow,
     vset: &HashSet<usize>,
@@ -33,7 +32,6 @@ fn check_domain(
     Ok(())
 }
 
-#[cfg(debug_assertions)]
 fn check_definition(f: &GFlow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     for (&i, fi) in f.iter() {
         for &fij in fi {

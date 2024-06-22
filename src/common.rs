@@ -6,7 +6,6 @@ use std::{
 pub type Graph = Vec<HashSet<usize>>;
 pub type Layer = Vec<usize>;
 
-#[cfg(debug_assertions)]
 pub fn check_initial(layer: &Layer, oset: &HashSet<usize>) -> anyhow::Result<()> {
     for (u, &lu) in layer.iter().enumerate() {
         // u in O => layer[u] == 0
