@@ -1,11 +1,44 @@
 use std::{
-    collections::{BTreeSet, HashMap, HashSet},
+    collections::{BTreeSet, HashSet},
     hash::Hash,
 };
 
-pub type Flow = HashMap<usize, usize>;
-pub type GFlow = HashMap<usize, HashSet<usize>>;
+pub type Graph = Vec<HashSet<usize>>;
 pub type Layer = Vec<usize>;
+
+#[cfg(debug_assertions)]
+pub fn check_initial(layer: &Layer, oset: &HashSet<usize>) -> anyhow::Result<()> {
+    for (u, &lu) in layer.iter().enumerate() {
+        // u in O => layer[u] == 0
+        // u not in O => layer[u] != 0
+        let valid = oset.contains(&u) ^ (lu != 0);
+        if !valid {
+            let err = anyhow::anyhow!("initial check failed")
+                .context(format!("cannot be maximally-delayed due to {u}"));
+            return Err(err);
+        }
+    }
+    Ok(())
+}
+
+pub fn odd_neighbors(g: &Graph, kset: &HashSet<usize>) -> HashSet<usize> {
+    if kset.iter().any(|&ki| ki >= g.len()) {
+        panic!("kset out of range");
+    }
+    let mut src = kset.clone();
+    src.extend(
+        kset.iter()
+            .flat_map(|&ki| g[ki].iter().copied())
+            .collect::<HashSet<_>>(),
+    );
+    let mut res = HashSet::new();
+    for u in src {
+        if kset.intersection(&g[u]).count() % 2 == 1 {
+            res.insert(u);
+        }
+    }
+    res
+}
 
 pub trait InPlaceSetOp<T: Clone> {
     fn union_with<'a>(&'a mut self, other: impl Iterator<Item = &'a T>)
