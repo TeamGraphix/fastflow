@@ -9,6 +9,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import pydantic
+from pydantic import NonNegativeInt, ValidationError
+
 from fastflow import common
 from fastflow._impl import gflow
 from fastflow.common import GFlowResult, V
@@ -17,6 +20,13 @@ if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
 
     import networkx as nx
+
+
+@pydantic.validate_call(validate_return=True)
+def _find_validated(
+    g: list[set[NonNegativeInt]], iset: set[NonNegativeInt], oset: set[NonNegativeInt]
+) -> tuple[dict[NonNegativeInt, set[NonNegativeInt]], list[NonNegativeInt]] | None:
+    return gflow.find(g, iset, oset)
 
 
 def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> GFlowResult[V] | None:
@@ -49,7 +59,11 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> GFlowRes
             g_[i].add(v2i[v])
     iset_ = {v2i[v] for v in iset}
     oset_ = {v2i[v] for v in oset}
-    ret_ = gflow.find(g_, iset_, oset_)
+    try:
+        ret_ = _find_validated(g_, iset_, oset_)
+    except ValidationError as e:
+        msg = "Failed to validate types at bindcall."
+        raise ValueError(msg) from e
     if ret_ is None:
         return None
     f_, layer_ = ret_
