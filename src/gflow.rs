@@ -1,3 +1,5 @@
+//! Maximally-delayed generalized flow algorithm.
+
 use fixedbitset::FixedBitSet;
 use pyo3::prelude::*;
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -9,6 +11,7 @@ use crate::{
 
 type GFlow = HashMap<usize, HashSet<usize>>;
 
+/// Check if the domain of `f` is in V\O and the codomain is in V\I.
 fn check_domain(
     f: &GFlow,
     vset: &HashSet<usize>,
@@ -32,6 +35,7 @@ fn check_domain(
     Ok(())
 }
 
+/// Check if the properties of the generalized flow are satisfied.
 fn check_definition(f: &GFlow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     for (&i, fi) in f.iter() {
         for &fij in fi {
@@ -58,6 +62,18 @@ fn check_definition(f: &GFlow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Find the maximally-delayed generalized flow, if any.
+///
+/// # Arguments
+///
+/// - `g`: The adjacency list of the graph. Must be undirected and without self-loops.
+/// - `iset`: The set of initial nodes. Must be consistent with `g`.
+/// - `oset`: The set of output nodes. Must be consistent with `g`.
+///
+/// # Note
+///
+/// - Node indices are assumed to be `0..g.len()`.
+/// - Arguments are **NOT** verified.
 #[pyfunction]
 pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<(GFlow, Layer)> {
     let n = g.len();

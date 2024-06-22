@@ -1,3 +1,7 @@
+//! Entry point of the Rust binding.
+//!
+//! From the Python side, bindings are visible as `fastflow._impl.XXX`.
+
 use pyo3::prelude::*;
 mod common;
 mod flow;

@@ -1,20 +1,39 @@
+//! GF(2) linear solver for gflow algorithm.
+
 use fixedbitset::FixedBitSet;
 use itertools::Itertools;
 
 type GF2Matrix = Vec<FixedBitSet>;
 
+/// Solver for GF(2) linear equations.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GF2Solver {
+    /// Number of rows in the coefficient matrix.
     rows: usize,
+    /// Number of columns in the coefficient matrix.
     cols: usize,
+    /// Number of independent equations solved at once.
     neqs: usize,
+    /// Rank of the coefficient matrix.
     rank: Option<usize>,
+    /// Permutation of columns.
     perm: Vec<usize>,
+    /// Working storage for the Gauss-Jordan elimination.
     work: GF2Matrix,
 }
 
 impl GF2Solver {
-    // Left for convenience
+    /// Creates a new solver from the coefficient matrix and the right-hand side.
+    ///
+    /// # Arguments
+    ///
+    /// - `co`: Coefficient matrix as a sequence of bitsets (row vectors).
+    /// - `rhs`: Right-hand sides. Can solve multiple equations at once.
+    ///
+    /// # Errors
+    ///
+    /// - If `co` or `rhs` is empty.
+    /// - If `co` or `rhs` is jagged (of different sizes).
     #[allow(dead_code)]
     pub fn new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> anyhow::Result<Self> {
         let rows = co.len();
@@ -51,6 +70,18 @@ impl GF2Solver {
         })
     }
 
+    /// Attaches to the existing working storage.
+    ///
+    /// This method is useful for achieving zero-copy operations.
+    ///
+    /// # Arguments
+    ///
+    /// - `work`: Working storage for the Gauss-Jordan elimination.
+    /// - `neqs`: Number of equations.
+    ///
+    /// # Errors
+    ///
+    /// - If similar conditions to `new_from` are not met.
     pub fn attach(work: GF2Matrix, neqs: usize) -> anyhow::Result<Self> {
         anyhow::ensure!(neqs > 0, "neqs is zero");
         let rows = work.len();
@@ -71,10 +102,14 @@ impl GF2Solver {
         })
     }
 
+    /// Detaches the working storage, consuming the solver.
+    ///
+    /// This method is intended to be used with `attach`.
     pub fn detach(self) -> GF2Matrix {
         self.work
     }
 
+    /// Moves `(r, c)` to `(i, i)` and updates the permutation.
     fn move_pivot_impl(&mut self, i: usize, r: usize, c: usize) {
         self.work.swap(i, r);
         if i == c {
@@ -89,6 +124,7 @@ impl GF2Solver {
         self.perm.swap(i, c);
     }
 
+    /// Find the first `1` and move it to `(i, i)`.
     fn move_pivot(&mut self, i: usize) -> bool {
         for c in i..self.cols {
             for r in i..self.rows {
@@ -101,6 +137,9 @@ impl GF2Solver {
         false
     }
 
+    /// Eliminates the lower triangular part of `work`.
+    ///
+    /// May panic if the rank is already known.
     fn eliminate_lower(&mut self) {
         debug_assert!(self.rank.is_none());
         let rmax = self.rows.min(self.cols);
@@ -128,6 +167,7 @@ impl GF2Solver {
         self.rank = Some(rmax);
     }
 
+    /// Validates the result after the lower elimination.
     #[cfg(test)]
     fn validate_afterlower(&self) -> bool {
         let rank = self.rank.expect("rank already known here");
@@ -147,6 +187,10 @@ impl GF2Solver {
         true
     }
 
+    /// Eliminates the upper triangular part of `work`.
+    ///
+    /// This method should be called after `eliminate_lower`.
+    /// May panic if the rank is not yet known.
     fn eliminate_upper(&mut self) {
         debug_assert!(self.rank.is_some());
         let rank = self.rank.expect("rank already known here");
@@ -165,6 +209,9 @@ impl GF2Solver {
         }
     }
 
+    /// Validates the result after the upper elimination.
+    ///
+    /// Fails if `eliminate_lower` is not called yet.
     #[cfg(test)]
     fn validate_afterupper(&self) -> bool {
         let rank = self.rank.expect("rank already known here");
@@ -184,6 +231,9 @@ impl GF2Solver {
         true
     }
 
+    /// Eliminates the lower and upper triangular parts of `work`.
+    ///
+    /// Guaranteed to be no-op if already eliminated.
     fn eliminate(&mut self) {
         // Already eliminated
         if self.rank.is_some() {
@@ -193,6 +243,22 @@ impl GF2Solver {
         self.eliminate_upper();
     }
 
+    /// Solves the equation indexed by `ieq` and writes the result to `out`.
+    ///
+    /// Gaussian elimination is performed only if not done yet.
+    ///
+    /// # Arguments
+    ///
+    /// - `out`: Output bitset. May be resized.
+    /// - `ieq`: Index of the equation to solve.
+    ///
+    /// # Returns
+    ///
+    /// `true` if the equation is solvable, `false` otherwise.
+    ///
+    /// # Panics
+    ///
+    /// - If `ieq` is out of range.
     pub fn solve_in_place(&mut self, out: &mut FixedBitSet, ieq: usize) -> bool {
         // Eliminate if not done yet
         self.eliminate();
@@ -221,7 +287,7 @@ impl GF2Solver {
         true
     }
 
-    // Left for easier testing
+    /// Solves the equation indexed by `ieq`.
     #[allow(dead_code)]
     pub fn solve(&mut self, ieq: usize) -> Option<FixedBitSet> {
         let mut out = FixedBitSet::with_capacity(self.cols);

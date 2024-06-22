@@ -1,3 +1,5 @@
+//! Maximally-delayed causal flow algorithm.
+
 use pyo3::prelude::*;
 use std::collections::{HashMap, HashSet};
 
@@ -5,6 +7,7 @@ use crate::common::{self, Graph, InPlaceSetOp, Layer};
 
 type Flow = HashMap<usize, usize>;
 
+/// Check if the domain of `f` is in V\O and the codomain is in V\I.
 fn check_domain(
     f: &Flow,
     vset: &HashSet<usize>,
@@ -26,6 +29,7 @@ fn check_domain(
     Ok(())
 }
 
+/// Check if the properties of the causal flow are satisfied.
 fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     for (&i, &fi) in f.iter() {
         if layer[i] <= layer[fi] {
@@ -48,6 +52,18 @@ fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Find the maximally-delayed causal flow, if any.
+///
+/// # Arguments
+///
+/// - `g`: The adjacency list of the graph. Must be undirected and without self-loops.
+/// - `iset`: The set of initial nodes. Must be consistent with `g`.
+/// - `oset`: The set of output nodes. Must be consistent with `g`.
+///
+/// # Note
+///
+/// - Node indices are assumed to be `0..g.len()`.
+/// - Arguments are **NOT** verified.
 #[pyfunction]
 pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<(Flow, Layer)> {
     let n = g.len();
