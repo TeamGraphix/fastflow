@@ -30,7 +30,12 @@ jobs:
       # - uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Run Python tests
+        # MEMO: DO NOT use `pip install .`
+        #  We need to test with debug build
         run: |
           python3 -m pip install -U pip
-          pip install .[dev]
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install maturin pytest
+          maturin develop
           pytest
