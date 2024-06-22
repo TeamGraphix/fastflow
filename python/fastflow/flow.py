@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import networkx as nx
-
 from fastflow import common
 from fastflow._impl import flow
 from fastflow.common import FlowResult, V
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
+
+    import networkx as nx
 
 
 def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResult[V] | None:
