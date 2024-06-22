@@ -1,6 +1,6 @@
 [package]
 name = "fastflow"
-description = "rust binding of generalized and pauli flow finding algorithms."
+description = "Rust binding of generalized and pauli flow finding algorithms."
 homepage = "https://github.com/TeamGraphix/fastflow"
 repository = "https://github.com/TeamGraphix/fastflow"
 # Must be consistent with pyproject.toml
