@@ -124,7 +124,7 @@ impl GF2Solver {
         self.perm.swap(i, c);
     }
 
-    /// Find the first `1` and move it to `(i, i)`.
+    /// Finds the first `1` and move it to `(i, i)`.
     fn move_pivot(&mut self, i: usize) -> bool {
         for c in i..self.cols {
             for r in i..self.rows {

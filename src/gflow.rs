@@ -11,7 +11,7 @@ use crate::{
 
 type GFlow = HashMap<usize, HashSet<usize>>;
 
-/// Check if the domain of `f` is in V\O and the codomain is in V\I.
+/// Checks if the domain of `f` is in V\O and the codomain is in V\I.
 fn check_domain(
     f: &GFlow,
     vset: &HashSet<usize>,
@@ -35,7 +35,7 @@ fn check_domain(
     Ok(())
 }
 
-/// Check if the properties of the generalized flow are satisfied.
+/// Checks if the properties of the generalized flow are satisfied.
 fn check_definition(f: &GFlow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     for (&i, fi) in f.iter() {
         for &fij in fi {
@@ -62,7 +62,7 @@ fn check_definition(f: &GFlow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Find the maximally-delayed generalized flow, if any.
+/// Finds the maximally-delayed generalized flow, if any.
 ///
 /// # Arguments
 ///

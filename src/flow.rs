@@ -7,7 +7,7 @@ use crate::common::{self, Graph, InPlaceSetOp, Layer};
 
 type Flow = HashMap<usize, usize>;
 
-/// Check if the domain of `f` is in V\O and the codomain is in V\I.
+/// Checks if the domain of `f` is in V\O and the codomain is in V\I.
 fn check_domain(
     f: &Flow,
     vset: &HashSet<usize>,
@@ -29,7 +29,7 @@ fn check_domain(
     Ok(())
 }
 
-/// Check if the properties of the causal flow are satisfied.
+/// Checks if the properties of the causal flow are satisfied.
 fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     for (&i, &fi) in f.iter() {
         if layer[i] <= layer[fi] {
@@ -52,7 +52,7 @@ fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Find the maximally-delayed causal flow, if any.
+/// Finds the maximally-delayed causal flow, if any.
 ///
 /// # Arguments
 ///
