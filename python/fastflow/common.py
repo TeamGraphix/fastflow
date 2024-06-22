@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import dataclasses
 from collections.abc import Hashable
 from collections.abc import Set as AbstractSet
-from typing import Generic, NamedTuple, TypeVar
+from typing import Generic, TypeVar
 
 import networkx as nx
 
@@ -12,7 +13,8 @@ import networkx as nx
 V = TypeVar("V", bound=Hashable)
 
 
-class FlowResult(NamedTuple, Generic[V]):
+@dataclasses.dataclass(frozen=True)
+class FlowResult(Generic[V]):
     """MBQC flow.
 
     Attributes
@@ -28,7 +30,8 @@ class FlowResult(NamedTuple, Generic[V]):
     layer: dict[V, int]
 
 
-class GFlowResult(NamedTuple, Generic[V]):
+@dataclasses.dataclass(frozen=True)
+class GFlowResult(Generic[V]):
     """MBQC gflow.
 
     Attributes

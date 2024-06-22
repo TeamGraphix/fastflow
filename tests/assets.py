@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from typing import NamedTuple
+import dataclasses
 
 import networkx as nx
 from fastflow.common import FlowResult, GFlowResult
 
 
-class FlowTestCase(NamedTuple):
+@dataclasses.dataclass(frozen=True)
+class FlowTestCase:
     """Test case for flow/gflow."""
 
     g: nx.Graph[int]
