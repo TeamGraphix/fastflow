@@ -26,11 +26,7 @@ pub fn odd_neighbors(g: &Graph, kset: &HashSet<usize>) -> HashSet<usize> {
         panic!("kset out of range");
     }
     let mut src = kset.clone();
-    src.extend(
-        kset.iter()
-            .flat_map(|&ki| g[ki].iter().copied())
-            .collect::<HashSet<_>>(),
-    );
+    src.extend(kset.iter().flat_map(|&ki| g[ki].iter().copied()));
     let mut res = HashSet::new();
     for u in src {
         if kset.intersection(&g[u]).count() % 2 == 1 {

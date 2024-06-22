@@ -3,16 +3,65 @@ use pyo3::prelude::*;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::{
-    common::{GFlow, InPlaceSetOp, Layer},
+    common::{self, Graph, InPlaceSetOp, Layer},
     gf2_linalg::GF2Solver,
 };
 
+type GFlow = HashMap<usize, HashSet<usize>>;
+
+#[cfg(debug_assertions)]
+fn check_domain(
+    f: &GFlow,
+    vset: &HashSet<usize>,
+    iset: &HashSet<usize>,
+    oset: &HashSet<usize>,
+) -> anyhow::Result<()> {
+    let icset = vset - iset;
+    let ocset = vset - oset;
+    for &i in f.keys() {
+        if !ocset.contains(&i) {
+            let err = anyhow::anyhow!("domain check failed").context(format!("{i} not in V\\O"));
+            return Err(err);
+        }
+    }
+    for &fij in f.values().flatten() {
+        if !icset.contains(&fij) {
+            let err = anyhow::anyhow!("domain check failed").context(format!("{fij} not in V\\I"));
+            return Err(err);
+        }
+    }
+    Ok(())
+}
+
+#[cfg(debug_assertions)]
+fn check_definition(f: &GFlow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
+    for (&i, fi) in f.iter() {
+        for &fij in fi {
+            if layer[i] <= layer[fij] {
+                let err =
+                    anyhow::anyhow!("layer check failed").context(format!("must be {i} -> {fij}"));
+                return Err(err);
+            }
+        }
+        let odd_fi = common::odd_neighbors(g, fi);
+        for &j in &odd_fi {
+            if i != j && layer[i] <= layer[j] {
+                let err = anyhow::anyhow!("layer check failed")
+                    .context(format!("neither {i} == {j} nor {i} -> {j}"));
+                return Err(err);
+            }
+        }
+        if !odd_fi.contains(&i) {
+            let err = anyhow::anyhow!("graph check failed")
+                .context(format!("{i} and Odd(f({i})) not connected"));
+            return Err(err);
+        }
+    }
+    Ok(())
+}
+
 #[pyfunction]
-pub fn find(
-    g: Vec<HashSet<usize>>,
-    iset: HashSet<usize>,
-    mut oset: HashSet<usize>,
-) -> Option<(GFlow, Layer)> {
+pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<(GFlow, Layer)> {
     let n = g.len();
     let vset = (0..n).collect::<HashSet<_>>();
     let mut cset = HashSet::new();
@@ -21,6 +70,7 @@ pub fn find(
     let mut omiset = oset.difference(&iset).copied().collect::<BTreeSet<_>>();
     // omivec[i] = i'th node in O\I after sorting
     let mut omivec = Vec::new();
+    let oset_orig = oset.clone();
     let mut f = HashMap::with_capacity(ocset.len());
     let mut layer = vec![0_usize; n];
     let mut nrows = ocset.len();
@@ -65,7 +115,7 @@ pub fn find(
             }
             cset.insert(u);
             // Decode solution
-            let fu = HashSet::from_iter(x.ones().map(|i| omivec[i]));
+            let fu = x.ones().map(|i| omivec[i]).collect::<HashSet<_>>();
             f.insert(u, fu);
             layer[u] = l;
         }
@@ -77,7 +127,10 @@ pub fn find(
         omiset.union_with(cset.iter());
         work = solver.detach();
     }
+    debug_assert_eq!(check_domain(&f, &vset, &iset, &oset_orig).unwrap(), ());
     if oset == vset {
+        debug_assert_eq!(common::check_initial(&layer, &oset_orig).unwrap(), ());
+        debug_assert_eq!(check_definition(&f, &layer, &g).unwrap(), ());
         Some((f, layer))
     } else {
         None
