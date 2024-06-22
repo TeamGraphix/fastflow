@@ -3,10 +3,10 @@
 //! From the Python side, bindings are visible as `fastflow._impl.XXX`.
 
 use pyo3::prelude::*;
-mod common;
-mod flow;
-mod gf2_linalg;
-mod gflow;
+pub mod common;
+pub mod flow;
+pub mod gf2_linalg;
+pub mod gflow;
 
 // MEMO: Data verification is done in the Python layer
 
