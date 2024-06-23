@@ -62,6 +62,14 @@ fn check_definition(f: &GFlow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Resizes `mat` to `mat.len()` x `ncols` and fills with zeros.
+fn zerofill(mat: &mut [FixedBitSet], ncols: usize) {
+    mat.iter_mut().for_each(|x| {
+        x.grow(ncols);
+        x.clear();
+    });
+}
+
 /// Finds the maximally-delayed generalized flow, if any.
 ///
 /// # Arguments
@@ -95,20 +103,19 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
     let mut x = FixedBitSet::with_capacity(ncols);
     for l in 1_usize.. {
         cset.clear();
-        nrows = ocset.len();
-        work.truncate(nrows);
-        ncols = omiset.len();
-        neqs = ocset.len();
-        // MEMO: Need to break before attaching
-        if nrows == 0 || ncols == 0 || neqs == 0 {
+        if ocset.is_empty() || omiset.is_empty() {
             break;
         }
-        work.iter_mut().for_each(|x| {
-            // No allocation
-            debug_assert!(x.len() >= ncols + neqs);
-            x.grow(ncols + neqs);
-            x.clear();
-        });
+        // Decrease over time
+        nrows = ocset.len();
+        // Increase over time
+        ncols = omiset.len();
+        // Decrease over time
+        neqs = ocset.len();
+        // MEMO: ncols + neqs is decreasing
+        //  No allocations
+        work.truncate(nrows);
+        zerofill(&mut work, ncols + neqs);
         // Encode node as one-hot vector
         for (r, &u) in ocset.iter().enumerate() {
             // Initialize rhs
