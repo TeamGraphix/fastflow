@@ -486,8 +486,14 @@ mod tests {
                     assert!(sol.work[i].count_ones(..sol.cols) == 0);
                     assert!(!sol.work[i][cols + ieq]);
                 }
-                let b = compute_lhs(&co, &x.unwrap());
+                let x = x.unwrap();
+                let b = compute_lhs(&co, &x);
                 assert_eq!(&b, rhsi);
+                let rank = sol.rank.unwrap();
+                for i_ in rank..sol.cols {
+                    let i = sol.perm[i_];
+                    assert!(!x[i]);
+                }
             }
         }
     }
@@ -511,8 +517,14 @@ mod tests {
                     assert!(sol.work[i].count_ones(..sol.cols) == 0);
                     assert!(!sol.work[i][cols + ieq]);
                 }
-                let b = compute_lhs(&co, &x.unwrap());
+                let x = x.unwrap();
+                let b = compute_lhs(&co, &x);
                 assert_eq!(&b, rhsi);
+                let rank = sol.rank.unwrap();
+                for i_ in rank..sol.cols {
+                    let i = sol.perm[i_];
+                    assert!(!x[i]);
+                }
             }
         }
     }
