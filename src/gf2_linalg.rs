@@ -167,7 +167,6 @@ impl GF2Solver {
     }
 
     /// Validates the result after the lower elimination.
-    #[cfg(test)]
     fn validate_afterlower(&self) -> bool {
         let rank = self.rank.expect("rank already known here");
         for c in 0..rank {
@@ -211,7 +210,6 @@ impl GF2Solver {
     /// Validates the result after the upper elimination.
     ///
     /// Fails if `eliminate_lower` is not called yet.
-    #[cfg(test)]
     fn validate_afterupper(&self) -> bool {
         let rank = self.rank.expect("rank already known here");
         for c in 0..rank {
@@ -239,7 +237,9 @@ impl GF2Solver {
             return;
         }
         self.eliminate_lower();
+        debug_assert!(self.validate_afterlower());
         self.eliminate_upper();
+        debug_assert!(self.validate_afterupper());
     }
 
     /// Solves the equation indexed by `ieq` and writes the result to `out`.
