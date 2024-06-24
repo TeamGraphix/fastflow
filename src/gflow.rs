@@ -112,6 +112,7 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
         neqs = ocset.len();
         debug_assert!(work.len() >= nrows);
         work.truncate(nrows);
+        debug_assert!(work[0].len() >= ncols + neqs);
         zerofill(&mut work, ncols + neqs);
         // Encode node as one-hot vector
         for (r, &u) in ocset.iter().enumerate() {
