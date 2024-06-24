@@ -97,6 +97,7 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
     let mut neqs = ocset.len();
     // Reuse working memory
     let mut work = vec![FixedBitSet::with_capacity(ncols + neqs); nrows];
+    let mut tab = Vec::new();
     for l in 1_usize.. {
         cset.clear();
         if ocset.is_empty() || omiset.is_empty() {
@@ -124,18 +125,16 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
         }
         let mut solver = GF2Solver::attach(work, neqs).unwrap();
         let mut x = FixedBitSet::with_capacity(ncols);
+        // tab[i] = node index assigned to one-hot vector x[i]
+        tab.clear();
+        tab.extend(omiset.iter().copied());
         for (ieq, &u) in ocset.iter().enumerate() {
             if !solver.solve_in_place(&mut x, ieq) {
                 continue;
             }
             cset.insert(u);
             // Decode solution
-            let mut fu = HashSet::with_capacity(x.count_ones(..));
-            for (c, &v) in omiset.iter().enumerate() {
-                if x[c] {
-                    fu.insert(v);
-                }
-            }
+            let fu = x.ones().map(|c| tab[c]).collect();
             f.insert(u, fu);
             layer[u] = l;
         }
