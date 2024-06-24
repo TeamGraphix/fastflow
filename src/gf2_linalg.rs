@@ -34,7 +34,6 @@ impl GF2Solver {
     ///
     /// - If `co` or `rhs` is empty.
     /// - If `co` or `rhs` is jagged (of different sizes).
-    #[allow(dead_code)]
     pub fn new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> anyhow::Result<Self> {
         let rows = co.len();
         anyhow::ensure!(rows > 0, "co is empty");
@@ -291,7 +290,6 @@ impl GF2Solver {
     }
 
     /// Solves the equation indexed by `ieq`.
-    #[allow(dead_code)]
     pub fn solve(&mut self, ieq: usize) -> Option<FixedBitSet> {
         let mut out = FixedBitSet::with_capacity(self.cols);
         match self.solve_in_place(&mut out, ieq) {
