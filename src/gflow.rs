@@ -65,8 +65,7 @@ fn check_definition(f: &GFlow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
 /// Resizes `mat` to `mat.len()` x `ncols` and fills with zeros.
 fn zerofill(mat: &mut [FixedBitSet], ncols: usize) {
     mat.iter_mut().for_each(|x| {
-        x.grow(ncols);
-        x.clear();
+        *x = FixedBitSet::with_capacity(ncols);
     });
 }
 
@@ -90,8 +89,6 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
     // Need to use BTreeSet to get deterministic order
     let mut ocset = vset.difference(&oset).copied().collect::<BTreeSet<_>>();
     let mut omiset = oset.difference(&iset).copied().collect::<BTreeSet<_>>();
-    // omivec[i] = i'th node in O\I after sorting
-    let mut omivec = Vec::new();
     let oset_orig = oset.clone();
     let mut f = HashMap::with_capacity(ocset.len());
     let mut layer = vec![0_usize; n];
@@ -100,7 +97,6 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
     let mut neqs = ocset.len();
     // Reuse working memory
     let mut work = vec![FixedBitSet::with_capacity(ncols + neqs); nrows];
-    let mut x = FixedBitSet::with_capacity(ncols);
     for l in 1_usize.. {
         cset.clear();
         if ocset.is_empty() || omiset.is_empty() {
@@ -112,8 +108,7 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
         ncols = omiset.len();
         // Decrease over time
         neqs = ocset.len();
-        // MEMO: ncols + neqs is decreasing
-        //  No allocations
+        debug_assert!(work.len() >= nrows);
         work.truncate(nrows);
         zerofill(&mut work, ncols + neqs);
         // Encode node as one-hot vector
@@ -128,15 +123,19 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
             }
         }
         let mut solver = GF2Solver::attach(work, neqs).unwrap();
-        omivec.clear();
-        omiset.iter().for_each(|&u| omivec.push(u));
+        let mut x = FixedBitSet::with_capacity(ncols);
         for (ieq, &u) in ocset.iter().enumerate() {
             if !solver.solve_in_place(&mut x, ieq) {
                 continue;
             }
             cset.insert(u);
             // Decode solution
-            let fu = x.ones().map(|i| omivec[i]).collect::<HashSet<_>>();
+            let mut fu = HashSet::with_capacity(x.count_ones(..));
+            for (c, &v) in omiset.iter().enumerate() {
+                if x[c] {
+                    fu.insert(v);
+                }
+            }
             f.insert(u, fu);
             layer[u] = l;
         }
@@ -145,7 +144,7 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
         }
         oset.union_with(cset.iter());
         ocset.difference_with(cset.iter());
-        omiset.union_with(cset.iter());
+        omiset.union_with(cset.difference(&iset));
         work = solver.detach();
     }
     if oset == vset {

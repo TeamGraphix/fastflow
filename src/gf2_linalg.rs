@@ -249,7 +249,7 @@ impl GF2Solver {
     ///
     /// # Arguments
     ///
-    /// - `out`: Output bitset. May be resized.
+    /// - `out`: Output bitset. Needs to have consistent size.
     /// - `ieq`: Index of the equation to solve.
     ///
     /// # Returns
@@ -258,12 +258,16 @@ impl GF2Solver {
     ///
     /// # Panics
     ///
+    /// - If `out.len() != self.cols`.
     /// - If `ieq` is out of range.
     pub fn solve_in_place(&mut self, out: &mut FixedBitSet, ieq: usize) -> bool {
         // Eliminate if not done yet
+        if out.len() != self.cols {
+            panic!("output size mismatch: {:} != {:}", out.len(), self.cols);
+        }
         self.eliminate();
         if ieq >= self.neqs {
-            panic!("equation index out of range");
+            panic!("equation index out of range: {:} >= {:}", ieq, self.neqs);
         }
         let rank = self.rank.expect("rank already known here");
         let c = self.cols + ieq;
@@ -277,8 +281,7 @@ impl GF2Solver {
             }
         }
         // One of the possible solutions (eagerly use `0`)
-        out.grow(self.cols);
-        out.clear();
+        out.remove_range(..);
         for i in 0..rank {
             if self.work[i][c] {
                 out.insert(self.perm[i]);
