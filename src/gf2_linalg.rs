@@ -145,9 +145,11 @@ impl GF2Solver {
         for i in 0..rmax {
             // No remaining `1`
             if !self.move_pivot(i) {
+                debug_assert!(!self.work[i][i]);
                 self.rank = Some(i);
                 return;
             }
+            debug_assert!(self.work[i][i]);
             for r in i + 1..self.rows {
                 if !self.work[r][i] {
                     continue;
@@ -160,6 +162,7 @@ impl GF2Solver {
                 let dst = &mut s2[0];
                 // MEMO: Rooms for optimization
                 //  Redundant operations on the area already cleared
+                debug_assert_eq!(src.count_ones(..i), 0);
                 *dst ^= src;
             }
         }
@@ -193,6 +196,7 @@ impl GF2Solver {
         debug_assert!(self.rank.is_some());
         let rank = self.rank.expect("rank already known here");
         for i in (0..rank).rev() {
+            debug_assert!(self.work[i][i]);
             for r in 0..i {
                 if !self.work[r][i] {
                     continue;
@@ -202,6 +206,7 @@ impl GF2Solver {
                 let (_, s1) = ss.split_at_mut(r);
                 let src = &s2[0];
                 let dst = &mut s1[0];
+                debug_assert_eq!(src.count_ones(..i), 0);
                 *dst ^= src;
             }
         }
