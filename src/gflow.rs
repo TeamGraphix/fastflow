@@ -149,13 +149,12 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
         work = solver.detach();
     }
     if oset == vset {
-        if cfg!(debug_assertions) {
-            // Check results
-            //  Only run in debug mode
-            check_domain(&f, &vset, &iset, &oset_orig).unwrap();
-            common::check_initial(&layer, &oset_orig).unwrap();
-            check_definition(&f, &layer, &g).unwrap();
-        }
+        // TODO: Uncomment once ready
+        // if cfg!(debug_assertions) {
+        check_domain(&f, &vset, &iset, &oset_orig).unwrap();
+        common::check_initial(&layer, &oset_orig).unwrap();
+        check_definition(&f, &layer, &g).unwrap();
+        // }
         Some((f, layer))
     } else {
         None
