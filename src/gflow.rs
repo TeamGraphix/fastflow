@@ -64,8 +64,9 @@ fn check_definition(f: &GFlow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
 
 /// Resizes `mat` to `mat.len()` x `ncols` and fills with zeros.
 fn zerofill(mat: &mut [FixedBitSet], ncols: usize) {
+    let src = FixedBitSet::with_capacity(ncols);
     mat.iter_mut().for_each(|x| {
-        *x = FixedBitSet::with_capacity(ncols);
+        x.clone_from(&src);
     });
 }
 
