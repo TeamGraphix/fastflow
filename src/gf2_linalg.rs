@@ -285,7 +285,7 @@ impl GF2Solver {
             }
         }
         // One of the possible solutions (eagerly use `0`)
-        out.remove_range(..);
+        out.clear();
         for i in 0..rank {
             if self.work[i][c] {
                 out.insert(self.perm[i]);
