@@ -1,9 +1,9 @@
 //! Common functionalities for the flow/gflow algorithms.
 
 use std::{
-    borrow::Borrow,
     collections::{BTreeSet, HashSet},
     hash::Hash,
+    ops::Deref,
 };
 
 /// Undirected graph represented as an adjacency list.
@@ -47,12 +47,12 @@ pub trait InPlaceSetOp<T: Clone> {
     /// Extends self with the elements from `other`.
     fn union_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        U: Borrow<T>;
+        U: Deref<Target = T>;
 
     /// Drops the elements from `other` from self.
     fn difference_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        U: Borrow<T>;
+        U: Deref<Target = T>;
 }
 
 impl<T> InPlaceSetOp<T> for HashSet<T>
@@ -61,17 +61,17 @@ where
 {
     fn union_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        U: Borrow<T>,
+        U: Deref<Target = T>,
     {
-        self.extend(other.map(|x| x.borrow().clone()));
+        self.extend(other.map(|x| x.deref().clone()));
     }
 
     fn difference_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        U: Borrow<T>,
+        U: Deref<Target = T>,
     {
         other.for_each(|x| {
-            self.remove(x.borrow());
+            self.remove(x.deref());
         });
     }
 }
@@ -82,17 +82,17 @@ where
 {
     fn union_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        U: Borrow<T>,
+        U: Deref<Target = T>,
     {
-        self.extend(other.map(|x| x.borrow().clone()));
+        self.extend(other.map(|x| x.deref().clone()));
     }
 
     fn difference_with<U>(&mut self, other: impl Iterator<Item = U>)
     where
-        U: Borrow<T>,
+        U: Deref<Target = T>,
     {
         other.for_each(|x| {
-            self.remove(x.borrow());
+            self.remove(x.deref());
         });
     }
 }
