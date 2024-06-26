@@ -166,14 +166,18 @@ pub fn find(
                 work[r].insert(ceq);
             }
         }
-        for (ieq, &uc) in ocset.iter().enumerate() {
+        for (ieq, &u) in ocset.iter().enumerate() {
             let c = ncols + ieq;
-            if let Plane::XY = plane[&uc] {
-                continue;
+            if let Plane::YZ | Plane::ZX = plane[&u] {
+                // = u
+                work[ieq].insert(c);
             }
-            for (r, &ur) in ocset.iter().enumerate() {
-                if g[ur].contains(&uc) {
-                    work[r].toggle(c);
+            if let Plane::YZ | Plane::ZX = plane[&u] {
+                // Include u
+                for (r, &v) in ocset.iter().enumerate() {
+                    if g[u].contains(&v) {
+                        work[r].toggle(c);
+                    }
                 }
             }
         }
@@ -190,6 +194,7 @@ pub fn find(
             // Decode solution
             let mut fu = x.ones().map(|c| tab[c]).collect::<HashSet<_>>();
             if let Plane::YZ | Plane::ZX = plane[&u] {
+                // Include u
                 fu.insert(u);
             }
             f.insert(u, fu);
