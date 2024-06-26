@@ -30,11 +30,13 @@ impl GF2Solver {
     /// - `co`: Coefficient matrix as a sequence of bitsets (row vectors).
     /// - `rhs`: Right-hand sides. Can solve multiple equations at once.
     ///
-    /// # Errors
+    /// # Returns
+    ///
+    /// `None` if the input is invalid.
     ///
     /// - If `co` or `rhs` is empty.
     /// - If `co` or `rhs` is jagged (of different sizes).
-    pub fn new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> anyhow::Result<Self> {
+    pub fn try_new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> anyhow::Result<Self> {
         let rows = co.len();
         anyhow::ensure!(rows > 0, "co is empty");
         let neqs = rhs.len();
@@ -69,6 +71,19 @@ impl GF2Solver {
         })
     }
 
+    /// Checkes the arguments of `attach`.
+    fn attach_check(work: &GF2Matrix, neqs: usize) -> anyhow::Result<()> {
+        anyhow::ensure!(neqs > 0, "neqs is zero");
+        let rows = work.len();
+        anyhow::ensure!(rows > 0, "work is empty");
+        let Ok(width) = work.iter().map(|worki| worki.len()).all_equal_value() else {
+            anyhow::bail!("work is jagged");
+        };
+        anyhow::ensure!(width > 0, "zero-length columns");
+        anyhow::ensure!(width > neqs, "neqs too large");
+        Ok(())
+    }
+
     /// Attaches to the existing working storage.
     ///
     /// This method is useful for achieving zero-copy operations.
@@ -78,27 +93,24 @@ impl GF2Solver {
     /// - `work`: Working storage for the Gauss-Jordan elimination.
     /// - `neqs`: Number of equations.
     ///
-    /// # Errors
+    /// # Panics
     ///
-    /// - If similar conditions to `new_from` are not met.
-    pub fn attach(work: GF2Matrix, neqs: usize) -> anyhow::Result<Self> {
-        anyhow::ensure!(neqs > 0, "neqs is zero");
+    /// - If similar conditions to `try_new_from` are not met.
+    pub fn attach(work: GF2Matrix, neqs: usize) -> Self {
+        if let Err(e) = Self::attach_check(&work, neqs) {
+            panic!("invalid argument detected: {:}", e);
+        }
         let rows = work.len();
-        anyhow::ensure!(rows > 0, "work is empty");
-        let Ok(width) = work.iter().map(|worki| worki.len()).all_equal_value() else {
-            anyhow::bail!("work is jagged");
-        };
-        anyhow::ensure!(width > 0, "zero-length columns");
-        anyhow::ensure!(width > neqs, "neqs too large");
+        let width = work[0].len();
         let cols = width - neqs;
-        Ok(Self {
+        Self {
             rows,
             cols,
             neqs,
             rank: None,
             perm: (0..cols).collect(),
             work,
-        })
+        }
     }
 
     /// Detaches the working storage, consuming the solver.
@@ -312,7 +324,7 @@ mod tests {
     use rstest_reuse::{apply, template};
 
     #[test]
-    fn test_new_from() {
+    fn test_try_new_from() {
         let co = vec![
             // 1000
             FixedBitSet::with_capacity_and_blocks(4, vec![0b0001]),
@@ -329,7 +341,7 @@ mod tests {
             // 111
             FixedBitSet::with_capacity_and_blocks(3, vec![0b111]),
         ];
-        let sol = GF2Solver::new_from(&co, &rhs).unwrap();
+        let sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
         assert_eq!(sol.rows, 3);
         assert_eq!(sol.cols, 4);
         assert_eq!(sol.neqs, 3);
@@ -350,7 +362,7 @@ mod tests {
             // 0010001
             FixedBitSet::with_capacity_and_blocks(7, vec![0b1000100]),
         ];
-        let sol = GF2Solver::attach(work, 3).unwrap();
+        let sol = GF2Solver::attach(work, 3);
         assert_eq!(sol.rows, 3);
         assert_eq!(sol.cols, 4);
         assert_eq!(sol.neqs, 3);
@@ -422,7 +434,7 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
             sol.eliminate_lower();
             assert!(sol.validate_afterlower());
         }
@@ -435,7 +447,7 @@ mod tests {
             let co = rand_co(rows, cols, p);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, 0.5));
-            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
             sol.eliminate_lower();
             assert!(sol.validate_afterlower());
         }
@@ -451,7 +463,7 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
             sol.eliminate();
             assert!(sol.validate_afterupper());
         }
@@ -464,7 +476,7 @@ mod tests {
             let co = rand_co(rows, cols, p);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, 0.5));
-            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
             sol.eliminate();
             assert!(sol.validate_afterupper());
         }
@@ -480,7 +492,7 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
             sol.eliminate();
             for (ieq, rhsi) in rhs.iter().enumerate() {
                 let x = sol.solve(ieq);
@@ -511,7 +523,7 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = GF2Solver::new_from(&co, &rhs).unwrap();
+            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
             sol.eliminate();
             for (ieq, rhsi) in rhs.iter().enumerate() {
                 let x = sol.solve(ieq);
