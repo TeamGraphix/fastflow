@@ -9,5 +9,5 @@ from tests.assets import CASES, FlowTestCase
 @pytest.mark.parametrize("c", CASES)
 def test_gflow_graphix(c: FlowTestCase) -> None:
     """Compare the results with the graphix package."""
-    result = gflow.find(c.g, c.iset, c.oset)
+    result = gflow.find(c.g, c.iset, c.oset, c.plane)
     assert result == c.gflow
