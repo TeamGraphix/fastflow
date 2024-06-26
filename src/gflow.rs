@@ -145,12 +145,11 @@ pub fn find(
         }
         // Decrease over time
         nrows = ocset.len();
-        // Increase over time
         ncols = omiset.len();
-        // Decrease over time
         neqs = ocset.len();
         debug_assert!(work.len() >= nrows);
         work.truncate(nrows);
+        // Decrease over time
         debug_assert!(work[0].len() >= ncols + neqs);
         zerofill(&mut work, ncols + neqs);
         // Encode node as one-hot vector
