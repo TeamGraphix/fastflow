@@ -105,15 +105,33 @@ pub enum Plane {
     ZX,
 }
 
-impl TryFrom<u8> for Plane {
-    type Error = anyhow::Error;
+macro_rules! impl_try_from {
+    ($t:ty) => {
+        impl TryFrom<$t> for Plane {
+            type Error = anyhow::Error;
 
-    fn try_from(p: u8) -> anyhow::Result<Self> {
-        match p {
-            0 => Ok(Plane::XY),
-            1 => Ok(Plane::YZ),
-            2 => Ok(Plane::ZX),
-            _ => Err(anyhow::anyhow!("invalid plane index").context(p)),
+            fn try_from(p: $t) -> anyhow::Result<Self> {
+                match p {
+                    0 => Ok(Plane::XY),
+                    1 => Ok(Plane::YZ),
+                    2 => Ok(Plane::ZX),
+                    _ => Err(anyhow::anyhow!("invalid plane index").context(p)),
+                }
+            }
         }
-    }
+    };
 }
+
+impl_try_from!(u8);
+impl_try_from!(u16);
+impl_try_from!(u32);
+impl_try_from!(u64);
+impl_try_from!(u128);
+impl_try_from!(usize);
+
+impl_try_from!(i8);
+impl_try_from!(i16);
+impl_try_from!(i32);
+impl_try_from!(i64);
+impl_try_from!(i128);
+impl_try_from!(isize);
