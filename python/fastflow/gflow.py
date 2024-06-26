@@ -7,14 +7,15 @@ See Mhalla et al. (2008) for more details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import warnings
+from typing import TYPE_CHECKING, Mapping
 
 import pydantic
 from pydantic import NonNegativeInt, ValidationError
 
 from fastflow import common
 from fastflow._impl import gflow
-from fastflow.common import GFlowResult, V
+from fastflow.common import GFlowResult, Plane, V, _Plane
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
@@ -24,13 +25,18 @@ if TYPE_CHECKING:
 
 @pydantic.validate_call(validate_return=True)
 def _find_validated(
-    g: list[set[NonNegativeInt]], iset: set[NonNegativeInt], oset: set[NonNegativeInt]
+    g: list[set[NonNegativeInt]],
+    iset: set[NonNegativeInt],
+    oset: set[NonNegativeInt],
+    plane: dict[NonNegativeInt, _Plane],
 ) -> tuple[dict[NonNegativeInt, set[NonNegativeInt]], list[NonNegativeInt]] | None:
-    return gflow.find(g, iset, oset)
+    return gflow.find(g, iset, oset, plane)
 
 
-def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> GFlowResult[V] | None:
-    """Compute the maximally-delayed generalized flow, if any.
+def find(
+    g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V], plane: Mapping[V, Plane] | None = None
+) -> GFlowResult[V] | None:
+    r"""Compute the maximally-delayed generalized flow, if any.
 
     Parameters
     ----------
@@ -43,6 +49,9 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> GFlowRes
     oset : `AbstractSet[V]`
         Output nodes.
         Must be a subset of `g.nodes`.
+    plane : `Mapping[V, Plane]` | None, optional
+        Measurement planes of each vertex in V\O.
+        If `None`, defaults to all `Plane.XY`.
 
     Returns
     -------
@@ -52,6 +61,14 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> GFlowRes
     common.check_graph(g, iset, oset)
     v2i = {v: i for i, v in enumerate(g.nodes)}
     i2v = {i: v for v, i in v2i.items()}
+    if plane is None:
+        plane = dict.fromkeys(v2i, Plane.XY)
+    if plane.keys() > g.nodes:
+        msg = "Keys of plane must be in g.nodes."
+        raise ValueError(msg)
+    if plane.keys() < g.nodes - oset:
+        msg = "Planes should be specified for all u in V\\O."
+        raise ValueError(msg)
     n = len(g)
     g_: list[set[int]] = [set() for _ in range(n)]
     for u, i in v2i.items():
@@ -59,8 +76,11 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> GFlowRes
             g_[i].add(v2i[v])
     iset_ = {v2i[v] for v in iset}
     oset_ = {v2i[v] for v in oset}
+    plane_: dict[int, _Plane] = {v2i[k]: v.value for k, v in plane.items() if k not in oset}
+    if len(plane_) != len(plane):
+        warnings.warn("Ignoring plane[v] where v in oset", stacklevel=1)
     try:
-        ret_ = _find_validated(g_, iset_, oset_)
+        ret_ = _find_validated(g_, iset_, oset_, plane_)
     except ValidationError as e:
         msg = "Failed to validate types at bindcall."
         raise ValueError(msg) from e

@@ -5,12 +5,25 @@ from __future__ import annotations
 import dataclasses
 from collections.abc import Hashable
 from collections.abc import Set as AbstractSet
-from typing import Generic, TypeVar
+from enum import Enum
+from typing import Generic, Literal, TypeVar
 
 import networkx as nx
 
 # Vertex type
 V = TypeVar("V", bound=Hashable)
+
+
+class Plane(Enum):
+    """Measurement planes in MBQC."""
+
+    # DO NOT change the associated values!
+    XY = 0
+    YZ = 1
+    ZX = 2
+
+
+_Plane = Literal[0, 1, 2]
 
 
 @dataclasses.dataclass(frozen=True)

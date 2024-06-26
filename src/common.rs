@@ -1,5 +1,6 @@
 //! Common functionalities for the flow/gflow algorithms.
 
+use anyhow;
 use std::{
     collections::{BTreeSet, HashSet},
     hash::Hash,
@@ -94,5 +95,25 @@ where
         other.for_each(|x| {
             self.remove(x.deref());
         });
+    }
+}
+
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+pub enum Plane {
+    XY,
+    YZ,
+    ZX,
+}
+
+impl TryFrom<u8> for Plane {
+    type Error = anyhow::Error;
+
+    fn try_from(p: u8) -> anyhow::Result<Self> {
+        match p {
+            0 => Ok(Plane::XY),
+            1 => Ok(Plane::YZ),
+            2 => Ok(Plane::ZX),
+            _ => Err(anyhow::anyhow!("invalid plane index").context(p)),
+        }
     }
 }

@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::{
-    common::{self, Graph, InPlaceSetOp, Layer},
+    common::{self, Graph, InPlaceSetOp, Layer, Plane},
     gf2_linalg::GF2Solver,
 };
 
@@ -36,27 +36,53 @@ fn check_domain(
 }
 
 /// Checks if the properties of the generalized flow are satisfied.
-fn check_definition(f: &GFlow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
-    for (&i, fi) in f.iter() {
+fn check_definition(
+    f: &GFlow,
+    layer: &Layer,
+    g: &Graph,
+    plane: &HashMap<usize, Plane>,
+) -> anyhow::Result<()> {
+    anyhow::ensure!(
+        f.len() == plane.len(),
+        "f and plane must have the same codomain"
+    );
+    for &i in f.keys() {
+        let fi = &f[&i];
+        let pi = plane[&i];
         for &fij in fi {
-            if layer[i] <= layer[fij] {
-                let err =
-                    anyhow::anyhow!("layer check failed").context(format!("must be {i} -> {fij}"));
+            if i != fij && layer[i] <= layer[fij] {
+                let err = anyhow::anyhow!("layer check failed")
+                    .context(format!("neither {i} == {fij} nor {i} -> {fij}: fi"));
                 return Err(err);
             }
         }
         let odd_fi = common::odd_neighbors(g, fi);
         for &j in &odd_fi {
             if i != j && layer[i] <= layer[j] {
-                let err = anyhow::anyhow!("layer check failed")
-                    .context(format!("neither {i} == {j} nor {i} -> {j}"));
+                let err = anyhow::anyhow!("layer check failed").context(format!(
+                    "neither {i} == {j} nor {i} -> {j}: odd_neighbors(g, fi)"
+                ));
                 return Err(err);
             }
         }
-        if !odd_fi.contains(&i) {
-            let err = anyhow::anyhow!("graph check failed")
-                .context(format!("{i} and Odd(f({i})) not connected"));
-            return Err(err);
+        let in_info = (fi.contains(&i), odd_fi.contains(&i));
+        match pi {
+            Plane::XY if in_info != (false, true) => {
+                let err = anyhow::anyhow!("plane check failed")
+                    .context(format!("must be {i} not in f({i}) and in Odd(f({i})): XY"));
+                return Err(err);
+            }
+            Plane::YZ if in_info != (true, false) => {
+                let err = anyhow::anyhow!("plane check failed")
+                    .context(format!("must be {i} in f({i}) and not in Odd(f({i})): YZ"));
+                return Err(err);
+            }
+            Plane::ZX if in_info != (true, true) => {
+                let err = anyhow::anyhow!("plane check failed")
+                    .context(format!("must be {i} in f({i}) and in Odd(f({i})): ZX"));
+                return Err(err);
+            }
+            _ => {}
         }
     }
     Ok(())
@@ -75,15 +101,28 @@ fn zerofill(mat: &mut [FixedBitSet], ncols: usize) {
 /// # Arguments
 ///
 /// - `g`: The adjacency list of the graph. Must be undirected and without self-loops.
-/// - `iset`: The set of initial nodes. Must be consistent with `g`.
-/// - `oset`: The set of output nodes. Must be consistent with `g`.
+/// - `iset`: The set of initial nodes.
+/// - `oset`: The set of output nodes.
+/// - `plane`: Measurement plane of each node in V\O.
+///   - `0`: XY
+///   - `1`: YZ
+///   - `2`: ZX
 ///
 /// # Note
 ///
 /// - Node indices are assumed to be `0..g.len()`.
 /// - Arguments are **NOT** verified.
 #[pyfunction]
-pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<(GFlow, Layer)> {
+pub fn find(
+    g: Graph,
+    iset: HashSet<usize>,
+    mut oset: HashSet<usize>,
+    plane: HashMap<usize, u8>,
+) -> Option<(GFlow, Layer)> {
+    let plane = plane
+        .into_iter()
+        .map(|(k, v)| (k, Plane::try_from(v).expect("plane is either 0, 1, or 2")))
+        .collect::<HashMap<_, _>>();
     let n = g.len();
     let vset = (0..n).collect::<HashSet<_>>();
     let mut cset = HashSet::new();
@@ -116,16 +155,30 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
         zerofill(&mut work, ncols + neqs);
         // Encode node as one-hot vector
         for (r, &u) in ocset.iter().enumerate() {
-            // Initialize rhs
-            work[r].insert(ncols + r);
             for (c, &v) in omiset.iter().enumerate() {
                 // Initialize adjacency matrix
                 if g[u].contains(&v) {
                     work[r].insert(c);
                 }
             }
+            let ceq = ncols + r;
+            // Initialize rhs
+            if let Plane::XY | Plane::ZX = plane[&u] {
+                work[r].insert(ceq);
+            }
         }
-        let mut solver = GF2Solver::attach(work, neqs).unwrap();
+        for (ieq, &uc) in ocset.iter().enumerate() {
+            let c = ncols + ieq;
+            if let Plane::XY = plane[&uc] {
+                continue;
+            }
+            for (r, &ur) in ocset.iter().enumerate() {
+                if g[ur].contains(&uc) {
+                    work[r].toggle(c);
+                }
+            }
+        }
+        let mut solver = GF2Solver::attach(work, neqs);
         let mut x = FixedBitSet::with_capacity(ncols);
         // tab[i] = node index assigned to one-hot vector x[i]
         tab.clear();
@@ -136,7 +189,10 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
             }
             cset.insert(u);
             // Decode solution
-            let fu = x.ones().map(|c| tab[c]).collect();
+            let mut fu = x.ones().map(|c| tab[c]).collect::<HashSet<_>>();
+            if let Plane::YZ | Plane::ZX = plane[&u] {
+                fu.insert(u);
+            }
             f.insert(u, fu);
             layer[u] = l;
         }
@@ -153,7 +209,7 @@ pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<
         // if cfg!(debug_assertions) {
         check_domain(&f, &vset, &iset, &oset_orig).unwrap();
         common::check_initial(&layer, &oset_orig).unwrap();
-        check_definition(&f, &layer, &g).unwrap();
+        check_definition(&f, &layer, &g, &plane).unwrap();
         // }
         Some((f, layer))
     } else {
