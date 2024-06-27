@@ -160,24 +160,20 @@ pub fn find(
                     work[r].insert(c);
                 }
             }
-            let ceq = ncols + r;
-            // Initialize rhs
-            if let Plane::XY | Plane::ZX = plane[&u] {
-                work[r].insert(ceq);
-            }
         }
         for (ieq, &u) in ocset.iter().enumerate() {
             let c = ncols + ieq;
-            if let Plane::YZ | Plane::ZX = plane[&u] {
+            if let Plane::XY | Plane::ZX = plane[&u] {
                 // = u
                 work[ieq].insert(c);
             }
-            if let Plane::YZ | Plane::ZX = plane[&u] {
-                // Include u
-                for (r, &v) in ocset.iter().enumerate() {
-                    if g[u].contains(&v) {
-                        work[r].toggle(c);
-                    }
+            if let Plane::XY = plane[&u] {
+                continue;
+            }
+            // Include u
+            for (r, &v) in ocset.iter().enumerate() {
+                if g[u].contains(&v) {
+                    work[r].toggle(c);
                 }
             }
         }
