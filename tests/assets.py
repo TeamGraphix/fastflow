@@ -91,7 +91,6 @@ CASE4 = FlowTestCase(
     None,
 )
 
-# MEMO: Bug in graphix?
 #   0 - 1
 #  /|   |
 # 4 |   |
@@ -103,7 +102,7 @@ CASE5 = FlowTestCase(
     {4, 5},
     {0: Plane.XY, 1: Plane.XY, 2: Plane.ZX, 3: Plane.YZ},
     None,
-    GFlowResult({0: {2}, 1: {5}, 2: set(), 3: {3}}, {0: 2, 1: 2, 2: 1, 3: 1, 4: 0, 5: 0}),
+    GFlowResult({0: {2}, 1: {5}, 2: {2, 4}, 3: {3}}, {0: 2, 1: 2, 2: 1, 3: 1, 4: 0, 5: 0}),
 )
 
 CASES = [CASE0, CASE1, CASE2, CASE3, CASE4, CASE5]
