@@ -1,6 +1,7 @@
 //! Common functionalities for the flow/gflow algorithms.
 
 use anyhow;
+use fixedbitset::FixedBitSet;
 use std::{
     collections::{BTreeSet, HashSet},
     hash::Hash,
@@ -36,6 +37,14 @@ pub fn odd_neighbors(g: &Graph, kset: &HashSet<usize>) -> HashSet<usize> {
     work.extend(kset.iter().flat_map(|&ki| g[ki].iter().copied()));
     work.retain(|&u| kset.intersection(&g[u]).count() % 2 == 1);
     work
+}
+
+/// Resizes `mat` to `mat.len()` x `ncols` and fills with zeros.
+pub fn zerofill(mat: &mut [FixedBitSet], ncols: usize) {
+    let src = FixedBitSet::with_capacity(ncols);
+    mat.iter_mut().for_each(|x| {
+        x.clone_from(&src);
+    });
 }
 
 /// Helper trait for in-place set operations.
@@ -101,8 +110,9 @@ pub enum Plane {
 }
 
 macro_rules! impl_try_from {
-    ($t:ty) => {
-        impl TryFrom<$t> for Plane {
+    ($($t:ty),*) => {
+        $(
+            impl TryFrom<$t> for Plane {
             type Error = anyhow::Error;
 
             fn try_from(p: $t) -> anyhow::Result<Self> {
@@ -114,19 +124,9 @@ macro_rules! impl_try_from {
                 }
             }
         }
+    )*
     };
 }
 
-impl_try_from!(u8);
-impl_try_from!(u16);
-impl_try_from!(u32);
-impl_try_from!(u64);
-impl_try_from!(u128);
-impl_try_from!(usize);
-
-impl_try_from!(i8);
-impl_try_from!(i16);
-impl_try_from!(i32);
-impl_try_from!(i64);
-impl_try_from!(i128);
-impl_try_from!(isize);
+impl_try_from!(u8, u16, u32, u64, u128, usize);
+impl_try_from!(i8, i16, i32, i64, i128, isize);

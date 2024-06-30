@@ -1,11 +1,12 @@
 //! Maximally-delayed generalized flow algorithm.
 
+use crate::common;
 use fixedbitset::FixedBitSet;
 use pyo3::prelude::*;
 use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::{
-    common::{self, Graph, InPlaceSetOp, Layer, Plane},
+    common::{Graph, InPlaceSetOp, Layer, Plane},
     gf2_linalg::GF2Solver,
 };
 
@@ -88,14 +89,6 @@ fn check_definition(
     Ok(())
 }
 
-/// Resizes `mat` to `mat.len()` x `ncols` and fills with zeros.
-fn zerofill(mat: &mut [FixedBitSet], ncols: usize) {
-    let src = FixedBitSet::with_capacity(ncols);
-    mat.iter_mut().for_each(|x| {
-        x.clone_from(&src);
-    });
-}
-
 /// Finds the maximally-delayed generalized flow, if any.
 ///
 /// # Arguments
@@ -151,7 +144,7 @@ pub fn find(
         work.truncate(nrows);
         // Decrease over time
         debug_assert!(work[0].len() >= ncols + neqs);
-        zerofill(&mut work, ncols + neqs);
+        common::zerofill(&mut work, ncols + neqs);
         // Encode node as one-hot vector
         for (r, &u) in ocset.iter().enumerate() {
             for (c, &v) in omiset.iter().enumerate() {
