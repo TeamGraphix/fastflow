@@ -62,7 +62,7 @@ def find(
     v2i = {v: i for i, v in enumerate(g.nodes)}
     i2v = {i: v for v, i in v2i.items()}
     if plane is None:
-        plane = dict.fromkeys(v2i, Plane.XY)
+        plane = dict.fromkeys(v2i.keys() - oset, Plane.XY)
     if plane.keys() > g.nodes:
         msg = "Keys of plane must be in g.nodes."
         raise ValueError(msg)
