@@ -179,7 +179,8 @@ jobs:
           args: --release --out dist
 
       - uses: uraimo/run-on-arch-action@v2
-        if: matrix.target != 'ppc64'
+        # MEMO: Cannot test on other platforms due to numpy sdist
+        if: matrix.target == 'aarch64'
         with:
           arch: ${{ matrix.target }}
           githubToken: ${{ github.token }}
