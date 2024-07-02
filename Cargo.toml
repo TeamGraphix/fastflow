@@ -27,3 +27,6 @@ pyo3 = { version = "0.21", features = ["abi3-py38", "hashbrown"] }
 rand = "0.8"
 rstest = "0.21"
 rstest_reuse = "0.7"
+
+[profile.release]
+debug = 1
