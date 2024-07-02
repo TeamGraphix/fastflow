@@ -29,7 +29,7 @@ jobs:
       - name: Install built wheel - x86_64
         run: |
           pip install dist/fastflow-*x86_64.whl --force-reinstall
-          python -c "import fastflow"
+          python3 -c "import fastflow"
 
       - name: Build wheels - universal2
         uses: PyO3/maturin-action@v1
@@ -40,10 +40,10 @@ jobs:
       - name: Install from wheel - universal2
         run: |
           pip install dist/fastflow-*universal2.whl --force-reinstall
-          python -c "import fastflow"
+          python3 -c "import fastflow"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: wheels
-          path: dist
+          path: dist/fastflow-*.whl
