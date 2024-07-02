@@ -141,6 +141,7 @@ jobs:
         if: matrix.target == 'x86_64'
         uses: addnab/docker-run-action@v3
         with:
+          # MEMO: May need to care about rate limit
           image: alpine:latest
           options: --mount type=bind,src=${{ github.workspace }},dst=/io -w /io
           run: |
