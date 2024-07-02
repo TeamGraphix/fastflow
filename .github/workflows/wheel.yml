@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        target: [x64, x86]
+        target: [x86_64, i686]
       fail-fast: false
 
     steps:
