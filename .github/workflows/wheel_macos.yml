@@ -28,7 +28,7 @@ jobs:
 
       - name: Install built wheel - x86_64
         run: |
-          pip install fastflow --no-index --find-links dist --force-reinstall
+          pip install dist/fastflow*.whl --force-reinstall
           python -c "import fastflow"
 
       - name: Build wheels - universal2
@@ -38,7 +38,7 @@ jobs:
 
       - name: Install from wheel - universal2
         run: |
-          pip install fastflow --no-index --find-links dist --force-reinstall
+          pip install dist/fastflow*.whl --force-reinstall
           python -c "import fastflow"
 
       - name: Upload artifacts
