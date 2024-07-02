@@ -99,6 +99,9 @@ jobs:
           python-version: 3.8
           architecture: x64
 
+      - run: |
+          python3 -m pip install -U pip
+
       - uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
@@ -130,6 +133,9 @@ jobs:
         with:
           python-version: 3.8
           architecture: x64
+
+      - run: |
+          python3 -m pip install -U pip
 
       - uses: PyO3/maturin-action@v1
         with:
@@ -172,6 +178,9 @@ jobs:
         with:
           python-version: 3.8
 
+      - run: |
+          python3 -m pip install -U pip
+
       - uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
@@ -212,6 +221,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.8
+
+      - run: |
+          python3 -m pip install -U pip
 
       - uses: PyO3/maturin-action@v1
         with:
