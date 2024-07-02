@@ -89,6 +89,42 @@ fn check_definition(
     Ok(())
 }
 
+/// Initializes the working matrix.
+fn init_work(
+    work: &mut [FixedBitSet],
+    g: &Graph,
+    plane: &HashMap<usize, Plane>,
+    ocset: &BTreeSet<usize>,
+    omiset: &BTreeSet<usize>,
+) {
+    let ncols = omiset.len();
+    // Encode node as one-hot vector
+    for (r, &u) in ocset.iter().enumerate() {
+        for (c, &v) in omiset.iter().enumerate() {
+            // Initialize adjacency matrix
+            if g[u].contains(&v) {
+                work[r].insert(c);
+            }
+        }
+    }
+    for (ieq, &u) in ocset.iter().enumerate() {
+        let c = ncols + ieq;
+        if let Plane::XY | Plane::ZX = plane[&u] {
+            // = u
+            work[ieq].insert(c);
+        }
+        if let Plane::XY = plane[&u] {
+            continue;
+        }
+        // Include u
+        for (r, &v) in ocset.iter().enumerate() {
+            if g[u].contains(&v) {
+                work[r].toggle(c);
+            }
+        }
+    }
+}
+
 /// Finds the maximally-delayed generalized flow, if any.
 ///
 /// # Arguments
@@ -145,31 +181,7 @@ pub fn find(
         // Decrease over time
         debug_assert!(work[0].len() >= ncols + neqs);
         common::zerofill(&mut work, ncols + neqs);
-        // Encode node as one-hot vector
-        for (r, &u) in ocset.iter().enumerate() {
-            for (c, &v) in omiset.iter().enumerate() {
-                // Initialize adjacency matrix
-                if g[u].contains(&v) {
-                    work[r].insert(c);
-                }
-            }
-        }
-        for (ieq, &u) in ocset.iter().enumerate() {
-            let c = ncols + ieq;
-            if let Plane::XY | Plane::ZX = plane[&u] {
-                // = u
-                work[ieq].insert(c);
-            }
-            if let Plane::XY = plane[&u] {
-                continue;
-            }
-            // Include u
-            for (r, &v) in ocset.iter().enumerate() {
-                if g[u].contains(&v) {
-                    work[r].toggle(c);
-                }
-            }
-        }
+        init_work(&mut work, &g, &plane, &ocset, &omiset);
         let mut solver = GF2Solver::attach(work, neqs);
         let mut x = FixedBitSet::with_capacity(ncols);
         // tab[i] = node index assigned to one-hot vector x[i]
