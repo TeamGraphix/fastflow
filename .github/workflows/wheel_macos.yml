@@ -42,8 +42,14 @@ jobs:
           pip install dist/fastflow-*universal2.whl --force-reinstall
           python3 -c "import fastflow"
 
+      - name: Upload artifacts - x86_64
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel_macos_x86_64
+          path: dist/fastflow-*x86_64.whl
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
-          path: dist/fastflow-*.whl
+          name: wheel_macos_universal2
+          path: dist/fastflow-*universal2.whl
