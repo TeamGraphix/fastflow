@@ -27,7 +27,8 @@ jobs:
 
       - name: Install from wheel
         run: |
-          pip install crfs --no-index --find-links dist --force-reinstall
+          python3 -m pip install -U pip
+          pip install fastflow --no-index --find-links dist --force-reinstall
           python -c "import fastflow"
 
       - name: Upload artifacts
