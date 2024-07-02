@@ -418,9 +418,9 @@ mod tests {
     #[template]
     #[rstest]
     fn template_tests(
-        #[values(1, 2, 7, 12)] rows: usize,
-        #[values(1, 2, 7, 12)] cols: usize,
-        #[values(1, 2, 7, 12)] neqs: usize,
+        #[values(1, 2, 7, 12, 23, 36)] rows: usize,
+        #[values(1, 2, 7, 12, 23, 36)] cols: usize,
+        #[values(1, 2, 7, 12, 23, 36)] neqs: usize,
     ) {
     }
 
