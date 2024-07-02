@@ -3,6 +3,7 @@
 use crate::common::{self, Nodes, OrderedNodes};
 use fixedbitset::FixedBitSet;
 use hashbrown;
+use num_traits::cast::FromPrimitive;
 use pyo3::prelude::*;
 
 use crate::{
@@ -10,6 +11,8 @@ use crate::{
     gf2_linalg::GF2Solver,
 };
 
+// Introduced only for internal use
+type InternalPlanes = hashbrown::HashMap<usize, u8>;
 type Planes = hashbrown::HashMap<usize, Plane>;
 type GFlow = hashbrown::HashMap<usize, Nodes>;
 
@@ -137,11 +140,11 @@ pub fn find(
     g: Graph,
     iset: Nodes,
     mut oset: Nodes,
-    plane: hashbrown::HashMap<usize, u8>,
+    plane: InternalPlanes,
 ) -> Option<(GFlow, Layer)> {
     let plane = plane
         .into_iter()
-        .map(|(k, v)| (k, Plane::try_from(v).expect("plane is either 0, 1, or 2")))
+        .map(|(k, v)| (k, Plane::from_u8(v).expect("plane is either 0, 1, or 2")))
         .collect::<Planes>();
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();

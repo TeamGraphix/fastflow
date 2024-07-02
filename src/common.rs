@@ -3,6 +3,7 @@
 use anyhow;
 use fixedbitset::FixedBitSet;
 use hashbrown;
+use num_traits::cast::FromPrimitive;
 use std::{collections::BTreeSet, hash::Hash, ops::Deref};
 
 /// Set of nodes.
@@ -110,24 +111,22 @@ pub enum Plane {
     ZX,
 }
 
-macro_rules! impl_try_from {
-    ($($t:ty),*) => {
-        $(
-            impl TryFrom<$t> for Plane {
-            type Error = anyhow::Error;
-
-            fn try_from(p: $t) -> anyhow::Result<Self> {
-                match p {
-                    0 => Ok(Plane::XY),
-                    1 => Ok(Plane::YZ),
-                    2 => Ok(Plane::ZX),
-                    _ => Err(anyhow::anyhow!("invalid plane index").context(p)),
-                }
-            }
+impl FromPrimitive for Plane {
+    fn from_i64(n: i64) -> Option<Self> {
+        match n {
+            0 => Some(Plane::XY),
+            1 => Some(Plane::YZ),
+            2 => Some(Plane::ZX),
+            _ => None,
         }
-    )*
-    };
-}
+    }
 
-impl_try_from!(u8, u16, u32, u64, u128, usize);
-impl_try_from!(i8, i16, i32, i64, i128, isize);
+    fn from_u64(n: u64) -> Option<Self> {
+        match n {
+            0 => Some(Plane::XY),
+            1 => Some(Plane::YZ),
+            2 => Some(Plane::ZX),
+            _ => None,
+        }
+    }
+}
