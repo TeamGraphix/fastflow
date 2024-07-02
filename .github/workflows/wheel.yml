@@ -225,10 +225,10 @@ jobs:
           distro: alpine_latest
           install: |
             apk add py3-pip
+          run: |
             python3 -m venv .venv
             . .venv/bin/activate
             pip install -U pip
-          run: |
             pip install dist/fastflow-*.whl --force-reinstall
             python3 -c "import fastflow"
 
