@@ -1,4 +1,4 @@
-name: wheel_macos
+name: wheel
 
 on:
   pull_request:
@@ -6,8 +6,47 @@ on:
   workflow_dispatch:
 
 jobs:
+  windows:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        target: [x64, x86]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+          architecture: ${{ matrix.target }}
+
+      - name: Update pip
+        run: |
+          python3 -m pip install -U pip
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist
+
+      - name: Install from wheel
+        shell: bash
+        run: |
+          pip install dist/fastflow-*.whl --force-reinstall
+          python3 -c "import fastflow"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels
+          path: dist/
+
   macos:
     runs-on: macos-13
+
     steps:
       - uses: actions/checkout@v4
 
@@ -42,14 +81,8 @@ jobs:
           pip install dist/fastflow-*universal2.whl --force-reinstall
           python3 -c "import fastflow"
 
-      - name: Upload artifacts - x86_64
-        uses: actions/upload-artifact@v4
-        with:
-          name: wheel_macos_x86_64
-          path: dist/fastflow-*x86_64.whl
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wheel_macos_universal2
-          path: dist/fastflow-*universal2.whl
+          name: wheels
+          path: dist/
