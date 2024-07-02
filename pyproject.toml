@@ -47,7 +47,6 @@ ignore = [
 
   # Not necessary for this project
   "ASYNC",
-  "TRIO",
   "DJ",
   "PD",
   "AIR",
