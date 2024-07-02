@@ -155,3 +155,80 @@ jobs:
         with:
           name: wheel-musllinux-${{ matrix.target }}
           path: dist/
+
+  linux-cross:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        target: [aarch64, armv7, s390x, ppc64le, ppc64]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: auto
+          args: --release --out dist
+
+      - uses: uraimo/run-on-arch-action@v2
+        if: matrix.target != 'ppc64'
+        with:
+          arch: ${{ matrix.target }}
+          githubToken: ${{ github.token }}
+          distro: ubuntu22.04
+          install: |
+            apt update
+            apt install -y --no-install-recommends python3 python3-pip
+            pip install -U pip
+          run: |
+            pip install dist/fastflow-*.whl --force-reinstall
+            python3 -c "import fastflow"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-linux-${{ matrix.target }}
+          path: dist/
+
+  musllinux-cross:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        target: [aarch64, armv7]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          manylinux: musllinux_1_2
+          args: --release --out dist
+
+      - uses: uraimo/run-on-arch-action@v2
+        with:
+          arch: ${{ matrix.target }}
+          githubToken: ${{ github.token }}
+          distro: alpine_latest
+          install: |
+            apk add py3-pip
+            pip install -U pip
+          run: |
+            pip install dist/fastflow-*.whl --force-reinstall
+            python3 -c "import fastflow"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheel-musllinux-${{ matrix.target }}
+          path: dist/
