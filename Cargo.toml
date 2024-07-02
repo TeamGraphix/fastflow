@@ -18,8 +18,9 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow = "1.0"
 fixedbitset = "0.5"
+hashbrown = "0.14"
 itertools = "0.13"
-pyo3 = { version = "0.21", features = ["abi3-py38"] }
+pyo3 = { version = "0.21", features = ["abi3-py38", "hashbrown"] }
 
 [dev-dependencies]
 rand = "0.8"
