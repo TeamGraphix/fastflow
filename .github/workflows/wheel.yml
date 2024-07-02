@@ -27,7 +27,7 @@ jobs:
 
       - uses: PyO3/maturin-action@v1
         with:
-          target: ${{ matrix.target }}
+          target: ${{ matrix.target }}-pc-windows-msvc
           args: --release --out dist
 
       - shell: bash
@@ -40,8 +40,13 @@ jobs:
           name: wheel-windows-${{ matrix.target }}
           path: dist/
 
-  macos-x86_64:
+  macos:
     runs-on: macos-13
+
+    strategy:
+      matrix:
+        target: [x86_64, universal2]
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
@@ -54,37 +59,18 @@ jobs:
       - run: |
           python3 -m pip install -U pip
 
-      - uses: PyO3/maturin-action@v1
+      - if: matrix.target == 'x86_64'
+        uses: PyO3/maturin-action@v1
         with:
-          target: x86_64
+          # Needs --sdist
+          target: ${{ matrix.target }}-apple-darwin
           args: --release --out dist --sdist
 
-      - run: |
-          pip install dist/fastflow-*.whl --force-reinstall
-          python3 -c "import fastflow"
-
-      - uses: actions/upload-artifact@v4
+      - if: matrix.target != 'x86_64'
+        uses: PyO3/maturin-action@v1
         with:
-          name: wheel-macos-x86_64
-          path: dist/
-
-  macos-universal2:
-    runs-on: macos-13
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.8
-          architecture: x64
-
-      - run: |
-          python3 -m pip install -U pip
-
-      - uses: PyO3/maturin-action@v1
-        with:
-          target: universal2-apple-darwin
+          # No --sdist
+          target: ${{ matrix.target }}-apple-darwin
           args: --release --out dist
 
       - run: |
@@ -93,7 +79,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheel-macos-universal2
+          name: wheel-macos-${{ matrix.target }}
           path: dist/
 
   linux:
