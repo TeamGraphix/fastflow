@@ -126,11 +126,11 @@ impl GF2Solver {
         if i == c {
             return;
         }
-        for r in 0..self.rows {
-            let bi = self.work[r][i];
-            let bc = self.work[r][c];
-            self.work[r].set(i, bc);
-            self.work[r].set(c, bi);
+        for row in self.work[..self.rows].iter_mut() {
+            let bi = row[i];
+            let bc = row[c];
+            row.set(i, bc);
+            row.set(c, bi);
         }
         self.perm.swap(i, c);
     }
@@ -138,8 +138,9 @@ impl GF2Solver {
     /// Finds the first `1` and move it to `(i, i)`.
     fn move_pivot(&mut self, i: usize) -> bool {
         for c in i..self.cols {
-            for r in i..self.rows {
-                if self.work[r][c] {
+            for (offset, row) in self.work[i..self.rows].iter().enumerate() {
+                if row[c] {
+                    let r = offset + i;
                     self.move_pivot_impl(i, r, c);
                     return true;
                 }

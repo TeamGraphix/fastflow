@@ -92,16 +92,29 @@ fn init_work(
     omiset: &OrderedNodes,
 ) {
     let ncols = omiset.len();
+    // Working memory for faster adjacency check
+    let oc2i = ocset
+        .iter()
+        .enumerate()
+        .map(|(i, &v)| (v, i))
+        .collect::<hashbrown::HashMap<_, _>>();
+    let omi2i = omiset
+        .iter()
+        .enumerate()
+        .map(|(i, &v)| (v, i))
+        .collect::<hashbrown::HashMap<_, _>>();
     // Encode node as one-hot vector
-    for (r, &u) in ocset.iter().enumerate() {
-        for (c, &v) in omiset.iter().enumerate() {
-            // Initialize adjacency matrix
-            if g[u].contains(&v) {
+    for (i, &u) in ocset.iter().enumerate() {
+        let gu = &g[u];
+        // Initialize adjacency matrix
+        let r = i;
+        for &v in gu.iter() {
+            if let Some(&c) = omi2i.get(&v) {
                 work[r].insert(c);
             }
         }
-    }
-    for (ieq, &u) in ocset.iter().enumerate() {
+        // Initialize rhs
+        let ieq = i;
         let c = ncols + ieq;
         if let Plane::XY | Plane::ZX = plane[&u] {
             // = u
@@ -111,8 +124,8 @@ fn init_work(
             continue;
         }
         // Include u
-        for (r, &v) in ocset.iter().enumerate() {
-            if g[u].contains(&v) {
+        for &v in gu.iter() {
+            if let Some(&r) = oc2i.get(&v) {
                 work[r].toggle(c);
             }
         }

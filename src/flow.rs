@@ -78,11 +78,12 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         oset_work.clear();
         cset_work.clear();
         for &v in &cset {
-            if check[v].len() != 1 {
+            let checkv = &check[v];
+            if checkv.len() != 1 {
                 continue;
             }
             // Get the only element
-            let u = *check[v].iter().next().expect("one element here");
+            let u = *checkv.iter().next().expect("one element here");
             f.insert(u, v);
             // MEMO: Typo in Mahlla's PP (2007)
             layer[u] = l;
