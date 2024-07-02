@@ -2,19 +2,20 @@
 
 use anyhow;
 use fixedbitset::FixedBitSet;
-use std::{
-    collections::{BTreeSet, HashSet},
-    hash::Hash,
-    ops::Deref,
-};
+use hashbrown;
+use std::{collections::BTreeSet, hash::Hash, ops::Deref};
 
+/// Set of nodes.
+pub type Nodes = hashbrown::HashSet<usize>;
+/// Ordered set of nodes.
+pub type OrderedNodes = BTreeSet<usize>;
 /// Undirected graph represented as an adjacency list.
-pub type Graph = Vec<HashSet<usize>>;
+pub type Graph = Vec<Nodes>;
 /// Numbered representation of the associated partial order of flow/gflow.
 pub type Layer = Vec<usize>;
 
 /// Checks if `layer[u] == 0` iff `u` is in `oset`.
-pub fn check_initial(layer: &Layer, oset: &HashSet<usize>) -> anyhow::Result<()> {
+pub fn check_initial(layer: &Layer, oset: &Nodes) -> anyhow::Result<()> {
     for (u, &lu) in layer.iter().enumerate() {
         // u in O => layer[u] == 0
         // u not in O => layer[u] != 0
@@ -29,7 +30,7 @@ pub fn check_initial(layer: &Layer, oset: &HashSet<usize>) -> anyhow::Result<()>
 }
 
 /// Computes the odd neighbors of the vertices in `kset`.
-pub fn odd_neighbors(g: &Graph, kset: &HashSet<usize>) -> HashSet<usize> {
+pub fn odd_neighbors(g: &Graph, kset: &Nodes) -> Nodes {
     if kset.iter().any(|&ki| ki >= g.len()) {
         panic!("kset out of range");
     }
@@ -60,7 +61,7 @@ pub trait InPlaceSetOp<T: Clone> {
         U: Deref<Target = T>;
 }
 
-impl<T> InPlaceSetOp<T> for HashSet<T>
+impl<T> InPlaceSetOp<T> for hashbrown::HashSet<T>
 where
     T: Eq + Clone + Hash,
 {

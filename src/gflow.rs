@@ -1,24 +1,20 @@
 //! Maximally-delayed generalized flow algorithm.
 
-use crate::common;
+use crate::common::{self, Nodes, OrderedNodes};
 use fixedbitset::FixedBitSet;
+use hashbrown;
 use pyo3::prelude::*;
-use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::{
     common::{Graph, InPlaceSetOp, Layer, Plane},
     gf2_linalg::GF2Solver,
 };
 
-type GFlow = HashMap<usize, HashSet<usize>>;
+type Planes = hashbrown::HashMap<usize, Plane>;
+type GFlow = hashbrown::HashMap<usize, Nodes>;
 
 /// Checks if the domain of `f` is in V\O and the codomain is in V\I.
-fn check_domain(
-    f: &GFlow,
-    vset: &HashSet<usize>,
-    iset: &HashSet<usize>,
-    oset: &HashSet<usize>,
-) -> anyhow::Result<()> {
+fn check_domain(f: &GFlow, vset: &Nodes, iset: &Nodes, oset: &Nodes) -> anyhow::Result<()> {
     let icset = vset - iset;
     let ocset = vset - oset;
     for &i in f.keys() {
@@ -37,12 +33,7 @@ fn check_domain(
 }
 
 /// Checks if the properties of the generalized flow are satisfied.
-fn check_definition(
-    f: &GFlow,
-    layer: &Layer,
-    g: &Graph,
-    plane: &HashMap<usize, Plane>,
-) -> anyhow::Result<()> {
+fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, plane: &Planes) -> anyhow::Result<()> {
     anyhow::ensure!(
         f.len() == plane.len(),
         "f and plane must have the same codomain"
@@ -93,9 +84,9 @@ fn check_definition(
 fn init_work(
     work: &mut [FixedBitSet],
     g: &Graph,
-    plane: &HashMap<usize, Plane>,
-    ocset: &BTreeSet<usize>,
-    omiset: &BTreeSet<usize>,
+    plane: &Planes,
+    ocset: &OrderedNodes,
+    omiset: &OrderedNodes,
 ) {
     let ncols = omiset.len();
     // Encode node as one-hot vector
@@ -144,22 +135,22 @@ fn init_work(
 #[pyfunction]
 pub fn find(
     g: Graph,
-    iset: HashSet<usize>,
-    mut oset: HashSet<usize>,
-    plane: HashMap<usize, u8>,
+    iset: Nodes,
+    mut oset: Nodes,
+    plane: hashbrown::HashMap<usize, u8>,
 ) -> Option<(GFlow, Layer)> {
     let plane = plane
         .into_iter()
         .map(|(k, v)| (k, Plane::try_from(v).expect("plane is either 0, 1, or 2")))
-        .collect::<HashMap<_, _>>();
+        .collect::<Planes>();
     let n = g.len();
-    let vset = (0..n).collect::<HashSet<_>>();
-    let mut cset = HashSet::new();
+    let vset = (0..n).collect::<Nodes>();
+    let mut cset = Nodes::new();
     // Need to use BTreeSet to get deterministic order
-    let mut ocset = vset.difference(&oset).copied().collect::<BTreeSet<_>>();
-    let mut omiset = oset.difference(&iset).copied().collect::<BTreeSet<_>>();
+    let mut ocset = vset.difference(&oset).copied().collect::<OrderedNodes>();
+    let mut omiset = oset.difference(&iset).copied().collect::<OrderedNodes>();
     let oset_orig = oset.clone();
-    let mut f = HashMap::with_capacity(ocset.len());
+    let mut f = GFlow::with_capacity(ocset.len());
     let mut layer = vec![0_usize; n];
     let mut nrows = ocset.len();
     let mut ncols = omiset.len();
@@ -193,7 +184,7 @@ pub fn find(
             }
             cset.insert(u);
             // Decode solution
-            let mut fu = x.ones().map(|c| tab[c]).collect::<HashSet<_>>();
+            let mut fu = x.ones().map(|c| tab[c]).collect::<Nodes>();
             if let Plane::YZ | Plane::ZX = plane[&u] {
                 // Include u
                 fu.insert(u);

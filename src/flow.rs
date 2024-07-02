@@ -1,19 +1,14 @@
 //! Maximally-delayed causal flow algorithm.
 
+use hashbrown;
 use pyo3::prelude::*;
-use std::collections::{HashMap, HashSet};
 
-use crate::common::{self, Graph, InPlaceSetOp, Layer};
+use crate::common::{self, Graph, InPlaceSetOp, Layer, Nodes};
 
-type Flow = HashMap<usize, usize>;
+type Flow = hashbrown::HashMap<usize, usize>;
 
 /// Checks if the domain of `f` is in V\O and the codomain is in V\I.
-fn check_domain(
-    f: &Flow,
-    vset: &HashSet<usize>,
-    iset: &HashSet<usize>,
-    oset: &HashSet<usize>,
-) -> anyhow::Result<()> {
+fn check_domain(f: &Flow, vset: &Nodes, iset: &Nodes, oset: &Nodes) -> anyhow::Result<()> {
     let icset = vset - iset;
     let ocset = vset - oset;
     for (&i, &fi) in f.iter() {
@@ -65,20 +60,20 @@ fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
 /// - Node indices are assumed to be `0..g.len()`.
 /// - Arguments are **NOT** verified.
 #[pyfunction]
-pub fn find(g: Graph, iset: HashSet<usize>, mut oset: HashSet<usize>) -> Option<(Flow, Layer)> {
+pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
     let n = g.len();
-    let vset = (0..n).collect::<HashSet<_>>();
+    let vset = (0..n).collect::<Nodes>();
     let mut cset = &oset - &iset;
     let icset = &vset - &iset;
     let ocset = &vset - &oset;
     let oset_orig = oset.clone();
-    let mut f = HashMap::with_capacity(ocset.len());
+    let mut f = Flow::with_capacity(ocset.len());
     let mut layer = vec![0_usize; n];
     // check[v] = g[v] & (vset - oset)
     let mut check = g.iter().map(|x| x & &ocset).collect::<Vec<_>>();
     // Reuse working memory
-    let mut oset_work = HashSet::new();
-    let mut cset_work = HashSet::new();
+    let mut oset_work = Nodes::new();
+    let mut cset_work = Nodes::new();
     for l in 1_usize.. {
         oset_work.clear();
         cset_work.clear();
