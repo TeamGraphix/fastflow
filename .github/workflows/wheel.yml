@@ -202,6 +202,7 @@ jobs:
     strategy:
       matrix:
         target: [aarch64, armv7]
+      fail-fast: false
 
     steps:
       - uses: actions/checkout@v4
