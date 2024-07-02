@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        target: [x86_64, i686]
+        target: [x64, x86]
       fail-fast: false
 
     steps:
@@ -27,7 +27,8 @@ jobs:
 
       - uses: PyO3/maturin-action@v1
         with:
-          target: ${{ matrix.target }}-pc-windows-msvc
+          # Need to rely on abbreviation
+          target: ${{ matrix.target }}
           args: --release --out dist
 
       - shell: bash
