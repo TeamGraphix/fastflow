@@ -32,7 +32,7 @@ jobs:
 
       - name: Install from wheel
         run: |
-          pip install fastflow --no-index --find-links dist --force-reinstall --verbose
+          pip install fastflow --no-index --find-links dist --force-reinstall
           python -c "import fastflow"
 
       - name: Upload artifacts
