@@ -22,24 +22,20 @@ jobs:
           python-version: 3.8
           architecture: ${{ matrix.target }}
 
-      - name: Upgrade pip
-        run: |
+      - run: |
           python3 -m pip install -U pip
 
-      - name: Build wheel
-        uses: PyO3/maturin-action@v1
+      - uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
           args: --release --out dist
 
-      - name: Install from wheel
-        shell: bash
+      - shell: bash
         run: |
           pip install dist/fastflow-*.whl --force-reinstall
           python3 -c "import fastflow"
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: wheel-windows-${{ matrix.target }}
           path: dist/
@@ -55,23 +51,19 @@ jobs:
           python-version: 3.8
           architecture: x64
 
-      - name: Upgrade pip
-        run: |
+      - run: |
           python3 -m pip install -U pip
 
-      - name: Build wheel
-        uses: PyO3/maturin-action@v1
+      - uses: PyO3/maturin-action@v1
         with:
           target: x86_64
           args: --release --out dist --sdist
 
-      - name: Install built wheel
-        run: |
+      - run: |
           pip install dist/fastflow-*.whl --force-reinstall
           python3 -c "import fastflow"
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: wheel-macos-x86_64
           path: dist/
@@ -87,23 +79,19 @@ jobs:
           python-version: 3.8
           architecture: x64
 
-      - name: Upgrade pip
-        run: |
+      - run: |
           python3 -m pip install -U pip
 
-      - name: Build wheel
-        uses: PyO3/maturin-action@v1
+      - uses: PyO3/maturin-action@v1
         with:
           target: universal2-apple-darwin
           args: --release --out dist
 
-      - name: Install from wheel
-        run: |
+      - run: |
           pip install dist/fastflow-*.whl --force-reinstall
           python3 -c "import fastflow"
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: wheel-macos-universal2
           path: dist/
