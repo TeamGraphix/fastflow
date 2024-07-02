@@ -127,3 +127,34 @@ jobs:
         with:
           name: wheel-linux-${{ matrix.target }}
           path: dist/
+
+  musllinux:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        target: [x86_64, i686]
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+          architecture: x64
+
+      - uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}-unknown-linux-musl
+          manylinux: musllinux_1_2
+          args: --release --out dist
+
+      - name: Install and test the wheel
+        run: |
+          # WIP
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: wheel-musllinux-${{ matrix.target }}
+          path: dist/
