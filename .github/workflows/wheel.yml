@@ -142,11 +142,13 @@ jobs:
         uses: addnab/docker-run-action@v3
         with:
           image: alpine:latest
-          options: --mount type=bind,src=${{ github.workspace }},dst=/io
+          options: --mount type=bind,src=${{ github.workspace }},dst=/io -w /io
           run: |
             apk add py3-pip
-            pip3 install -U pip
-            pip3 install /io/dist/fastflow-*.whl
+            python3 -m venv .venv
+            . .venv/bin/activate
+            pip install -U pip
+            pip install dist/fastflow-*.whl
             python3 -c "import fastflow"
 
       - uses: actions/upload-artifact@v4
