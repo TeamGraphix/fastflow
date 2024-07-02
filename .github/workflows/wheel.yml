@@ -108,7 +108,7 @@ jobs:
       - if: matrix.target == 'x86_64'
         run: |
           pip install dist/fastflow-*.whl --force-reinstall
-          python -c "import fastflow"
+          python3 -c "import fastflow"
 
       - uses: actions/upload-artifact@v4
         with:
