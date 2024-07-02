@@ -187,9 +187,9 @@ jobs:
           manylinux: auto
           args: --release --out dist
 
-      - uses: uraimo/run-on-arch-action@v2
-        # MEMO: Cannot test on other platforms due to numpy sdist
-        if: matrix.target == 'aarch64'
+      # MEMO: Cannot test on other platforms due to numpy sdist
+      - if: matrix.target == 'aarch64'
+        uses: uraimo/run-on-arch-action@v2
         with:
           arch: ${{ matrix.target }}
           githubToken: ${{ github.token }}
@@ -231,7 +231,9 @@ jobs:
           manylinux: musllinux_1_2
           args: --release --out dist
 
-      - uses: uraimo/run-on-arch-action@v2
+      # MEMO: Cannot test on armv7 due to forced sdist
+      - if: matrix.target != 'armv7'
+        uses: uraimo/run-on-arch-action@v2
         with:
           arch: ${{ matrix.target }}
           githubToken: ${{ github.token }}
