@@ -22,11 +22,11 @@ jobs:
           python-version: 3.8
           architecture: ${{ matrix.target }}
 
-      - name: Update pip
+      - name: Upgrade pip
         run: |
           python3 -m pip install -U pip
 
-      - name: Build wheels
+      - name: Build wheel
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
@@ -41,10 +41,10 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheel-windows-${{ matrix.target }}
           path: dist/
 
-  macos:
+  macos-x86_64:
     runs-on: macos-13
 
     steps:
@@ -55,34 +55,55 @@ jobs:
           python-version: 3.8
           architecture: x64
 
-      - name: Update pip
+      - name: Upgrade pip
         run: |
           python3 -m pip install -U pip
 
-      - name: Build wheels - x86_64
+      - name: Build wheel
         uses: PyO3/maturin-action@v1
         with:
           target: x86_64
           args: --release --out dist --sdist
 
-      - name: Install built wheel - x86_64
+      - name: Install built wheel
         run: |
-          pip install dist/fastflow-*x86_64.whl --force-reinstall
-          python3 -c "import fastflow"
-
-      - name: Build wheels - universal2
-        uses: PyO3/maturin-action@v1
-        with:
-          target: universal2-apple-darwin
-          args: --release --out dist
-
-      - name: Install from wheel - universal2
-        run: |
-          pip install dist/fastflow-*universal2.whl --force-reinstall
+          pip install dist/fastflow-*.whl --force-reinstall
           python3 -c "import fastflow"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheel-macos-x86_64
+          path: dist/
+
+  macos-universal2:
+    runs-on: macos-13
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+          architecture: x64
+
+      - name: Upgrade pip
+        run: |
+          python3 -m pip install -U pip
+
+      - name: Build wheel
+        uses: PyO3/maturin-action@v1
+        with:
+          target: universal2-apple-darwin
+          args: --release --out dist
+
+      - name: Install from wheel
+        run: |
+          pip install dist/fastflow-*.whl --force-reinstall
+          python3 -c "import fastflow"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-macos-universal2
           path: dist/
