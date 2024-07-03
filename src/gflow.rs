@@ -5,6 +5,7 @@ use std::iter;
 use crate::common::{self, Nodes, OrderedNodes};
 use fixedbitset::FixedBitSet;
 use hashbrown;
+use num_derive::FromPrimitive;
 use num_traits::cast::FromPrimitive;
 use pyo3::prelude::*;
 
@@ -13,31 +14,11 @@ use crate::{
     gf2_linalg::GF2Solver,
 };
 
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive)]
 enum Plane {
-    XY,
-    YZ,
-    ZX,
-}
-
-impl FromPrimitive for Plane {
-    fn from_i64(n: i64) -> Option<Self> {
-        match n {
-            0 => Some(Plane::XY),
-            1 => Some(Plane::YZ),
-            2 => Some(Plane::ZX),
-            _ => None,
-        }
-    }
-
-    fn from_u64(n: u64) -> Option<Self> {
-        match n {
-            0 => Some(Plane::XY),
-            1 => Some(Plane::YZ),
-            2 => Some(Plane::ZX),
-            _ => None,
-        }
-    }
+    XY = 0,
+    YZ = 1,
+    ZX = 2,
 }
 
 // Introduced only for internal use
