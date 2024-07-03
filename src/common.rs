@@ -81,12 +81,12 @@ pub fn zerofill(mat: &mut [FixedBitSet], ncols: usize) {
 /// Helper trait for in-place set operations.
 pub trait InPlaceSetOp<T: Clone> {
     /// Extends self with the elements from `other`.
-    fn union_with<U>(&mut self, other: impl Iterator<Item = U>)
+    fn union_with<U>(&mut self, other: impl IntoIterator<Item = U>)
     where
         U: Deref<Target = T>;
 
     /// Drops the elements from `other` from self.
-    fn difference_with<U>(&mut self, other: impl Iterator<Item = U>)
+    fn difference_with<U>(&mut self, other: impl IntoIterator<Item = U>)
     where
         U: Deref<Target = T>;
 }
@@ -95,18 +95,18 @@ impl<T> InPlaceSetOp<T> for hashbrown::HashSet<T>
 where
     T: Eq + Clone + Hash,
 {
-    fn union_with<U>(&mut self, other: impl Iterator<Item = U>)
+    fn union_with<U>(&mut self, other: impl IntoIterator<Item = U>)
     where
         U: Deref<Target = T>,
     {
-        self.extend(other.map(|x| x.deref().clone()));
+        self.extend(other.into_iter().map(|x| x.deref().clone()));
     }
 
-    fn difference_with<U>(&mut self, other: impl Iterator<Item = U>)
+    fn difference_with<U>(&mut self, other: impl IntoIterator<Item = U>)
     where
         U: Deref<Target = T>,
     {
-        other.for_each(|x| {
+        other.into_iter().for_each(|x| {
             self.remove(x.deref());
         });
     }
@@ -116,18 +116,18 @@ impl<T> InPlaceSetOp<T> for BTreeSet<T>
 where
     T: Eq + Clone + Ord,
 {
-    fn union_with<U>(&mut self, other: impl Iterator<Item = U>)
+    fn union_with<U>(&mut self, other: impl IntoIterator<Item = U>)
     where
         U: Deref<Target = T>,
     {
-        self.extend(other.map(|x| x.deref().clone()));
+        self.extend(other.into_iter().map(|x| x.deref().clone()));
     }
 
-    fn difference_with<U>(&mut self, other: impl Iterator<Item = U>)
+    fn difference_with<U>(&mut self, other: impl IntoIterator<Item = U>)
     where
         U: Deref<Target = T>,
     {
-        other.for_each(|x| {
+        other.into_iter().for_each(|x| {
             self.remove(x.deref());
         });
     }

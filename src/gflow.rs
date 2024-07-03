@@ -196,7 +196,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
         if cset.is_empty() {
             break;
         }
-        ocset.difference_with(cset.iter());
+        ocset.difference_with(&cset);
         omiset.union_with(cset.difference(&iset));
         work = solver.detach();
     }
