@@ -140,12 +140,7 @@ fn init_work(
 /// - Node indices are assumed to be `0..g.len()`.
 /// - Arguments are **NOT** verified.
 #[pyfunction]
-pub fn find(
-    g: Graph,
-    iset: Nodes,
-    mut oset: Nodes,
-    plane: InternalPlanes,
-) -> Option<(GFlow, Layer)> {
+pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option<(GFlow, Layer)> {
     let plane = plane
         .into_iter()
         .map(|(k, v)| (k, Plane::from_u8(v).expect("plane is either 0, 1, or 2")))
@@ -156,7 +151,6 @@ pub fn find(
     // Need to use BTreeSet to get deterministic order
     let mut ocset = vset.difference(&oset).copied().collect::<OrderedNodes>();
     let mut omiset = oset.difference(&iset).copied().collect::<OrderedNodes>();
-    let oset_orig = oset.clone();
     let mut f = GFlow::with_capacity(ocset.len());
     let mut layer = vec![0_usize; n];
     let mut nrows = ocset.len();
@@ -202,19 +196,18 @@ pub fn find(
         if cset.is_empty() {
             break;
         }
-        oset.union_with(cset.iter());
         ocset.difference_with(cset.iter());
         omiset.union_with(cset.difference(&iset));
         work = solver.detach();
     }
-    if oset == vset {
+    if ocset.is_empty() {
         // TODO: Uncomment once ready
         // if cfg!(debug_assertions) {
         let f_flatiter = f
             .iter()
             .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
-        common::check_domain(f_flatiter, &vset, &iset, &oset_orig).unwrap();
-        common::check_initial(&layer, &oset_orig).unwrap();
+        common::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
+        common::check_initial(&layer, &oset).unwrap();
         check_definition(&f, &layer, &g, &plane).unwrap();
         // }
         Some((f, layer))
