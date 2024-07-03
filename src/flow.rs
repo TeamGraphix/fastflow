@@ -3,7 +3,10 @@
 use hashbrown;
 use pyo3::prelude::*;
 
-use crate::common::{self, Graph, InPlaceSetOp, Layer, Nodes};
+use crate::{
+    common::{self, Graph, InPlaceSetOp, Layer, Nodes},
+    validate,
+};
 
 type Flow = hashbrown::HashMap<usize, usize>;
 
@@ -44,6 +47,7 @@ fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
 /// - Arguments are **NOT** verified.
 #[pyfunction]
 pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
+    validate::check_graph(&g, &iset, &oset).unwrap();
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();
     let mut cset = &oset - &iset;

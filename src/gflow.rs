@@ -3,6 +3,7 @@
 use std::iter;
 
 use crate::common::{self, Nodes, OrderedNodes};
+use crate::validate;
 use fixedbitset::FixedBitSet;
 use hashbrown;
 use num_derive::FromPrimitive;
@@ -141,6 +142,7 @@ fn init_work(
 /// - Arguments are **NOT** verified.
 #[pyfunction]
 pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option<(GFlow, Layer)> {
+    validate::check_graph(&g, &iset, &oset).unwrap();
     let plane = plane
         .into_iter()
         .map(|(k, v)| (k, Plane::from_u8(v).expect("plane is either 0, 1, or 2")))
