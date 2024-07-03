@@ -3,7 +3,6 @@
 use anyhow;
 use fixedbitset::FixedBitSet;
 use hashbrown;
-use num_traits::cast::FromPrimitive;
 use std::{collections::BTreeSet, hash::Hash, ops::Deref};
 
 /// Set of nodes.
@@ -57,6 +56,10 @@ pub fn check_domain<'a, 'b>(
 }
 
 /// Computes the odd neighbors of the vertices in `kset`.
+///
+/// # Note
+///
+/// - Naively implemented.
 pub fn odd_neighbors(g: &Graph, kset: &Nodes) -> Nodes {
     if kset.iter().any(|&ki| ki >= g.len()) {
         panic!("kset out of range");
@@ -127,32 +130,5 @@ where
         other.for_each(|x| {
             self.remove(x.deref());
         });
-    }
-}
-
-#[derive(PartialEq, Eq, Clone, Copy, Debug)]
-pub enum Plane {
-    XY,
-    YZ,
-    ZX,
-}
-
-impl FromPrimitive for Plane {
-    fn from_i64(n: i64) -> Option<Self> {
-        match n {
-            0 => Some(Plane::XY),
-            1 => Some(Plane::YZ),
-            2 => Some(Plane::ZX),
-            _ => None,
-        }
-    }
-
-    fn from_u64(n: u64) -> Option<Self> {
-        match n {
-            0 => Some(Plane::XY),
-            1 => Some(Plane::YZ),
-            2 => Some(Plane::ZX),
-            _ => None,
-        }
     }
 }

@@ -9,9 +9,36 @@ use num_traits::cast::FromPrimitive;
 use pyo3::prelude::*;
 
 use crate::{
-    common::{Graph, InPlaceSetOp, Layer, Plane},
+    common::{Graph, InPlaceSetOp, Layer},
     gf2_linalg::GF2Solver,
 };
+
+#[derive(PartialEq, Eq, Clone, Copy, Debug)]
+enum Plane {
+    XY,
+    YZ,
+    ZX,
+}
+
+impl FromPrimitive for Plane {
+    fn from_i64(n: i64) -> Option<Self> {
+        match n {
+            0 => Some(Plane::XY),
+            1 => Some(Plane::YZ),
+            2 => Some(Plane::ZX),
+            _ => None,
+        }
+    }
+
+    fn from_u64(n: u64) -> Option<Self> {
+        match n {
+            0 => Some(Plane::XY),
+            1 => Some(Plane::YZ),
+            2 => Some(Plane::ZX),
+            _ => None,
+        }
+    }
+}
 
 // Introduced only for internal use
 type InternalPlanes = hashbrown::HashMap<usize, u8>;
