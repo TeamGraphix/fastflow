@@ -78,7 +78,7 @@ def find(
     oset_ = {v2i[v] for v in oset}
     plane_: dict[int, _Plane] = {v2i[k]: v.value for k, v in plane.items() if k not in oset}
     if len(plane_) != len(plane):
-        warnings.warn("Ignoring plane[v] where v in oset", stacklevel=1)
+        warnings.warn("Ignoring plane[v] where v in oset.", stacklevel=1)
     try:
         ret_ = _find_validated(g_, iset_, oset_, plane_)
     except ValidationError as e:
