@@ -7,23 +7,6 @@ use crate::common::{self, Graph, InPlaceSetOp, Layer, Nodes};
 
 type Flow = hashbrown::HashMap<usize, usize>;
 
-/// Checks if the domain of `f` is in V\O and the codomain is in V\I.
-fn check_domain(f: &Flow, vset: &Nodes, iset: &Nodes, oset: &Nodes) -> anyhow::Result<()> {
-    let icset = vset - iset;
-    let ocset = vset - oset;
-    for (&i, &fi) in f.iter() {
-        if !ocset.contains(&i) {
-            let err = anyhow::anyhow!("domain check failed").context(format!("{i} not in V\\O"));
-            return Err(err);
-        }
-        if !icset.contains(&fi) {
-            let err = anyhow::anyhow!("domain check failed").context(format!("{fi} not in V\\I"));
-            return Err(err);
-        }
-    }
-    Ok(())
-}
-
 /// Checks if the properties of the causal flow are satisfied.
 fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     for (&i, &fi) in f.iter() {
@@ -108,7 +91,7 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
     if oset == vset {
         // TODO: Uncomment once ready
         // if cfg!(debug_assertions) {
-        check_domain(&f, &vset, &iset, &oset_orig).unwrap();
+        common::check_domain(f.iter(), &vset, &iset, &oset_orig).unwrap();
         common::check_initial(&layer, &oset_orig).unwrap();
         check_definition(&f, &layer, &g).unwrap();
         // }

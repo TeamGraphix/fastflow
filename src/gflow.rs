@@ -1,5 +1,7 @@
 //! Maximally-delayed generalized flow algorithm.
 
+use std::iter;
+
 use crate::common::{self, Nodes, OrderedNodes};
 use fixedbitset::FixedBitSet;
 use hashbrown;
@@ -15,25 +17,6 @@ use crate::{
 type InternalPlanes = hashbrown::HashMap<usize, u8>;
 type Planes = hashbrown::HashMap<usize, Plane>;
 type GFlow = hashbrown::HashMap<usize, Nodes>;
-
-/// Checks if the domain of `f` is in V\O and the codomain is in V\I.
-fn check_domain(f: &GFlow, vset: &Nodes, iset: &Nodes, oset: &Nodes) -> anyhow::Result<()> {
-    let icset = vset - iset;
-    let ocset = vset - oset;
-    for &i in f.keys() {
-        if !ocset.contains(&i) {
-            let err = anyhow::anyhow!("domain check failed").context(format!("{i} not in V\\O"));
-            return Err(err);
-        }
-    }
-    for &fij in f.values().flatten() {
-        if !icset.contains(&fij) {
-            let err = anyhow::anyhow!("domain check failed").context(format!("{fij} not in V\\I"));
-            return Err(err);
-        }
-    }
-    Ok(())
-}
 
 /// Checks if the properties of the generalized flow are satisfied.
 fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, plane: &Planes) -> anyhow::Result<()> {
@@ -219,7 +202,10 @@ pub fn find(
     if oset == vset {
         // TODO: Uncomment once ready
         // if cfg!(debug_assertions) {
-        check_domain(&f, &vset, &iset, &oset_orig).unwrap();
+        let f_flatiter = f
+            .iter()
+            .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
+        common::check_domain(f_flatiter, &vset, &iset, &oset_orig).unwrap();
         common::check_initial(&layer, &oset_orig).unwrap();
         check_definition(&f, &layer, &g, &plane).unwrap();
         // }

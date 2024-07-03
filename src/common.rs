@@ -30,6 +30,32 @@ pub fn check_initial(layer: &Layer, oset: &Nodes) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Checks if the domain of `f` is in V\O and the codomain is in V\I.
+///
+/// # Note
+///
+/// - Accepts `impl Iterator<Item = (&usize, &usize)>` to reuse it for flow, gflow, and pflow.
+pub fn check_domain<'a, 'b>(
+    f_flatiter: impl Iterator<Item = (&'a usize, &'b usize)>,
+    vset: &Nodes,
+    iset: &Nodes,
+    oset: &Nodes,
+) -> anyhow::Result<()> {
+    let icset = vset - iset;
+    let ocset = vset - oset;
+    for (&i, &fi) in f_flatiter {
+        if !ocset.contains(&i) {
+            let err = anyhow::anyhow!("domain check failed").context(format!("{i} not in V\\O"));
+            return Err(err);
+        }
+        if !icset.contains(&fi) {
+            let err = anyhow::anyhow!("domain check failed").context(format!("{fi} not in V\\I"));
+            return Err(err);
+        }
+    }
+    Ok(())
+}
+
 /// Computes the odd neighbors of the vertices in `kset`.
 pub fn odd_neighbors(g: &Graph, kset: &Nodes) -> Nodes {
     if kset.iter().any(|&ki| ki >= g.len()) {
