@@ -2,11 +2,13 @@
 //!
 //! From the Python side, bindings are visible as `fastflow._impl.XXX`.
 
-use pyo3::prelude::*;
 pub mod common;
 pub mod flow;
 pub mod gf2_linalg;
 pub mod gflow;
+pub mod pflow;
+
+use pyo3::prelude::*;
 
 // MEMO: Data verification is done in the Python layer
 
