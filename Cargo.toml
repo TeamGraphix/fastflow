@@ -20,6 +20,7 @@ anyhow = "1.0"
 fixedbitset = "0.5"
 hashbrown = "0.14"
 itertools = "0.13"
+num-derive = "0.4"
 num-traits = "0.2"
 pyo3 = { version = "0.21", features = ["abi3-py38", "hashbrown"] }
 
