@@ -7,6 +7,7 @@ pub mod flow;
 pub mod gf2_linalg;
 pub mod gflow;
 pub mod pflow;
+pub mod validate;
 
 use pyo3::prelude::*;
 
