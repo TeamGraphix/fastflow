@@ -66,8 +66,11 @@ def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> N
     Raises
     ------
     ValueError
-        If the graph has self-loops or iset/oset are not subsets of the vertices.
+        If the graph is empty, has self-loops, or iset/oset are not subsets of the vertices.
     """
+    if len(g) == 0:
+        msg = "Graph is empty."
+        raise ValueError(msg)
     # BUG: Incorrect annotation
     if nx.number_of_selfloops(g) > 0:  # type: ignore[arg-type]
         msg = "Self-loop detected."
