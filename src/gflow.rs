@@ -7,6 +7,7 @@ use crate::validate;
 use fixedbitset::FixedBitSet;
 use hashbrown;
 use num_derive::FromPrimitive;
+use num_enum::IntoPrimitive;
 use num_traits::cast::FromPrimitive;
 use pyo3::prelude::*;
 
@@ -15,7 +16,8 @@ use crate::{
     gf2_linalg::GF2Solver,
 };
 
-#[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive)]
+#[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive, IntoPrimitive)]
+#[repr(u8)]
 enum Plane {
     XY = 0,
     YZ = 1,
