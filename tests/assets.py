@@ -76,33 +76,33 @@ CASE3 = FlowTestCase(
     GFlowResult({1: {5, 6}, 2: {4, 5, 6}, 3: {4, 6}}, {1: 1, 2: 1, 3: 1, 4: 0, 5: 0, 6: 0}),
 )
 
-
-# 1 - 3
-#  \ /
-#   X
-#  / \
-# 2 - 4
-CASE4 = FlowTestCase(
-    nx.Graph([(1, 3), (1, 4), (2, 3), (2, 4)]),
-    {1, 2},
-    {3, 4},
-    None,
-    None,
-    None,
-)
-
 #   0 - 1
 #  /|   |
 # 4 |   |
 #  \|   |
 #   2 - 5 - 3
-CASE5 = FlowTestCase(
+CASE4 = FlowTestCase(
     nx.Graph([(0, 1), (0, 2), (0, 4), (1, 5), (2, 4), (2, 5), (3, 5)]),
     {0, 1},
     {4, 5},
     {0: Plane.XY, 1: Plane.XY, 2: Plane.ZX, 3: Plane.YZ},
     None,
     GFlowResult({0: {2}, 1: {5}, 2: {2, 4}, 3: {3}}, {0: 2, 1: 2, 2: 1, 3: 1, 4: 0, 5: 0}),
+)
+
+
+# 1 - 3
+#  \ /
+#   X
+#  / \
+# 2 - 4
+CASE5 = FlowTestCase(
+    nx.Graph([(1, 3), (1, 4), (2, 3), (2, 4)]),
+    {1, 2},
+    {3, 4},
+    None,
+    None,
+    None,
 )
 
 CASES = [CASE0, CASE1, CASE2, CASE3, CASE4, CASE5]
