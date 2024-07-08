@@ -104,3 +104,80 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         None
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_utils::{self, TestCase};
+
+    #[test]
+    fn test_find_case0() {
+        let TestCase { g, iset, oset } = test_utils::CASE0.get_or_init(test_utils::case0).clone();
+        let flen = g.len() - oset.len();
+        let (f, layer) = find(g, iset, oset).unwrap();
+        assert_eq!(f.len(), flen);
+        assert_eq!(layer, vec![0, 0]);
+    }
+
+    #[test]
+    fn test_find_case1() {
+        let TestCase { g, iset, oset } = test_utils::CASE1.get_or_init(test_utils::case1).clone();
+        let flen = g.len() - oset.len();
+        let (f, layer) = find(g, iset, oset).unwrap();
+        assert_eq!(f.len(), flen);
+        assert_eq!(f[&0], 1);
+        assert_eq!(f[&1], 2);
+        assert_eq!(f[&2], 3);
+        assert_eq!(f[&3], 4);
+        assert_eq!(layer, vec![4, 3, 2, 1, 0]);
+    }
+
+    #[test]
+    fn test_find_case2() {
+        let TestCase { g, iset, oset } = test_utils::CASE2.get_or_init(test_utils::case2).clone();
+        let flen = g.len() - oset.len();
+        let (f, layer) = find(g, iset, oset).unwrap();
+        assert_eq!(f.len(), flen);
+        assert_eq!(f[&0], 2);
+        assert_eq!(f[&1], 3);
+        assert_eq!(f[&2], 4);
+        assert_eq!(f[&3], 5);
+        assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
+    }
+
+    #[test]
+    fn test_find_case3() {
+        let TestCase { g, iset, oset } = test_utils::CASE3.get_or_init(test_utils::case3).clone();
+        assert!(find(g, iset, oset).is_none());
+    }
+
+    #[test]
+    fn test_find_case4() {
+        let TestCase { g, iset, oset } = test_utils::CASE4.get_or_init(test_utils::case4).clone();
+        assert!(find(g, iset, oset).is_none());
+    }
+
+    #[test]
+    fn test_find_case5() {
+        let TestCase { g, iset, oset } = test_utils::CASE5.get_or_init(test_utils::case5).clone();
+        assert!(find(g, iset, oset).is_none());
+    }
+
+    #[test]
+    fn test_find_case6() {
+        let TestCase { g, iset, oset } = test_utils::CASE6.get_or_init(test_utils::case6).clone();
+        assert!(find(g, iset, oset).is_none());
+    }
+
+    #[test]
+    fn test_find_case7() {
+        let TestCase { g, iset, oset } = test_utils::CASE7.get_or_init(test_utils::case7).clone();
+        assert!(find(g, iset, oset).is_none());
+    }
+
+    #[test]
+    fn test_find_case8() {
+        let TestCase { g, iset, oset } = test_utils::CASE8.get_or_init(test_utils::case8).clone();
+        assert!(find(g, iset, oset).is_none());
+    }
+}
