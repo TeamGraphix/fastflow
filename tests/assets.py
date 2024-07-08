@@ -5,7 +5,7 @@ from __future__ import annotations
 import dataclasses
 
 import networkx as nx
-from fastflow.common import FlowResult, GFlowResult, Plane
+from fastflow.common import FlowResult, GFlowResult, PauliPlane, Plane
 
 
 @dataclasses.dataclass(frozen=True)
@@ -16,8 +16,10 @@ class FlowTestCase:
     iset: set[int]
     oset: set[int]
     plane: dict[int, Plane] | None
+    pplane: dict[int, PauliPlane] | None
     flow: FlowResult[int] | None
     gflow: GFlowResult[int] | None
+    pflow: GFlowResult[int] | None
 
 
 # MEMO: DO NOT modify while testing
@@ -29,7 +31,9 @@ CASE0 = FlowTestCase(
     {1, 2},
     {1, 2},
     None,
+    None,
     FlowResult({}, {1: 0, 2: 0}),
+    GFlowResult({}, {1: 0, 2: 0}),
     GFlowResult({}, {1: 0, 2: 0}),
 )
 
@@ -39,7 +43,9 @@ CASE1 = FlowTestCase(
     {1},
     {5},
     None,
+    None,
     FlowResult({1: 2, 2: 3, 3: 4, 4: 5}, {1: 4, 2: 3, 3: 2, 4: 1, 5: 0}),
+    GFlowResult({1: {2}, 2: {3}, 3: {4}, 4: {5}}, {1: 4, 2: 3, 3: 2, 4: 1, 5: 0}),
     GFlowResult({1: {2}, 2: {3}, 3: {4}, 4: {5}}, {1: 4, 2: 3, 3: 2, 4: 1, 5: 0}),
 )
 
@@ -52,7 +58,9 @@ CASE2 = FlowTestCase(
     {1, 2},
     {5, 6},
     None,
+    None,
     FlowResult({3: 5, 4: 6, 1: 3, 2: 4}, {1: 2, 2: 2, 3: 1, 4: 1, 5: 0, 6: 0}),
+    GFlowResult({3: {5}, 4: {6}, 1: {3}, 2: {4}}, {1: 2, 2: 2, 3: 1, 4: 1, 5: 0, 6: 0}),
     GFlowResult({3: {5}, 4: {6}, 1: {3}, 2: {4}}, {1: 2, 2: 2, 3: 1, 4: 1, 5: 0, 6: 0}),
 )
 
@@ -73,6 +81,8 @@ CASE3 = FlowTestCase(
     {4, 5, 6},
     None,
     None,
+    None,
+    GFlowResult({1: {5, 6}, 2: {4, 5, 6}, 3: {4, 6}}, {1: 1, 2: 1, 3: 1, 4: 0, 5: 0, 6: 0}),
     GFlowResult({1: {5, 6}, 2: {4, 5, 6}, 3: {4, 6}}, {1: 1, 2: 1, 3: 1, 4: 0, 5: 0, 6: 0}),
 )
 
@@ -87,6 +97,8 @@ CASE4 = FlowTestCase(
     {4, 5},
     {0: Plane.XY, 1: Plane.XY, 2: Plane.ZX, 3: Plane.YZ},
     None,
+    None,
+    GFlowResult({0: {2}, 1: {5}, 2: {2, 4}, 3: {3}}, {0: 2, 1: 2, 2: 1, 3: 1, 4: 0, 5: 0}),
     GFlowResult({0: {2}, 1: {5}, 2: {2, 4}, 3: {3}}, {0: 2, 1: 2, 2: 1, 3: 1, 4: 0, 5: 0}),
 )
 
@@ -100,6 +112,8 @@ CASE5 = FlowTestCase(
     nx.Graph([(1, 3), (1, 4), (2, 3), (2, 4)]),
     {1, 2},
     {3, 4},
+    None,
+    None,
     None,
     None,
     None,
