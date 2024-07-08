@@ -28,5 +28,9 @@ fn entrypoint(m: &Bound<'_, PyModule>) -> PyResult<()> {
     let mod_gflow = PyModule::new_bound(m.py(), "gflow")?;
     mod_gflow.add_function(wrap_pyfunction!(gflow::find, &mod_gflow)?)?;
     m.add_submodule(&mod_gflow)?;
+    // fastflow._impl.pflow
+    let mod_pflow = PyModule::new_bound(m.py(), "pflow")?;
+    mod_pflow.add_function(wrap_pyfunction!(pflow::find, &mod_pflow)?)?;
+    m.add_submodule(&mod_pflow)?;
     Ok(())
 }

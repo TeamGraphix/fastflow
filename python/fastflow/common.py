@@ -23,7 +23,20 @@ class Plane(Enum):
     ZX = 2
 
 
+class PauliPlane(Enum):
+    """Measurement planes for Pauli flow."""
+
+    # DO NOT change the associated values!
+    XY = 0
+    YZ = 1
+    ZX = 2
+    X = 3
+    Y = 4
+    Z = 5
+
+
 _Plane = Literal[0, 1, 2]
+_PPlane = Literal[0, 1, 2, 3, 4, 5]
 
 
 @dataclasses.dataclass(frozen=True)
