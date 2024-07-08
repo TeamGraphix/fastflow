@@ -132,3 +132,28 @@ where
         });
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::nodeset;
+    use crate::test_utils::{self, TestCase, CASE3};
+
+    use super::*;
+
+    #[test]
+    fn test_odd_neighbors() {
+        let TestCase { g, .. } = CASE3.get_or_init(test_utils::case3);
+        for i in 0..g.len() {
+            assert_eq!(odd_neighbors(g, &nodeset![i]), g[i]);
+        }
+        assert_eq!(odd_neighbors(g, &nodeset![0, 3]), nodeset![0, 1, 3, 5]);
+        assert_eq!(odd_neighbors(g, &nodeset![1, 4]), nodeset![1, 2, 3, 4, 5]);
+        assert_eq!(odd_neighbors(g, &nodeset![2, 5]), nodeset![0, 1, 2, 4, 5]);
+        assert_eq!(odd_neighbors(g, &nodeset![0, 1, 2]), nodeset![5]);
+        assert_eq!(odd_neighbors(g, &nodeset![3, 4, 5]), nodeset![1]);
+        assert_eq!(
+            odd_neighbors(g, &nodeset![0, 1, 2, 3, 4, 5]),
+            nodeset![1, 5]
+        );
+    }
+}
