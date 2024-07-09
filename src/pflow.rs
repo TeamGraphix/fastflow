@@ -10,6 +10,7 @@ use num_enum::IntoPrimitive;
 use num_traits::cast::FromPrimitive;
 use pyo3::prelude::*;
 use std::iter;
+use std::ops::{Deref, DerefMut};
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive, IntoPrimitive)]
 #[repr(u8)]
@@ -173,6 +174,76 @@ macro_rules! matching_nodes {
     };
 }
 
+#[derive(Debug)]
+struct ScopedInclude<'a> {
+    target: &'a mut OrderedNodes,
+    u: Option<usize>,
+}
+
+impl<'a> ScopedInclude<'a> {
+    pub fn new(target: &'a mut OrderedNodes, u: usize) -> Self {
+        let u = if target.insert(u) { Some(u) } else { None };
+        Self { target, u }
+    }
+}
+
+impl Deref for ScopedInclude<'_> {
+    type Target = OrderedNodes;
+
+    fn deref(&self) -> &Self::Target {
+        self.target
+    }
+}
+
+impl DerefMut for ScopedInclude<'_> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.target
+    }
+}
+
+impl Drop for ScopedInclude<'_> {
+    fn drop(&mut self) {
+        if let Some(u) = self.u {
+            self.target.remove(&u);
+        }
+    }
+}
+
+#[derive(Debug)]
+struct ScopedExclude<'a> {
+    target: &'a mut OrderedNodes,
+    u: Option<usize>,
+}
+
+impl<'a> ScopedExclude<'a> {
+    pub fn new(target: &'a mut OrderedNodes, u: usize) -> Self {
+        let u = if target.remove(&u) { Some(u) } else { None };
+        Self { target, u }
+    }
+}
+
+impl Deref for ScopedExclude<'_> {
+    type Target = OrderedNodes;
+
+    fn deref(&self) -> &Self::Target {
+        self.target
+    }
+}
+
+impl DerefMut for ScopedExclude<'_> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.target
+    }
+}
+
+impl Drop for ScopedExclude<'_> {
+    fn drop(&mut self) {
+        if let Some(u) = self.u {
+            self.target.insert(u);
+        }
+    }
+}
+
 #[pyfunction]
 pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Option<(PFlow, Layer)> {
     let pplane = pplane
@@ -199,28 +270,10 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
     let mut tab = Vec::new();
     for l in 0_usize.. {
         cset.clear();
-        let mut cleanup = None;
         for &u in &ocset {
-            // Perform cleanup
-            if let Some((uprev, p0, p1, p2)) = cleanup {
-                if p0 {
-                    rowset_upper.remove(&uprev);
-                }
-                if p1 {
-                    rowset_lower.insert(uprev);
-                }
-                if p2 {
-                    debug_assert!(!iset.contains(&uprev));
-                    colset.insert(uprev);
-                }
-            }
-            // Exclude u and prepare for cleanup
-            cleanup = Some((
-                u,
-                rowset_upper.insert(u),
-                rowset_lower.remove(&u),
-                colset.remove(&u),
-            ));
+            let rowset_upper = ScopedInclude::new(&mut rowset_upper, u);
+            let rowset_lower = ScopedExclude::new(&mut rowset_lower, u);
+            let colset = ScopedExclude::new(&mut colset, u);
             let nrows_upper = rowset_upper.len();
             let nrows_lower = rowset_lower.len();
             let ncols = colset.len();
