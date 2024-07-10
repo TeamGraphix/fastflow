@@ -84,13 +84,6 @@ fn init_work_lower_co(
     }
 }
 
-fn clear_work_rhs(work: &mut [FixedBitSet]) {
-    for row in work.iter_mut() {
-        let width = row.len();
-        row.remove_range(width - 1..width);
-    }
-}
-
 type BranchKind = u8;
 const BRANCH_XY: BranchKind = 0;
 const BRANCH_YZ: BranchKind = 1;
@@ -156,6 +149,21 @@ fn init_work_lower_rhs<const K: BranchKind>(
             work[r].toggle(c);
         }
     }
+}
+
+fn init_work<const K: BranchKind>(
+    work: &mut [FixedBitSet],
+    u: usize,
+    g: &Graph,
+    rowset_upper: &OrderedNodes,
+    rowset_lower: &OrderedNodes,
+    colset: &OrderedNodes,
+) {
+    let nrows_upper = rowset_upper.len();
+    init_work_upper_co(&mut work[..nrows_upper], g, rowset_upper, colset);
+    init_work_lower_co(&mut work[nrows_upper..], g, rowset_lower, colset);
+    init_work_upper_rhs::<K>(&mut work[..nrows_upper], u, g, rowset_upper, colset);
+    init_work_lower_rhs::<K>(&mut work[nrows_upper..], u, g, rowset_lower, colset);
 }
 
 fn decode_solution<const K: BranchKind>(u: usize, x: &FixedBitSet, tab: &[usize]) -> Nodes {
@@ -292,9 +300,6 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
             work.resize_with(nrows_upper + nrows_lower, || {
                 FixedBitSet::with_capacity(ncols + 1)
             });
-            common::zerofill(&mut work, ncols + 1);
-            init_work_upper_co(&mut work[..nrows_upper], &g, &rowset_upper, &colset);
-            init_work_lower_co(&mut work[nrows_upper..], &g, &rowset_lower, &colset);
             tab.clear();
             tab.extend(colset.iter().copied());
             let mut x = FixedBitSet::with_capacity(ncols);
@@ -303,21 +308,8 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
             if !done && matches!(ppu, PPlane::XY | PPlane::X | PPlane::Y) {
                 log::debug!("===XY branch===");
                 x.clear();
-                clear_work_rhs(&mut work);
-                init_work_upper_rhs::<BRANCH_XY>(
-                    &mut work[..nrows_upper],
-                    u,
-                    &g,
-                    &rowset_upper,
-                    &colset,
-                );
-                init_work_lower_rhs::<BRANCH_XY>(
-                    &mut work[nrows_upper..],
-                    u,
-                    &g,
-                    &rowset_lower,
-                    &colset,
-                );
+                common::zerofill(&mut work, ncols + 1);
+                init_work::<BRANCH_XY>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
                 if log::log_enabled!(Level::Debug) {
                     log::debug!("work (upper):");
                     for row in gf2_linalg::log_work(&work[..nrows_upper], ncols) {
@@ -341,21 +333,8 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
             if !done && matches!(ppu, PPlane::YZ | PPlane::Y | PPlane::Z) {
                 log::debug!("===YZ branch===");
                 x.clear();
-                clear_work_rhs(&mut work);
-                init_work_upper_rhs::<BRANCH_YZ>(
-                    &mut work[..nrows_upper],
-                    u,
-                    &g,
-                    &rowset_upper,
-                    &colset,
-                );
-                init_work_lower_rhs::<BRANCH_YZ>(
-                    &mut work[nrows_upper..],
-                    u,
-                    &g,
-                    &rowset_lower,
-                    &colset,
-                );
+                common::zerofill(&mut work, ncols + 1);
+                init_work::<BRANCH_YZ>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
                 if log::log_enabled!(Level::Debug) {
                     log::debug!("work (upper):");
                     for row in gf2_linalg::log_work(&work[..nrows_upper], ncols) {
@@ -379,21 +358,8 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
             if !done && matches!(ppu, PPlane::ZX | PPlane::Z | PPlane::X) {
                 log::debug!("===ZX branch===");
                 x.clear();
-                clear_work_rhs(&mut work);
-                init_work_upper_rhs::<BRANCH_ZX>(
-                    &mut work[..nrows_upper],
-                    u,
-                    &g,
-                    &rowset_upper,
-                    &colset,
-                );
-                init_work_lower_rhs::<BRANCH_ZX>(
-                    &mut work[nrows_upper..],
-                    u,
-                    &g,
-                    &rowset_lower,
-                    &colset,
-                );
+                common::zerofill(&mut work, ncols + 1);
+                init_work::<BRANCH_ZX>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
                 if log::log_enabled!(Level::Debug) {
                     log::debug!("work (upper):");
                     for row in gf2_linalg::log_work(&work[..nrows_upper], ncols) {
