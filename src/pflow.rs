@@ -29,6 +29,87 @@ type InternalPPlanes = hashbrown::HashMap<usize, u8>;
 type PPlanes = hashbrown::HashMap<usize, PPlane>;
 type PFlow = hashbrown::HashMap<usize, Nodes>;
 
+fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplane: &PPlanes) -> anyhow::Result<()> {
+    anyhow::ensure!(
+        f.len() == pplane.len(),
+        "f and pplane must have the same codomain"
+    );
+    for &i in f.keys() {
+        let fi = &f[&i];
+        let pi = pplane[&i];
+        for &fij in fi {
+            match (i != fij, layer[i] <= layer[fij]) {
+                (true, true) if !matches!(pplane[&fij], PPlane::X | PPlane::Y) => {
+                    let err = anyhow::anyhow!("layer check failed")
+                        .context(format!("neither {i} == {fij} nor {i} -> {fij}: fi"));
+                    return Err(err);
+                }
+                (false, false) => unreachable!("layer[i] == layer[i]"),
+                _ => {}
+            }
+        }
+        let odd_fi = common::odd_neighbors(g, fi);
+        for &j in &odd_fi {
+            match (i != j, layer[i] <= layer[j]) {
+                (true, true) if !matches!(pplane[&j], PPlane::Y | PPlane::Z) => {
+                    let err = anyhow::anyhow!("layer check failed").context(format!(
+                        "neither {i} == {j} nor {i} -> {j}: odd_neighbors(g, fi)"
+                    ));
+                    return Err(err);
+                }
+                (false, false) => unreachable!("layer[i] == layer[i]"),
+                _ => {}
+            }
+        }
+        for &j in fi.symmetric_difference(&odd_fi) {
+            if pplane.get(&j) == Some(&PPlane::Y) && i != j && layer[i] <= layer[j] {
+                let err = anyhow::anyhow!("Y correction check failed")
+                    .context(format!("{j} must be corrected by f({i}) xor Odd(f({i}))"));
+                return Err(err);
+            }
+        }
+        let in_info = (fi.contains(&i), odd_fi.contains(&i));
+        match pi {
+            PPlane::XY if in_info != (false, true) => {
+                let err = anyhow::anyhow!("pplane check failed").context(format!(
+                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (false, true): XY"
+                ));
+                return Err(err);
+            }
+            PPlane::YZ if in_info != (true, false) => {
+                let err = anyhow::anyhow!("pplane check failed").context(format!(
+                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (true, false): YZ"
+                ));
+                return Err(err);
+            }
+            PPlane::ZX if in_info != (true, true) => {
+                let err = anyhow::anyhow!("pplane check failed").context(format!(
+                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (true, true): ZX"
+                ));
+                return Err(err);
+            }
+            PPlane::X if !in_info.1 => {
+                let err = anyhow::anyhow!("pplane check failed")
+                    .context(format!("{i} must be in Odd(f({i})): X"));
+                return Err(err);
+            }
+            PPlane::Y if !(in_info.0 ^ in_info.1) => {
+                let err = anyhow::anyhow!("pplane check failed").context(format!(
+                    "{i} must be in either f({i}) or Odd(f({i})), not both: Y"
+                ));
+                return Err(err);
+            }
+            PPlane::Z if !in_info.0 => {
+                let err = anyhow::anyhow!("pplane check failed")
+                    .context(format!("{i} must be in f({i}): Z"));
+                return Err(err);
+            }
+            _ => {}
+        }
+    }
+    Ok(())
+}
+
 fn init_work_upper_co(
     work: &mut [FixedBitSet],
     g: &Graph,
@@ -398,6 +479,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
             .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
         common::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
         common::check_initial(&layer, &oset, false).unwrap();
+        check_definition(&f, &layer, &g, &pplane).unwrap();
         // }
         log::debug!("pflow found");
         Some((f, layer))
