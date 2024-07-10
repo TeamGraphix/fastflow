@@ -323,6 +323,21 @@ impl Drop for ScopedExclude<'_> {
     }
 }
 
+fn log_work(work_upper: &[FixedBitSet], work_lower: &[FixedBitSet]) {
+    if !log::log_enabled!(Level::Debug) {
+        return;
+    }
+    let ncols = work_upper[0].len() - 1;
+    log::debug!("work (upper):");
+    for row in gf2_linalg::format_work(work_upper, ncols) {
+        log::debug!("  {}", row);
+    }
+    log::debug!("work (lower):");
+    for row in gf2_linalg::format_work(work_lower, ncols) {
+        log::debug!("  {}", row);
+    }
+}
+
 #[pyfunction]
 /// Finds the maximally-delayed Pauli flow.
 pub fn find(
@@ -386,16 +401,7 @@ pub fn find(
                 x.clear();
                 common::zerofill(&mut work, ncols + 1);
                 init_work::<BRANCH_XY>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
-                if log::log_enabled!(Level::Debug) {
-                    log::debug!("work (upper):");
-                    for row in gf2_linalg::format_work(&work[..nrows_upper], ncols) {
-                        log::debug!("  {}", row);
-                    }
-                    log::debug!("work (lower):");
-                    for row in gf2_linalg::format_work(&work[nrows_upper..], ncols) {
-                        log::debug!("  {}", row);
-                    }
-                }
+                log_work(&work[..nrows_upper], &work[nrows_upper..]);
                 let mut solver = GF2Solver::attach(work, 1);
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (XY)");
@@ -411,16 +417,7 @@ pub fn find(
                 x.clear();
                 common::zerofill(&mut work, ncols + 1);
                 init_work::<BRANCH_YZ>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
-                if log::log_enabled!(Level::Debug) {
-                    log::debug!("work (upper):");
-                    for row in gf2_linalg::format_work(&work[..nrows_upper], ncols) {
-                        log::debug!("  {}", row);
-                    }
-                    log::debug!("work (lower):");
-                    for row in gf2_linalg::format_work(&work[nrows_upper..], ncols) {
-                        log::debug!("  {}", row);
-                    }
-                }
+                log_work(&work[..nrows_upper], &work[nrows_upper..]);
                 let mut solver = GF2Solver::attach(work, 1);
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (YZ)");
@@ -436,16 +433,7 @@ pub fn find(
                 x.clear();
                 common::zerofill(&mut work, ncols + 1);
                 init_work::<BRANCH_ZX>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
-                if log::log_enabled!(Level::Debug) {
-                    log::debug!("work (upper):");
-                    for row in gf2_linalg::format_work(&work[..nrows_upper], ncols) {
-                        log::debug!("  {}", row);
-                    }
-                    log::debug!("work (lower):");
-                    for row in gf2_linalg::format_work(&work[nrows_upper..], ncols) {
-                        log::debug!("  {}", row);
-                    }
-                }
+                log_work(&work[..nrows_upper], &work[nrows_upper..]);
                 let mut solver = GF2Solver::attach(work, 1);
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (ZX)");
