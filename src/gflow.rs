@@ -58,18 +58,21 @@ fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, plane: &Planes) -> anyh
         let in_info = (fi.contains(&i), odd_fi.contains(&i));
         match pi {
             Plane::XY if in_info != (false, true) => {
-                let err = anyhow::anyhow!("plane check failed")
-                    .context(format!("must be {i} not in f({i}) and in Odd(f({i})): XY"));
+                let err = anyhow::anyhow!("plane check failed").context(format!(
+                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (false, true): XY"
+                ));
                 return Err(err);
             }
             Plane::YZ if in_info != (true, false) => {
-                let err = anyhow::anyhow!("plane check failed")
-                    .context(format!("must be {i} in f({i}) and not in Odd(f({i})): YZ"));
+                let err = anyhow::anyhow!("plane check failed").context(format!(
+                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (true, false): YZ"
+                ));
                 return Err(err);
             }
             Plane::ZX if in_info != (true, true) => {
-                let err = anyhow::anyhow!("plane check failed")
-                    .context(format!("must be {i} in f({i}) and in Odd(f({i})): ZX"));
+                let err = anyhow::anyhow!("plane check failed").context(format!(
+                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (true, true): ZX"
+                ));
                 return Err(err);
             }
             _ => {}
