@@ -96,7 +96,7 @@ CASE4 = FlowTestCase(
     {0, 1},
     {4, 5},
     {0: Plane.XY, 1: Plane.XY, 2: Plane.ZX, 3: Plane.YZ},
-    None,
+    {0: PauliPlane.XY, 1: PauliPlane.XY, 2: PauliPlane.ZX, 3: PauliPlane.YZ},
     None,
     GFlowResult({0: {2}, 1: {5}, 2: {2, 4}, 3: {3}}, {0: 2, 1: 2, 2: 1, 3: 1, 4: 0, 5: 0}),
     GFlowResult({0: {2}, 1: {5}, 2: {2, 4}, 3: {3}}, {0: 2, 1: 2, 2: 1, 3: 1, 4: 0, 5: 0}),
