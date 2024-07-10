@@ -1,19 +1,22 @@
-//! Common functionalities for the flow/gflow algorithms.
+//! Common functionalities.
 
 use anyhow;
 use fixedbitset::FixedBitSet;
 use hashbrown;
 use std::{collections::BTreeSet, hash::Hash, ops::Deref};
 
-/// Set of nodes.
 pub type Nodes = hashbrown::HashSet<usize>;
-/// Ordered set of nodes.
 pub type OrderedNodes = BTreeSet<usize>;
-/// Undirected graph represented as an adjacency list.
 pub type Graph = Vec<Nodes>;
-/// Numbered representation of the associated partial order of flow/gflow.
 pub type Layer = Vec<usize>;
 
+/// Checks if the layer-zero nodes are correctly chosen.
+///
+/// # Arguments
+///
+/// - `layer`: The layer.
+/// - `oset`: The set of output nodes.
+/// - `iff`: If `true`, `layer[u] == 0` "iff" `u` is in `oset`. Otherwise "if".
 pub fn check_initial(layer: &Layer, oset: &Nodes, iff: bool) -> anyhow::Result<()> {
     for (u, &lu) in layer.iter().enumerate() {
         match (oset.contains(&u), lu == 0) {
@@ -35,9 +38,12 @@ pub fn check_initial(layer: &Layer, oset: &Nodes, iff: bool) -> anyhow::Result<(
 
 /// Checks if the domain of `f` is in V\O and the codomain is in V\I.
 ///
-/// # Note
+/// # Arguments
 ///
-/// - Accepts `impl Iterator<Item = (&usize, &usize)>` to reuse it for flow, gflow, and pflow.
+/// - `f_flatiter`: Flow, gflow, or pflow as `impl Iterator<Item = (&usize, &usize)>`.
+/// - `vset`: All nodes.
+/// - `iset`: Input nodes.
+/// - `oset`: Output nodes.
 pub fn check_domain<'a, 'b>(
     f_flatiter: impl Iterator<Item = (&'a usize, &'b usize)>,
     vset: &Nodes,
@@ -63,7 +69,7 @@ pub fn check_domain<'a, 'b>(
 ///
 /// # Note
 ///
-/// - Naively implemented.
+/// - Naive implementation only for post-verification.
 pub fn odd_neighbors(g: &Graph, kset: &Nodes) -> Nodes {
     if kset.iter().any(|&ki| ki >= g.len()) {
         panic!("kset out of range");

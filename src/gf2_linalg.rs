@@ -71,7 +71,7 @@ impl GF2Solver {
         })
     }
 
-    /// Checkes the arguments of `attach`.
+    /// Checks the arguments of `attach`.
     fn attach_check(work: &GF2Matrix, neqs: usize) -> anyhow::Result<()> {
         anyhow::ensure!(neqs > 0, "neqs is zero");
         let rows = work.len();
@@ -86,7 +86,7 @@ impl GF2Solver {
 
     /// Attaches to the existing working storage.
     ///
-    /// This method is useful for achieving zero-copy operations.
+    /// This method is designed for reusing the working storage.
     ///
     /// # Arguments
     ///
@@ -317,6 +317,7 @@ impl GF2Solver {
     }
 }
 
+/// Formats the solver for debugging.
 pub fn log_work(work: &[FixedBitSet], ncols: usize) -> Vec<String> {
     let mut ret = Vec::with_capacity(work.len());
     for row in work.iter() {

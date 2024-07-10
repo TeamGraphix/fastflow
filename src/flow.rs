@@ -10,7 +10,11 @@ use crate::{
 
 type Flow = hashbrown::HashMap<usize, usize>;
 
-/// Checks if the properties of the causal flow are satisfied.
+/// Checks the definition of causal flow.
+///
+/// 1. i -> f(i)
+/// 2. j in neighbors(f(i)) => i == j or i -> j
+/// 3. i in neighbors(f(i))
 fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     for (&i, &fi) in f.iter() {
         if layer[i] <= layer[fi] {
@@ -33,13 +37,13 @@ fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Finds the maximally-delayed causal flow, if any.
+/// Finds the maximally-delayed causal flow.
 ///
 /// # Arguments
 ///
 /// - `g`: The adjacency list of the graph. Must be undirected and without self-loops.
-/// - `iset`: The set of initial nodes. Must be consistent with `g`.
-/// - `oset`: The set of output nodes. Must be consistent with `g`.
+/// - `iset`: The set of initial nodes.
+/// - `oset`: The set of output nodes.
 ///
 /// # Note
 ///
@@ -75,7 +79,6 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
             let u = *checkv.iter().next().expect("one element here");
             log::debug!("f({u}) = {v}");
             f.insert(u, v);
-            // MEMO: Typo in Mahlla's PP (2007)
             log::debug!("layer({u}) = {l}");
             layer[u] = l;
             oset_work.insert(u);
@@ -86,8 +89,6 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         }
         // For all u check[u] -= oset_work
         for &v in &oset_work {
-            // check[u] contains v only if v in g[u]
-            //  => u must be in g[v]
             g[v].iter().for_each(|&u| {
                 check[u].remove(&v);
             });

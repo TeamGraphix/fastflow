@@ -19,18 +19,24 @@ use crate::{
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive, IntoPrimitive)]
 #[repr(u8)]
+/// Measurement plane.
 enum Plane {
     XY = 0,
     YZ = 1,
     ZX = 2,
 }
 
-// Introduced only for internal use
 type InternalPlanes = hashbrown::HashMap<usize, u8>;
 type Planes = hashbrown::HashMap<usize, Plane>;
 type GFlow = hashbrown::HashMap<usize, Nodes>;
 
-/// Checks if the properties of the generalized flow are satisfied.
+/// Checks the definition of gflow.
+///
+/// 1. i -> g(i)
+/// 2. j in odd_neighbors(g(i)) => i == j or i -> j
+/// 3. i not in g(i) and in odd_neighbors(g(i)) if plane(i) == XY
+/// 4. i in g(i) and in odd_neighbors(g(i)) if plane(i) == YZ
+/// 5. i in g(i) and not in odd_neighbors(g(i)) if plane(i) == ZX
 fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> anyhow::Result<()> {
     anyhow::ensure!(
         f.len() == planes.len(),
@@ -130,7 +136,7 @@ fn init_work(
     }
 }
 
-/// Finds the maximally-delayed generalized flow, if any.
+/// Finds the maximally-delayed generalized flow.
 ///
 /// # Arguments
 ///

@@ -15,6 +15,7 @@ use std::ops::{Deref, DerefMut};
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive, IntoPrimitive)]
 #[repr(u8)]
+/// Measurement planes or Pauli index.
 enum PPlane {
     XY = 0,
     YZ = 1,
@@ -24,11 +25,11 @@ enum PPlane {
     Z = 5,
 }
 
-// Introduced only for internal use
 type InternalPPlanes = hashbrown::HashMap<usize, u8>;
 type PPlanes = hashbrown::HashMap<usize, PPlane>;
 type PFlow = hashbrown::HashMap<usize, Nodes>;
 
+/// Checks the definition of Pauli flow.
 fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> anyhow::Result<()> {
     anyhow::ensure!(
         f.len() == pplanes.len(),
@@ -159,14 +160,6 @@ const BRANCH_XY: BranchKind = 0;
 const BRANCH_YZ: BranchKind = 1;
 const BRANCH_ZX: BranchKind = 2;
 
-/// Initializes the right-hand side of the work matrix for the upper part.
-///
-/// # Note
-///
-/// - `K` specifies the branch kind.
-///   - `0`: `XY` branch.
-///   - `1`: `YZ` branch.
-///   - `2`: `ZX` branch.
 fn init_work_upper_rhs<const K: BranchKind>(
     work: &mut [FixedBitSet],
     u: usize,
@@ -221,6 +214,7 @@ fn init_work_lower_rhs<const K: BranchKind>(
     }
 }
 
+/// Initializes working memory for the given branch kind.
 fn init_work<const K: BranchKind>(
     work: &mut [FixedBitSet],
     u: usize,
@@ -254,6 +248,9 @@ macro_rules! matching_nodes {
 }
 
 #[derive(Debug)]
+/// RAII guard for inserting a node into a set.
+///
+/// Inserts `u` on construction and reverts on drop.
 struct ScopedInclude<'a> {
     target: &'a mut OrderedNodes,
     u: Option<usize>,
@@ -289,6 +286,9 @@ impl Drop for ScopedInclude<'_> {
 }
 
 #[derive(Debug)]
+/// RAII guard for deleting a node from a set.
+///
+/// Removes `u` on construction and reverts on drop.
 struct ScopedExclude<'a> {
     target: &'a mut OrderedNodes,
     u: Option<usize>,
@@ -324,6 +324,7 @@ impl Drop for ScopedExclude<'_> {
 }
 
 #[pyfunction]
+/// Finds the maximally-delayed Pauli flow.
 pub fn find(
     g: Graph,
     iset: Nodes,
