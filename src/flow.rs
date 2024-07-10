@@ -100,7 +100,7 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         // TODO: Uncomment once ready
         // if cfg!(debug_assertions) {
         common::check_domain(f.iter(), &vset, &iset, &oset_orig).unwrap();
-        common::check_initial(&layer, &oset_orig).unwrap();
+        common::check_initial(&layer, &oset_orig, true).unwrap();
         check_definition(&f, &layer, &g).unwrap();
         // }
         log::debug!("flow found");

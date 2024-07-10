@@ -230,7 +230,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
             .iter()
             .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
         common::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
-        common::check_initial(&layer, &oset).unwrap();
+        common::check_initial(&layer, &oset, true).unwrap();
         check_definition(&f, &layer, &g, &plane).unwrap();
         // }
         log::debug!("gflow found");

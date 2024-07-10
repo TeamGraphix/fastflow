@@ -14,16 +14,20 @@ pub type Graph = Vec<Nodes>;
 /// Numbered representation of the associated partial order of flow/gflow.
 pub type Layer = Vec<usize>;
 
-/// Checks if `layer[u] == 0` iff `u` is in `oset`.
-pub fn check_initial(layer: &Layer, oset: &Nodes) -> anyhow::Result<()> {
+pub fn check_initial(layer: &Layer, oset: &Nodes, iff: bool) -> anyhow::Result<()> {
     for (u, &lu) in layer.iter().enumerate() {
-        // u in O => layer[u] == 0
-        // u not in O => layer[u] != 0
-        let valid = oset.contains(&u) ^ (lu != 0);
-        if !valid {
-            let err = anyhow::anyhow!("initial check failed")
-                .context(format!("cannot be maximally-delayed due to {u}"));
-            return Err(err);
+        match (oset.contains(&u), lu == 0) {
+            (true, false) => {
+                let err = anyhow::anyhow!("initial check failed")
+                    .context(format!("layer({u}) != 0 && {u} in O"));
+                return Err(err);
+            }
+            (false, true) if iff => {
+                let err = anyhow::anyhow!("initial check failed")
+                    .context(format!("layer({u}) == 0 && {u} not in O"));
+                return Err(err);
+            }
+            _ => {}
         }
     }
     Ok(())

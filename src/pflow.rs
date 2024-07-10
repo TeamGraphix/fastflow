@@ -29,17 +29,6 @@ type InternalPPlanes = hashbrown::HashMap<usize, u8>;
 type PPlanes = hashbrown::HashMap<usize, PPlane>;
 type PFlow = hashbrown::HashMap<usize, Nodes>;
 
-fn check_initial_pflow(layer: &Layer, oset: &Nodes) -> anyhow::Result<()> {
-    for &u in oset {
-        if layer[u] != 0 {
-            let err = anyhow::anyhow!("initial check failed")
-                .context(format!("cannot be maximally-delayed due to {u}"));
-            return Err(err);
-        }
-    }
-    Ok(())
-}
-
 fn init_work_upper_co(
     work: &mut [FixedBitSet],
     g: &Graph,
@@ -408,7 +397,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
             .iter()
             .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
         common::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
-        check_initial_pflow(&layer, &oset).unwrap();
+        common::check_initial(&layer, &oset, false).unwrap();
         // }
         log::debug!("pflow found");
         Some((f, layer))
