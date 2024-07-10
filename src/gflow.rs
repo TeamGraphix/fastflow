@@ -227,6 +227,9 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
         work = solver.detach();
     }
     if ocset.is_empty() {
+        log::debug!("gflow found");
+        log::debug!("gflow: {f:?}");
+        log::debug!("layer: {layer:?}");
         // TODO: Uncomment once ready
         // if cfg!(debug_assertions) {
         let f_flatiter = f
@@ -236,7 +239,6 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
         common::check_initial(&layer, &oset, true).unwrap();
         check_definition(&f, &layer, &g, &plane).unwrap();
         // }
-        log::debug!("gflow found");
         Some((f, layer))
     } else {
         log::debug!("gflow not found");

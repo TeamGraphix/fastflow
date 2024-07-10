@@ -97,13 +97,15 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         cset.union_with(oset_work.intersection(&icset));
     }
     if oset == vset {
+        log::debug!("flow found");
+        log::debug!("flow : {f:?}");
+        log::debug!("layer: {layer:?}");
         // TODO: Uncomment once ready
         // if cfg!(debug_assertions) {
         common::check_domain(f.iter(), &vset, &iset, &oset_orig).unwrap();
         common::check_initial(&layer, &oset_orig, true).unwrap();
         check_definition(&f, &layer, &g).unwrap();
         // }
-        log::debug!("flow found");
         Some((f, layer))
     } else {
         log::debug!("flow not found");

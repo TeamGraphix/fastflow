@@ -472,6 +472,9 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
         colset.union_with(cset.difference(&iset));
     }
     if ocset.is_empty() {
+        log::debug!("pflow found");
+        log::debug!("pflow: {f:?}");
+        log::debug!("layer: {layer:?}");
         // TODO: Uncomment once ready
         // if cfg!(debug_assertions) {
         let f_flatiter = f
@@ -481,7 +484,6 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
         common::check_initial(&layer, &oset, false).unwrap();
         check_definition(&f, &layer, &g, &pplane).unwrap();
         // }
-        log::debug!("pflow found");
         Some((f, layer))
     } else {
         log::debug!("pflow not found");
