@@ -3,9 +3,10 @@
 use std::iter;
 
 use crate::common::{self, Nodes, OrderedNodes};
-use crate::validate;
+use crate::{gf2_linalg, validate};
 use fixedbitset::FixedBitSet;
 use hashbrown;
+use log::Level;
 use num_derive::FromPrimitive;
 use num_enum::IntoPrimitive;
 use num_traits::cast::FromPrimitive;
@@ -144,6 +145,7 @@ fn init_work(
 /// - Arguments are **NOT** verified.
 #[pyfunction]
 pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option<(GFlow, Layer)> {
+    log::debug!("gflow::find");
     validate::check_graph(&g, &iset, &oset).unwrap();
     let plane = plane
         .into_iter()
@@ -168,6 +170,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
         if ocset.is_empty() || omiset.is_empty() {
             break;
         }
+        log::debug!("=====layer {l}=====");
         // Decrease over time
         nrows = ocset.len();
         ncols = omiset.len();
@@ -177,7 +180,20 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
         // Decrease over time
         debug_assert!(work[0].len() >= ncols + neqs);
         common::zerofill(&mut work, ncols + neqs);
+        log::debug!("rowset: {ocset:?}");
+        log::debug!("colset: {omiset:?}");
+        log::debug!("eqset : {ocset:?}");
+        log::debug!(
+            "planes: {:?}",
+            ocset.iter().map(|&u| plane[&u]).collect::<Vec<_>>()
+        );
         init_work(&mut work, &g, &plane, &ocset, &omiset);
+        if log::log_enabled!(Level::Debug) {
+            log::debug!("work:");
+            for row in gf2_linalg::log_work(&work, omiset.len()) {
+                log::debug!("  {}", row);
+            }
+        }
         let mut solver = GF2Solver::attach(work, neqs);
         let mut x = FixedBitSet::with_capacity(ncols);
         // tab[i] = node index assigned to one-hot vector x[i]
@@ -185,6 +201,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
         tab.extend(omiset.iter().copied());
         for (ieq, &u) in ocset.iter().enumerate() {
             if !solver.solve_in_place(&mut x, ieq) {
+                log::debug!("solution not found: {u}");
                 continue;
             }
             cset.insert(u);
@@ -194,7 +211,9 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
                 // Include u
                 fu.insert(u);
             }
+            log::debug!("f({u}) = {fu:?}");
             f.insert(u, fu);
+            log::debug!("layer({u}) = {l}");
             layer[u] = l;
         }
         if cset.is_empty() {
@@ -214,8 +233,10 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
         common::check_initial(&layer, &oset).unwrap();
         check_definition(&f, &layer, &g, &plane).unwrap();
         // }
+        log::debug!("gflow found");
         Some((f, layer))
     } else {
+        log::debug!("gflow not found");
         None
     }
 }
@@ -225,6 +246,7 @@ mod tests {
     use super::*;
     use crate::nodeset;
     use crate::test_utils::{self, TestCase};
+    use test_log;
 
     macro_rules! planes {
     ($($u:literal: $v:expr),*) => {
@@ -232,7 +254,7 @@ mod tests {
     };
 }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case0() {
         let TestCase { g, iset, oset } = test_utils::CASE0.get_or_init(test_utils::case0).clone();
         let planes = planes! {};
@@ -242,7 +264,7 @@ mod tests {
         assert_eq!(layer, vec![0, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case1() {
         let TestCase { g, iset, oset } = test_utils::CASE1.get_or_init(test_utils::case1).clone();
         let planes = planes! {
@@ -261,7 +283,7 @@ mod tests {
         assert_eq!(layer, vec![4, 3, 2, 1, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case2() {
         let TestCase { g, iset, oset } = test_utils::CASE2.get_or_init(test_utils::case2).clone();
         let planes = planes! {
@@ -280,7 +302,7 @@ mod tests {
         assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case3() {
         let TestCase { g, iset, oset } = test_utils::CASE3.get_or_init(test_utils::case3).clone();
         let planes = planes! {
@@ -297,7 +319,7 @@ mod tests {
         assert_eq!(layer, vec![1, 1, 1, 0, 0, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case4() {
         let TestCase { g, iset, oset } = test_utils::CASE4.get_or_init(test_utils::case4).clone();
         let planes = planes! {
@@ -316,7 +338,7 @@ mod tests {
         assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case5() {
         let TestCase { g, iset, oset } = test_utils::CASE5.get_or_init(test_utils::case5).clone();
         let planes = planes! {
@@ -326,7 +348,7 @@ mod tests {
         assert!(find(g, iset, oset, planes).is_none());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case6() {
         let TestCase { g, iset, oset } = test_utils::CASE6.get_or_init(test_utils::case6).clone();
         let planes = planes! {
@@ -338,7 +360,7 @@ mod tests {
         assert!(find(g, iset, oset, planes).is_none());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case7() {
         let TestCase { g, iset, oset } = test_utils::CASE7.get_or_init(test_utils::case7).clone();
         let planes = planes! {
@@ -350,7 +372,7 @@ mod tests {
         assert!(find(g, iset, oset, planes).is_none());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case8() {
         let TestCase { g, iset, oset } = test_utils::CASE8.get_or_init(test_utils::case8).clone();
         let planes = planes! {

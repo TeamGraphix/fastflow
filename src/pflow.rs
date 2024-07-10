@@ -2,9 +2,10 @@
 
 use crate::common::InPlaceSetOp;
 use crate::common::{self, Graph, Layer, Nodes, OrderedNodes};
-use crate::gf2_linalg::GF2Solver;
+use crate::gf2_linalg::{self, GF2Solver};
 use fixedbitset::FixedBitSet;
 use hashbrown;
+use log::Level;
 use num_derive::FromPrimitive;
 use num_enum::IntoPrimitive;
 use num_traits::cast::FromPrimitive;
@@ -246,6 +247,7 @@ impl Drop for ScopedExclude<'_> {
 
 #[pyfunction]
 pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Option<(PFlow, Layer)> {
+    log::debug!("pflow::find");
     let pplane = pplane
         .into_iter()
         .map(|(k, v)| (k, PPlane::from_u8(v).expect("pplane is in 0..6")))
@@ -269,6 +271,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
     let mut work = vec![FixedBitSet::new(); rowset_upper.len() + rowset_lower.len()];
     let mut tab = Vec::new();
     for l in 0_usize.. {
+        log::debug!("=====layer {l}=====");
         cset.clear();
         for &u in &ocset {
             let rowset_upper = ScopedInclude::new(&mut rowset_upper, u);
@@ -280,6 +283,11 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
             if nrows_upper + nrows_lower == 0 || ncols == 0 {
                 continue;
             }
+            let ppu = pplane[&u];
+            log::debug!("====checking {u} ({ppu:?})====");
+            log::debug!("rowset_upper: {:?}", &*rowset_upper);
+            log::debug!("rowset_lower: {:?}", &*rowset_lower);
+            log::debug!("colset      : {:?}", &*colset);
             // No monotonicity guarantees
             work.resize_with(nrows_upper + nrows_lower, || {
                 FixedBitSet::with_capacity(ncols + 1)
@@ -290,10 +298,10 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
             tab.clear();
             tab.extend(colset.iter().copied());
             let mut x = FixedBitSet::with_capacity(ncols);
-            let ppu = pplane[&u];
             let mut done = false;
             // TODO: Use macro later
             if !done && matches!(ppu, PPlane::XY | PPlane::X | PPlane::Y) {
+                log::debug!("===XY branch===");
                 x.clear();
                 clear_work_rhs(&mut work);
                 init_work_upper_rhs::<BRANCH_XY>(
@@ -310,14 +318,28 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
                     &rowset_lower,
                     &colset,
                 );
+                if log::log_enabled!(Level::Debug) {
+                    log::debug!("work (upper):");
+                    for row in gf2_linalg::log_work(&work[..nrows_upper], ncols) {
+                        log::debug!("  {}", row);
+                    }
+                    log::debug!("work (lower):");
+                    for row in gf2_linalg::log_work(&work[nrows_upper..], ncols) {
+                        log::debug!("  {}", row);
+                    }
+                }
                 let mut solver = GF2Solver::attach(work, 1);
                 if solver.solve_in_place(&mut x, 0) {
+                    log::debug!("solution found for {u} (XY)");
                     f.insert(u, decode_solution::<BRANCH_XY>(u, &x, &tab));
                     done = true;
+                } else {
+                    log::debug!("solution not found: {u} (XY)");
                 }
                 work = solver.detach();
             }
             if !done && matches!(ppu, PPlane::YZ | PPlane::Y | PPlane::Z) {
+                log::debug!("===YZ branch===");
                 x.clear();
                 clear_work_rhs(&mut work);
                 init_work_upper_rhs::<BRANCH_YZ>(
@@ -334,14 +356,28 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
                     &rowset_lower,
                     &colset,
                 );
+                if log::log_enabled!(Level::Debug) {
+                    log::debug!("work (upper):");
+                    for row in gf2_linalg::log_work(&work[..nrows_upper], ncols) {
+                        log::debug!("  {}", row);
+                    }
+                    log::debug!("work (lower):");
+                    for row in gf2_linalg::log_work(&work[nrows_upper..], ncols) {
+                        log::debug!("  {}", row);
+                    }
+                }
                 let mut solver = GF2Solver::attach(work, 1);
                 if solver.solve_in_place(&mut x, 0) {
+                    log::debug!("solution found for {u} (YZ)");
                     f.insert(u, decode_solution::<BRANCH_YZ>(u, &x, &tab));
                     done = true;
+                } else {
+                    log::debug!("solution not found: {u} (YZ)");
                 }
                 work = solver.detach();
             }
             if !done && matches!(ppu, PPlane::ZX | PPlane::Z | PPlane::X) {
+                log::debug!("===ZX branch===");
                 x.clear();
                 clear_work_rhs(&mut work);
                 init_work_upper_rhs::<BRANCH_ZX>(
@@ -358,16 +394,33 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
                     &rowset_lower,
                     &colset,
                 );
+                if log::log_enabled!(Level::Debug) {
+                    log::debug!("work (upper):");
+                    for row in gf2_linalg::log_work(&work[..nrows_upper], ncols) {
+                        log::debug!("  {}", row);
+                    }
+                    log::debug!("work (lower):");
+                    for row in gf2_linalg::log_work(&work[nrows_upper..], ncols) {
+                        log::debug!("  {}", row);
+                    }
+                }
                 let mut solver = GF2Solver::attach(work, 1);
                 if solver.solve_in_place(&mut x, 0) {
+                    log::debug!("solution found for {u} (ZX)");
                     f.insert(u, decode_solution::<BRANCH_ZX>(u, &x, &tab));
                     done = true;
+                } else {
+                    log::debug!("solution not found: {u} (ZX)");
                 }
                 work = solver.detach();
             }
             if done {
+                log::debug!("f({}) = {:?}", u, &f[&u]);
+                log::debug!("layer({u}) = {l}");
                 layer[u] = l;
                 cset.insert(u);
+            } else {
+                log::debug!("solution not found: {u} (all branches)");
             }
         }
         if l == 0 {
@@ -391,8 +444,10 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
         common::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
         check_initial_pflow(&layer, &oset).unwrap();
         // }
+        log::debug!("pflow found");
         Some((f, layer))
     } else {
+        log::debug!("pflow not found");
         None
     }
 }
@@ -402,6 +457,7 @@ mod tests {
     use super::*;
     use crate::nodeset;
     use crate::test_utils::{self, TestCase};
+    use test_log;
 
     macro_rules! planes {
     ($($u:literal: $v:expr),*) => {
@@ -409,7 +465,7 @@ mod tests {
     };
 }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case0() {
         let TestCase { g, iset, oset } = test_utils::CASE0.get_or_init(test_utils::case0).clone();
         let planes = planes! {};
@@ -419,7 +475,7 @@ mod tests {
         assert_eq!(layer, vec![0, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case1() {
         let TestCase { g, iset, oset } = test_utils::CASE1.get_or_init(test_utils::case1).clone();
         let planes = planes! {
@@ -438,7 +494,7 @@ mod tests {
         assert_eq!(layer, vec![4, 3, 2, 1, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case2() {
         let TestCase { g, iset, oset } = test_utils::CASE2.get_or_init(test_utils::case2).clone();
         let planes = planes! {
@@ -457,7 +513,7 @@ mod tests {
         assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case3() {
         let TestCase { g, iset, oset } = test_utils::CASE3.get_or_init(test_utils::case3).clone();
         let planes = planes! {
@@ -474,7 +530,7 @@ mod tests {
         assert_eq!(layer, vec![1, 1, 1, 0, 0, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case4() {
         let TestCase { g, iset, oset } = test_utils::CASE4.get_or_init(test_utils::case4).clone();
         let planes = planes! {
@@ -493,7 +549,7 @@ mod tests {
         assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case5() {
         let TestCase { g, iset, oset } = test_utils::CASE5.get_or_init(test_utils::case5).clone();
         let planes = planes! {
@@ -503,7 +559,7 @@ mod tests {
         assert!(find(g, iset, oset, planes).is_none());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case6() {
         let TestCase { g, iset, oset } = test_utils::CASE6.get_or_init(test_utils::case6).clone();
         let planes = planes! {
@@ -522,7 +578,7 @@ mod tests {
         assert_eq!(layer, vec![1, 1, 0, 1, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case7() {
         let TestCase { g, iset, oset } = test_utils::CASE7.get_or_init(test_utils::case7).clone();
         let planes = planes! {
@@ -541,7 +597,7 @@ mod tests {
         assert_eq!(layer, vec![1, 0, 0, 1, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case8() {
         let TestCase { g, iset, oset } = test_utils::CASE8.get_or_init(test_utils::case8).clone();
         let planes = planes! {

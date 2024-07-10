@@ -47,6 +47,7 @@ fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
 /// - Arguments are **NOT** verified.
 #[pyfunction]
 pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
+    log::debug!("flow::find");
     validate::check_graph(&g, &iset, &oset).unwrap();
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();
@@ -62,6 +63,7 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
     let mut oset_work = Nodes::new();
     let mut cset_work = Nodes::new();
     for l in 1_usize.. {
+        log::debug!("=====layer {l}=====");
         oset_work.clear();
         cset_work.clear();
         for &v in &cset {
@@ -71,8 +73,10 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
             }
             // Get the only element
             let u = *checkv.iter().next().expect("one element here");
+            log::debug!("f({u}) = {v}");
             f.insert(u, v);
             // MEMO: Typo in Mahlla's PP (2007)
+            log::debug!("layer({u}) = {l}");
             layer[u] = l;
             oset_work.insert(u);
             cset_work.insert(v);
@@ -99,8 +103,10 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         common::check_initial(&layer, &oset_orig).unwrap();
         check_definition(&f, &layer, &g).unwrap();
         // }
+        log::debug!("flow found");
         Some((f, layer))
     } else {
+        log::debug!("flow not found");
         None
     }
 }
@@ -109,8 +115,9 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
 mod tests {
     use super::*;
     use crate::test_utils::{self, TestCase};
+    use test_log;
 
-    #[test]
+    #[test_log::test]
     fn test_find_case0() {
         let TestCase { g, iset, oset } = test_utils::CASE0.get_or_init(test_utils::case0).clone();
         let flen = g.len() - oset.len();
@@ -119,7 +126,7 @@ mod tests {
         assert_eq!(layer, vec![0, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case1() {
         let TestCase { g, iset, oset } = test_utils::CASE1.get_or_init(test_utils::case1).clone();
         let flen = g.len() - oset.len();
@@ -132,7 +139,7 @@ mod tests {
         assert_eq!(layer, vec![4, 3, 2, 1, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case2() {
         let TestCase { g, iset, oset } = test_utils::CASE2.get_or_init(test_utils::case2).clone();
         let flen = g.len() - oset.len();
@@ -145,37 +152,37 @@ mod tests {
         assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case3() {
         let TestCase { g, iset, oset } = test_utils::CASE3.get_or_init(test_utils::case3).clone();
         assert!(find(g, iset, oset).is_none());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case4() {
         let TestCase { g, iset, oset } = test_utils::CASE4.get_or_init(test_utils::case4).clone();
         assert!(find(g, iset, oset).is_none());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case5() {
         let TestCase { g, iset, oset } = test_utils::CASE5.get_or_init(test_utils::case5).clone();
         assert!(find(g, iset, oset).is_none());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case6() {
         let TestCase { g, iset, oset } = test_utils::CASE6.get_or_init(test_utils::case6).clone();
         assert!(find(g, iset, oset).is_none());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case7() {
         let TestCase { g, iset, oset } = test_utils::CASE7.get_or_init(test_utils::case7).clone();
         assert!(find(g, iset, oset).is_none());
     }
 
-    #[test]
+    #[test_log::test]
     fn test_find_case8() {
         let TestCase { g, iset, oset } = test_utils::CASE8.get_or_init(test_utils::case8).clone();
         assert!(find(g, iset, oset).is_none());
