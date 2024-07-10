@@ -317,6 +317,21 @@ impl GF2Solver {
     }
 }
 
+pub fn log_work(work: &[FixedBitSet], ncols: usize) -> Vec<String> {
+    let mut ret = Vec::with_capacity(work.len());
+    for row in work.iter() {
+        let mut s = String::new();
+        for c in 0..row.len() {
+            if c == ncols {
+                s.push(' ');
+            }
+            s.push(if row.contains(c) { '1' } else { '0' });
+        }
+        ret.push(s);
+    }
+    ret
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
