@@ -47,7 +47,7 @@ pub fn check_domain<'a, 'b>(
             let err = anyhow::anyhow!("domain check failed").context(format!("{i} not in V\\O"));
             return Err(err);
         }
-        if !icset.contains(&fi) {
+        if i != fi && !icset.contains(&fi) {
             let err = anyhow::anyhow!("domain check failed").context(format!("{fi} not in V\\I"));
             return Err(err);
         }
