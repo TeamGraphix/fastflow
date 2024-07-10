@@ -388,11 +388,11 @@ pub fn find(
                 init_work::<BRANCH_XY>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
                 if log::log_enabled!(Level::Debug) {
                     log::debug!("work (upper):");
-                    for row in gf2_linalg::log_work(&work[..nrows_upper], ncols) {
+                    for row in gf2_linalg::format_work(&work[..nrows_upper], ncols) {
                         log::debug!("  {}", row);
                     }
                     log::debug!("work (lower):");
-                    for row in gf2_linalg::log_work(&work[nrows_upper..], ncols) {
+                    for row in gf2_linalg::format_work(&work[nrows_upper..], ncols) {
                         log::debug!("  {}", row);
                     }
                 }
@@ -413,11 +413,11 @@ pub fn find(
                 init_work::<BRANCH_YZ>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
                 if log::log_enabled!(Level::Debug) {
                     log::debug!("work (upper):");
-                    for row in gf2_linalg::log_work(&work[..nrows_upper], ncols) {
+                    for row in gf2_linalg::format_work(&work[..nrows_upper], ncols) {
                         log::debug!("  {}", row);
                     }
                     log::debug!("work (lower):");
-                    for row in gf2_linalg::log_work(&work[nrows_upper..], ncols) {
+                    for row in gf2_linalg::format_work(&work[nrows_upper..], ncols) {
                         log::debug!("  {}", row);
                     }
                 }
@@ -438,11 +438,11 @@ pub fn find(
                 init_work::<BRANCH_ZX>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
                 if log::log_enabled!(Level::Debug) {
                     log::debug!("work (upper):");
-                    for row in gf2_linalg::log_work(&work[..nrows_upper], ncols) {
+                    for row in gf2_linalg::format_work(&work[..nrows_upper], ncols) {
                         log::debug!("  {}", row);
                     }
                     log::debug!("work (lower):");
-                    for row in gf2_linalg::log_work(&work[nrows_upper..], ncols) {
+                    for row in gf2_linalg::format_work(&work[nrows_upper..], ncols) {
                         log::debug!("  {}", row);
                     }
                 }

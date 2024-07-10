@@ -317,8 +317,8 @@ impl GF2Solver {
     }
 }
 
-/// Formats the solver for debugging.
-pub fn log_work(work: &[FixedBitSet], ncols: usize) -> Vec<String> {
+/// Formats the solver working memory.
+pub fn format_work(work: &[FixedBitSet], ncols: usize) -> Vec<String> {
     let mut ret = Vec::with_capacity(work.len());
     for row in work.iter() {
         let mut s = String::new();

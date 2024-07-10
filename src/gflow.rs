@@ -199,7 +199,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Optio
         init_work(&mut work, &g, &planes, &ocset, &omiset);
         if log::log_enabled!(Level::Debug) {
             log::debug!("work:");
-            for row in gf2_linalg::log_work(&work, omiset.len()) {
+            for row in gf2_linalg::format_work(&work, omiset.len()) {
                 log::debug!("  {}", row);
             }
         }
