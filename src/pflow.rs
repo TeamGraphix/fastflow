@@ -498,7 +498,7 @@ mod tests {
     use crate::test_utils::{self, TestCase};
     use test_log;
 
-    macro_rules! planes {
+    macro_rules! pplanes {
     ($($u:literal: $v:expr),*) => {
         ::hashbrown::HashMap::from_iter([$(($u, ($v).into())),*].iter().copied())
     };
@@ -507,9 +507,9 @@ mod tests {
     #[test_log::test]
     fn test_find_case0() {
         let TestCase { g, iset, oset } = test_utils::CASE0.get_or_init(test_utils::case0).clone();
-        let planes = planes! {};
+        let pplanes = pplanes! {};
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, planes).unwrap();
+        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(layer, vec![0, 0]);
     }
@@ -517,14 +517,14 @@ mod tests {
     #[test_log::test]
     fn test_find_case1() {
         let TestCase { g, iset, oset } = test_utils::CASE1.get_or_init(test_utils::case1).clone();
-        let planes = planes! {
+        let pplanes = pplanes! {
             0: PPlane::XY,
             1: PPlane::XY,
             2: PPlane::XY,
             3: PPlane::XY
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, planes).unwrap();
+        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], nodeset![1]);
         assert_eq!(f[&1], nodeset![2]);
@@ -536,14 +536,14 @@ mod tests {
     #[test_log::test]
     fn test_find_case2() {
         let TestCase { g, iset, oset } = test_utils::CASE2.get_or_init(test_utils::case2).clone();
-        let planes = planes! {
+        let pplanes = pplanes! {
             0: PPlane::XY,
             1: PPlane::XY,
             2: PPlane::XY,
             3: PPlane::XY
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, planes).unwrap();
+        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], nodeset![2]);
         assert_eq!(f[&1], nodeset![3]);
@@ -555,13 +555,13 @@ mod tests {
     #[test_log::test]
     fn test_find_case3() {
         let TestCase { g, iset, oset } = test_utils::CASE3.get_or_init(test_utils::case3).clone();
-        let planes = planes! {
+        let pplanes = pplanes! {
             0: PPlane::XY,
             1: PPlane::XY,
             2: PPlane::XY
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, planes).unwrap();
+        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], nodeset![4, 5]);
         assert_eq!(f[&1], nodeset![3, 4, 5]);
@@ -572,14 +572,14 @@ mod tests {
     #[test_log::test]
     fn test_find_case4() {
         let TestCase { g, iset, oset } = test_utils::CASE4.get_or_init(test_utils::case4).clone();
-        let planes = planes! {
+        let pplanes = pplanes! {
             0: PPlane::XY,
             1: PPlane::XY,
             2: PPlane::ZX,
             3: PPlane::YZ
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, planes).unwrap();
+        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], nodeset![2]);
         assert_eq!(f[&1], nodeset![5]);
@@ -591,24 +591,24 @@ mod tests {
     #[test_log::test]
     fn test_find_case5() {
         let TestCase { g, iset, oset } = test_utils::CASE5.get_or_init(test_utils::case5).clone();
-        let planes = planes! {
+        let pplanes = pplanes! {
             0: PPlane::XY,
             1: PPlane::XY
         };
-        assert!(find(g, iset, oset, planes).is_none());
+        assert!(find(g, iset, oset, pplanes).is_none());
     }
 
     #[test_log::test]
     fn test_find_case6() {
         let TestCase { g, iset, oset } = test_utils::CASE6.get_or_init(test_utils::case6).clone();
-        let planes = planes! {
+        let pplanes = pplanes! {
             0: PPlane::XY,
             1: PPlane::X,
             2: PPlane::XY,
             3: PPlane::X
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, planes).unwrap();
+        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], nodeset![1]);
         assert_eq!(f[&1], nodeset![4]);
@@ -620,14 +620,14 @@ mod tests {
     #[test_log::test]
     fn test_find_case7() {
         let TestCase { g, iset, oset } = test_utils::CASE7.get_or_init(test_utils::case7).clone();
-        let planes = planes! {
+        let pplanes = pplanes! {
             0: PPlane::Z,
             1: PPlane::Z,
             2: PPlane::Y,
             3: PPlane::Y
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, planes).unwrap();
+        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], nodeset![0, 1]);
         assert_eq!(f[&1], nodeset![1]);
@@ -639,13 +639,13 @@ mod tests {
     #[test_log::test]
     fn test_find_case8() {
         let TestCase { g, iset, oset } = test_utils::CASE8.get_or_init(test_utils::case8).clone();
-        let planes = planes! {
+        let pplanes = pplanes! {
             0: PPlane::Z,
             1: PPlane::ZX,
             2: PPlane::Y
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, planes).unwrap();
+        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], nodeset![0, 3, 4]);
         assert_eq!(f[&1], nodeset![1, 2]);
