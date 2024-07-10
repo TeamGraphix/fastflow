@@ -16,7 +16,7 @@ name = "fastflow"
 crate-type = ["cdylib"]
 
 [dependencies]
-anyhow = "1.0"
+anyhow = "1"
 fixedbitset = "0.5"
 hashbrown = "0.14"
 itertools = "0.13"
