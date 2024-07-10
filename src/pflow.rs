@@ -29,17 +29,17 @@ type InternalPPlanes = hashbrown::HashMap<usize, u8>;
 type PPlanes = hashbrown::HashMap<usize, PPlane>;
 type PFlow = hashbrown::HashMap<usize, Nodes>;
 
-fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplane: &PPlanes) -> anyhow::Result<()> {
+fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> anyhow::Result<()> {
     anyhow::ensure!(
-        f.len() == pplane.len(),
-        "f and pplane must have the same codomain"
+        f.len() == pplanes.len(),
+        "f and pplanes must have the same codomain"
     );
     for &i in f.keys() {
         let fi = &f[&i];
-        let pi = pplane[&i];
+        let pi = pplanes[&i];
         for &fij in fi {
             match (i != fij, layer[i] <= layer[fij]) {
-                (true, true) if !matches!(pplane[&fij], PPlane::X | PPlane::Y) => {
+                (true, true) if !matches!(pplanes[&fij], PPlane::X | PPlane::Y) => {
                     let err = anyhow::anyhow!("layer check failed")
                         .context(format!("neither {i} == {fij} nor {i} -> {fij}: fi"));
                     return Err(err);
@@ -51,7 +51,7 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplane: &PPlanes) -> an
         let odd_fi = common::odd_neighbors(g, fi);
         for &j in &odd_fi {
             match (i != j, layer[i] <= layer[j]) {
-                (true, true) if !matches!(pplane[&j], PPlane::Y | PPlane::Z) => {
+                (true, true) if !matches!(pplanes[&j], PPlane::Y | PPlane::Z) => {
                     let err = anyhow::anyhow!("layer check failed").context(format!(
                         "neither {i} == {j} nor {i} -> {j}: odd_neighbors(g, fi)"
                     ));
@@ -62,7 +62,7 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplane: &PPlanes) -> an
             }
         }
         for &j in fi.symmetric_difference(&odd_fi) {
-            if pplane.get(&j) == Some(&PPlane::Y) && i != j && layer[i] <= layer[j] {
+            if pplanes.get(&j) == Some(&PPlane::Y) && i != j && layer[i] <= layer[j] {
                 let err = anyhow::anyhow!("Y correction check failed")
                     .context(format!("{j} must be corrected by f({i}) xor Odd(f({i}))"));
                 return Err(err);
@@ -324,15 +324,20 @@ impl Drop for ScopedExclude<'_> {
 }
 
 #[pyfunction]
-pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Option<(PFlow, Layer)> {
+pub fn find(
+    g: Graph,
+    iset: Nodes,
+    oset: Nodes,
+    pplanes: InternalPPlanes,
+) -> Option<(PFlow, Layer)> {
     log::debug!("pflow::find");
-    let pplane = pplane
+    let pplanes = pplanes
         .into_iter()
         .map(|(k, v)| (k, PPlane::from_u8(v).expect("pplane is in 0..6")))
         .collect::<PPlanes>();
-    let yset = matching_nodes!(pplane, PPlane::Y);
-    let xyset = matching_nodes!(pplane, PPlane::X | PPlane::Y);
-    let yzset = matching_nodes!(pplane, PPlane::Y | PPlane::Z);
+    let yset = matching_nodes!(pplanes, PPlane::Y);
+    let xyset = matching_nodes!(pplanes, PPlane::X | PPlane::Y);
+    let yzset = matching_nodes!(pplanes, PPlane::Y | PPlane::Z);
     debug_assert!(yset.is_disjoint(&oset));
     debug_assert!(xyset.is_disjoint(&oset));
     debug_assert!(yzset.is_disjoint(&oset));
@@ -361,7 +366,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
             if nrows_upper + nrows_lower == 0 || ncols == 0 {
                 continue;
             }
-            let ppu = pplane[&u];
+            let ppu = pplanes[&u];
             log::debug!("====checking {u} ({ppu:?})====");
             log::debug!("rowset_upper: {:?}", &*rowset_upper);
             log::debug!("rowset_lower: {:?}", &*rowset_lower);
@@ -482,7 +487,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplane: InternalPPlanes) -> Opti
             .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
         common::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
         common::check_initial(&layer, &oset, false).unwrap();
-        check_definition(&f, &layer, &g, &pplane).unwrap();
+        check_definition(&f, &layer, &g, &pplanes).unwrap();
         // }
         Some((f, layer))
     } else {

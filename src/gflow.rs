@@ -31,14 +31,14 @@ type Planes = hashbrown::HashMap<usize, Plane>;
 type GFlow = hashbrown::HashMap<usize, Nodes>;
 
 /// Checks if the properties of the generalized flow are satisfied.
-fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, plane: &Planes) -> anyhow::Result<()> {
+fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> anyhow::Result<()> {
     anyhow::ensure!(
-        f.len() == plane.len(),
-        "f and plane must have the same codomain"
+        f.len() == planes.len(),
+        "f and planes must have the same codomain"
     );
     for &i in f.keys() {
         let fi = &f[&i];
-        let pi = plane[&i];
+        let pi = planes[&i];
         for &fij in fi {
             if i != fij && layer[i] <= layer[fij] {
                 let err = anyhow::anyhow!("layer check failed")
@@ -85,7 +85,7 @@ fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, plane: &Planes) -> anyh
 fn init_work(
     work: &mut [FixedBitSet],
     g: &Graph,
-    plane: &Planes,
+    planes: &Planes,
     ocset: &OrderedNodes,
     omiset: &OrderedNodes,
 ) {
@@ -114,11 +114,11 @@ fn init_work(
         // Initialize rhs
         let ieq = i;
         let c = ncols + ieq;
-        if let Plane::XY | Plane::ZX = plane[&u] {
+        if let Plane::XY | Plane::ZX = planes[&u] {
             // = u
             work[ieq].insert(c);
         }
-        if let Plane::XY = plane[&u] {
+        if let Plane::XY = planes[&u] {
             continue;
         }
         // Include u
@@ -137,7 +137,7 @@ fn init_work(
 /// - `g`: The adjacency list of the graph. Must be undirected and without self-loops.
 /// - `iset`: The set of initial nodes.
 /// - `oset`: The set of output nodes.
-/// - `plane`: Measurement plane of each node in V\O.
+/// - `planes`: Measurement plane of each node in V\O.
 ///   - `0`: XY
 ///   - `1`: YZ
 ///   - `2`: ZX
@@ -147,10 +147,10 @@ fn init_work(
 /// - Node indices are assumed to be `0..g.len()`.
 /// - Arguments are **NOT** verified.
 #[pyfunction]
-pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option<(GFlow, Layer)> {
+pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Option<(GFlow, Layer)> {
     log::debug!("gflow::find");
     validate::check_graph(&g, &iset, &oset).unwrap();
-    let plane = plane
+    let planes = planes
         .into_iter()
         .map(|(k, v)| (k, Plane::from_u8(v).expect("plane is either 0, 1, or 2")))
         .collect::<Planes>();
@@ -188,9 +188,9 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
         log::debug!("eqset : {ocset:?}");
         log::debug!(
             "planes: {:?}",
-            ocset.iter().map(|&u| plane[&u]).collect::<Vec<_>>()
+            ocset.iter().map(|&u| planes[&u]).collect::<Vec<_>>()
         );
-        init_work(&mut work, &g, &plane, &ocset, &omiset);
+        init_work(&mut work, &g, &planes, &ocset, &omiset);
         if log::log_enabled!(Level::Debug) {
             log::debug!("work:");
             for row in gf2_linalg::log_work(&work, omiset.len()) {
@@ -210,7 +210,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
             cset.insert(u);
             // Decode solution
             let mut fu = x.ones().map(|c| tab[c]).collect::<Nodes>();
-            if let Plane::YZ | Plane::ZX = plane[&u] {
+            if let Plane::YZ | Plane::ZX = planes[&u] {
                 // Include u
                 fu.insert(u);
             }
@@ -237,7 +237,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, plane: InternalPlanes) -> Option
             .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
         common::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
         common::check_initial(&layer, &oset, true).unwrap();
-        check_definition(&f, &layer, &g, &plane).unwrap();
+        check_definition(&f, &layer, &g, &planes).unwrap();
         // }
         Some((f, layer))
     } else {
