@@ -111,6 +111,7 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> a
     Ok(())
 }
 
+/// Initializes the upper block of working storage.
 fn init_work_upper_co(
     work: &mut [FixedBitSet],
     g: &Graph,
@@ -132,6 +133,7 @@ fn init_work_upper_co(
     }
 }
 
+/// Initializes the lower block of working storage.
 fn init_work_lower_co(
     work: &mut [FixedBitSet],
     g: &Graph,
@@ -160,6 +162,7 @@ const BRANCH_XY: BranchKind = 0;
 const BRANCH_YZ: BranchKind = 1;
 const BRANCH_ZX: BranchKind = 2;
 
+/// Initializes the right-hand side of working storage for the upper block.
 fn init_work_upper_rhs<const K: BranchKind>(
     work: &mut [FixedBitSet],
     u: usize,
@@ -190,6 +193,7 @@ fn init_work_upper_rhs<const K: BranchKind>(
     }
 }
 
+/// Initializes the right-hand side of working storage for the lower block.
 fn init_work_lower_rhs<const K: BranchKind>(
     work: &mut [FixedBitSet],
     u: usize,
@@ -214,7 +218,7 @@ fn init_work_lower_rhs<const K: BranchKind>(
     }
 }
 
-/// Initializes working memory for the given branch kind.
+/// Initializes working storage for the given branch kind.
 fn init_work<const K: BranchKind>(
     work: &mut [FixedBitSet],
     u: usize,
@@ -230,14 +234,16 @@ fn init_work<const K: BranchKind>(
     init_work_lower_rhs::<K>(&mut work[nrows_upper..], u, g, rowset_lower, colset);
 }
 
-fn decode_solution<const K: BranchKind>(u: usize, x: &FixedBitSet, tab: &[usize]) -> Nodes {
-    let mut fu = x.ones().map(|c| tab[c]).collect::<Nodes>();
+/// Decodes the solution returned by `GF2Solver`.
+fn decode_solution<const K: BranchKind>(u: usize, x: &FixedBitSet, i2v: &[usize]) -> Nodes {
+    let mut fu = x.ones().map(|c| i2v[c]).collect::<Nodes>();
     if K != BRANCH_XY {
         fu.insert(u);
     }
     fu
 }
 
+/// Filters and collects nodes that match the given pattern.
 macro_rules! matching_nodes {
     ($src:expr, $p:pat) => {
         $src.iter()
@@ -323,6 +329,9 @@ impl Drop for ScopedExclude<'_> {
     }
 }
 
+/// Logs the working storage.
+///
+/// For debugging purposes only.
 fn log_work(work_upper: &[FixedBitSet], work_lower: &[FixedBitSet]) {
     if !log::log_enabled!(Level::Debug) {
         return;
@@ -338,8 +347,26 @@ fn log_work(work_upper: &[FixedBitSet], work_lower: &[FixedBitSet]) {
     }
 }
 
-#[pyfunction]
 /// Finds the maximally-delayed Pauli flow.
+///
+/// # Arguments
+///
+/// - `g`: The adjacency list of the graph. Must be undirected and without self-loops.
+/// - `iset`: The set of initial nodes.
+/// - `oset`: The set of output nodes.
+/// - `pplanes`: Measurement plane of each node in `&vset - &oset`.
+///   - `0`: XY
+///   - `1`: YZ
+///   - `2`: ZX
+///   - `3`: X
+///   - `4`: Y
+///   - `5`: Z
+///
+/// # Note
+///
+/// - Node indices are assumed to be `0..g.len()`.
+/// - Arguments are **NOT** verified.
+#[pyfunction]
 pub fn find(
     g: Graph,
     iset: Nodes,
@@ -366,9 +393,8 @@ pub fn find(
     let mut colset = xyset.difference(&iset).copied().collect::<OrderedNodes>();
     let mut f = PFlow::with_capacity(ocset.len());
     let mut layer = vec![0_usize; n];
-    // Working memory
     let mut work = vec![FixedBitSet::new(); rowset_upper.len() + rowset_lower.len()];
-    let mut tab = Vec::new();
+    let mut i2v = Vec::new();
     for l in 0_usize.. {
         log::debug!("=====layer {l}=====");
         cset.clear();
@@ -391,11 +417,10 @@ pub fn find(
             work.resize_with(nrows_upper + nrows_lower, || {
                 FixedBitSet::with_capacity(ncols + 1)
             });
-            tab.clear();
-            tab.extend(colset.iter().copied());
+            i2v.clear();
+            i2v.extend(colset.iter().copied());
             let mut x = FixedBitSet::with_capacity(ncols);
             let mut done = false;
-            // TODO: Use macro later
             if !done && matches!(ppu, PPlane::XY | PPlane::X | PPlane::Y) {
                 log::debug!("===XY branch===");
                 x.clear();
@@ -405,7 +430,7 @@ pub fn find(
                 let mut solver = GF2Solver::attach(work, 1);
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (XY)");
-                    f.insert(u, decode_solution::<BRANCH_XY>(u, &x, &tab));
+                    f.insert(u, decode_solution::<BRANCH_XY>(u, &x, &i2v));
                     done = true;
                 } else {
                     log::debug!("solution not found: {u} (XY)");
@@ -421,7 +446,7 @@ pub fn find(
                 let mut solver = GF2Solver::attach(work, 1);
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (YZ)");
-                    f.insert(u, decode_solution::<BRANCH_YZ>(u, &x, &tab));
+                    f.insert(u, decode_solution::<BRANCH_YZ>(u, &x, &i2v));
                     done = true;
                 } else {
                     log::debug!("solution not found: {u} (YZ)");
@@ -437,7 +462,7 @@ pub fn find(
                 let mut solver = GF2Solver::attach(work, 1);
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (ZX)");
-                    f.insert(u, decode_solution::<BRANCH_ZX>(u, &x, &tab));
+                    f.insert(u, decode_solution::<BRANCH_ZX>(u, &x, &i2v));
                     done = true;
                 } else {
                     log::debug!("solution not found: {u} (ZX)");

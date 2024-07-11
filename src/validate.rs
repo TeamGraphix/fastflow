@@ -2,7 +2,7 @@
 //!
 //! # Note
 //!
-//! - Internal use only, as they're assumed to be validated already.
+//! - Internal use only.
 //! - DO NOT rely on these validations!
 
 use crate::common::{Graph, Nodes};

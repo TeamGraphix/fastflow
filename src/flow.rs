@@ -63,7 +63,6 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
     let mut layer = vec![0_usize; n];
     // check[v] = g[v] & (vset - oset)
     let mut check = g.iter().map(|x| x & &ocset).collect::<Vec<_>>();
-    // Reuse working memory
     let mut oset_work = Nodes::new();
     let mut cset_work = Nodes::new();
     for l in 1_usize.. {
@@ -75,7 +74,6 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
             if checkv.len() != 1 {
                 continue;
             }
-            // Get the only element
             let u = *checkv.iter().next().expect("one element here");
             log::debug!("f({u}) = {v}");
             f.insert(u, v);

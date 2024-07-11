@@ -96,7 +96,7 @@ fn init_work(
     omiset: &OrderedNodes,
 ) {
     let ncols = omiset.len();
-    // Working memory for faster adjacency check
+    // Set-to-index maps
     let oc2i = ocset
         .iter()
         .enumerate()
@@ -171,9 +171,8 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Optio
     let mut nrows = ocset.len();
     let mut ncols = omiset.len();
     let mut neqs = ocset.len();
-    // Reuse working memory
     let mut work = vec![FixedBitSet::with_capacity(ncols + neqs); nrows];
-    let mut tab = Vec::new();
+    let mut i2v = Vec::new();
     for l in 1_usize.. {
         cset.clear();
         if ocset.is_empty() || omiset.is_empty() {
@@ -205,9 +204,9 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Optio
         }
         let mut solver = GF2Solver::attach(work, neqs);
         let mut x = FixedBitSet::with_capacity(ncols);
-        // tab[i] = node index assigned to one-hot vector x[i]
-        tab.clear();
-        tab.extend(omiset.iter().copied());
+        // i2v[i] = node assigned to one-hot vector x[i]
+        i2v.clear();
+        i2v.extend(omiset.iter().copied());
         for (ieq, &u) in ocset.iter().enumerate() {
             if !solver.solve_in_place(&mut x, ieq) {
                 log::debug!("solution not found: {u}");
@@ -215,7 +214,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Optio
             }
             cset.insert(u);
             // Decode solution
-            let mut fu = x.ones().map(|c| tab[c]).collect::<Nodes>();
+            let mut fu = x.ones().map(|c| i2v[c]).collect::<Nodes>();
             if let Plane::YZ | Plane::ZX = planes[&u] {
                 // Include u
                 fu.insert(u);

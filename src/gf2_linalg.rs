@@ -14,7 +14,7 @@ pub struct GF2Solver {
     cols: usize,
     /// Number of independent equations solved at once.
     neqs: usize,
-    /// Rank of the coefficient matrix.
+    /// Rank of the coefficient matrix. Available after elimination.
     rank: Option<usize>,
     /// Permutation of columns.
     perm: Vec<usize>,
@@ -36,6 +36,7 @@ impl GF2Solver {
     ///
     /// - If `co` or `rhs` is empty.
     /// - If `co` or `rhs` is jagged (of different sizes).
+    #[allow(dead_code)]
     pub fn try_new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> anyhow::Result<Self> {
         let rows = co.len();
         anyhow::ensure!(rows > 0, "co is empty");
@@ -308,6 +309,7 @@ impl GF2Solver {
     }
 
     /// Solves the equation indexed by `ieq`.
+    #[allow(dead_code)]
     pub fn solve(&mut self, ieq: usize) -> Option<FixedBitSet> {
         let mut out = FixedBitSet::with_capacity(self.cols);
         match self.solve_in_place(&mut out, ieq) {
@@ -317,7 +319,7 @@ impl GF2Solver {
     }
 }
 
-/// Formats the solver working memory.
+/// Formats the solver working storage.
 pub fn format_work(work: &[FixedBitSet], ncols: usize) -> Vec<String> {
     let mut ret = Vec::with_capacity(work.len());
     for row in work.iter() {

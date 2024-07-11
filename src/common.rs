@@ -1,8 +1,6 @@
 //! Common functionalities.
 
-use anyhow;
 use fixedbitset::FixedBitSet;
-use hashbrown;
 use std::{collections::BTreeSet, hash::Hash, ops::Deref};
 
 pub type Nodes = hashbrown::HashSet<usize>;
@@ -36,7 +34,7 @@ pub fn check_initial(layer: &Layer, oset: &Nodes, iff: bool) -> anyhow::Result<(
     Ok(())
 }
 
-/// Checks if the domain of `f` is in V\O and the codomain is in V\I.
+/// Checks if the domain of `f` is in `vset - oset` and the codomain is in `vset - iset`.
 ///
 /// # Arguments
 ///
@@ -44,6 +42,10 @@ pub fn check_initial(layer: &Layer, oset: &Nodes, iff: bool) -> anyhow::Result<(
 /// - `vset`: All nodes.
 /// - `iset`: Input nodes.
 /// - `oset`: Output nodes.
+///
+/// # Note
+///
+/// It is allowed for `f[i]` to contain `i`, even if `i` is in `iset`.
 pub fn check_domain<'a, 'b>(
     f_flatiter: impl Iterator<Item = (&'a usize, &'b usize)>,
     vset: &Nodes,
