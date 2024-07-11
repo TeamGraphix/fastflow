@@ -3,14 +3,14 @@
 //! From the Python side, bindings are visible as `fastflow._impl.XXX`.
 
 #[cfg(test)]
-pub mod test_utils;
+pub(crate) mod test_utils;
 
-pub mod common;
+pub(crate) mod common;
 pub mod flow;
-pub mod gf2_linalg;
+pub(crate) mod gf2_linalg;
 pub mod gflow;
 pub mod pflow;
-pub mod validate;
+pub(crate) mod validate;
 
 use pyo3::prelude::*;
 
