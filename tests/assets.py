@@ -119,4 +119,50 @@ CASE5 = FlowTestCase(
     None,
 )
 
-CASES = [CASE0, CASE1, CASE2, CASE3, CASE4, CASE5]
+#     3
+#     |
+#     2
+#     |
+# 0 - 1 - 4
+CASE6 = FlowTestCase(
+    nx.Graph([(0, 1), (1, 2), (1, 4), (2, 3)]),
+    {0},
+    {4},
+    {0: Plane.XY, 1: Plane.XY, 2: Plane.XY, 3: Plane.XY},
+    {0: PauliPlane.XY, 1: PauliPlane.X, 2: PauliPlane.XY, 3: PauliPlane.X},
+    None,
+    None,
+    GFlowResult({0: {1}, 1: {4}, 2: {3}, 3: {2, 4}}, {0: 1, 1: 1, 2: 0, 3: 1, 4: 0}),
+)
+
+# 1   2   3
+# | /     |
+# 0 - - - 4
+CASE7 = FlowTestCase(
+    nx.Graph([(0, 1), (0, 2), (0, 4), (3, 4)]),
+    {0},
+    {4},
+    {0: Plane.YZ, 1: Plane.ZX, 2: Plane.XY, 3: Plane.YZ},
+    {0: PauliPlane.Z, 1: PauliPlane.Z, 2: PauliPlane.Y, 3: PauliPlane.Y},
+    None,
+    None,
+    GFlowResult({0: {0}, 1: {1}, 2: {2}, 3: {4}}, {0: 1, 1: 0, 2: 0, 3: 1, 4: 0}),
+)
+
+# 0 - 1 -- 3
+#    \|   /|
+#     |\ / |
+#     | /\ |
+#     2 -- 4
+CASE8 = FlowTestCase(
+    nx.Graph([(0, 1), (0, 4), (1, 2), (1, 3), (2, 3), (2, 4), (3, 4)]),
+    {0},
+    {3, 4},
+    {0: Plane.YZ, 1: Plane.ZX, 2: Plane.XY},
+    {0: PauliPlane.Z, 1: PauliPlane.ZX, 2: PauliPlane.Y},
+    None,
+    None,
+    GFlowResult({0: {0, 2, 4}, 1: {1, 2}, 2: {4}}, {0: 1, 1: 1, 2: 1, 3: 0, 4: 0}),
+)
+
+CASES = [CASE0, CASE1, CASE2, CASE3, CASE4, CASE5, CASE6, CASE7, CASE8]
