@@ -10,11 +10,6 @@ macro_rules! nodeset {
         ::hashbrown::HashSet::from_iter([$($x),*].iter().copied())
     };
 }
-macro_rules! nodeset {
-    ($($x:expr),*) => {
-        ::hashbrown::HashSet::from_iter([$($x),*].iter().copied())
-    };
-}
 
 macro_rules! static_max {
     ($x:expr) => {
