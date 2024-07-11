@@ -146,8 +146,10 @@ fn init_work_lower_co(
         .map(|(i, &v)| (v, i))
         .collect::<hashbrown::HashMap<_, _>>();
     for (r, &v) in rowset.iter().enumerate() {
-        // Diagonal elements included
-        work[r].insert(r);
+        // need to introduce self-loops
+        if let Some(&c) = colset2i.get(&v) {
+            work[r].insert(c);
+        }
         let gv = &g[v];
         for &w in gv.iter() {
             if let Some(&c) = colset2i.get(&w) {
