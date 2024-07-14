@@ -5,6 +5,8 @@ use std::sync::OnceLock;
 use crate::common::{Graph, Nodes};
 
 pub mod exports {
+    pub use std::cmp;
+
     pub use hashbrown::{HashMap, HashSet};
 }
 
@@ -34,12 +36,12 @@ macro_rules! graph {
         vec![]
     };
     ($(($u:literal, $v:literal)),+) => {{
-        let n = static_max!($($u),+).max(static_max!($($v),+)) + 1;
+        let n = $crate::test_utils::exports::cmp::max(static_max!($($u),+), static_max!($($v),+)) + 1;
         let mut g = vec![$crate::test_utils::exports::HashSet::new(); n];
         $(
         g[$u].insert($v);
         g[$v].insert($u);
-        )*
+        )+
         g
     }};
 }
