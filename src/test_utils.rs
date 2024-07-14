@@ -3,10 +3,20 @@
 use crate::common::{Graph, Nodes};
 use std::sync::OnceLock;
 
-#[macro_export]
+pub mod exports {
+    pub use hashbrown::HashMap;
+    pub use hashbrown::HashSet;
+}
+
 macro_rules! nodeset {
     ($($x:expr),*) => {
-        ::hashbrown::HashSet::from_iter([$($x),*].iter().copied())
+        $crate::test_utils::exports::HashSet::from_iter([$($x),*].iter().copied())
+    };
+}
+
+macro_rules! measurements {
+    ($($u:literal: $v:expr),*) => {
+        $crate::test_utils::exports::HashMap::from_iter([$(($u, ($v).into())),*].iter().copied())
     };
 }
 
@@ -25,10 +35,10 @@ macro_rules! graph {
     };
     ($(($u:literal, $v:literal)),+) => {{
         let n = static_max!($($u),+).max(static_max!($($v),+)) + 1;
-        let mut g = vec![::hashbrown::HashSet::new(); n];
+        let mut g = vec![$crate::test_utils::exports::HashSet::new(); n];
         $(
-            g[$u].insert($v);
-            g[$v].insert($u);
+        g[$u].insert($v);
+        g[$v].insert($u);
         )*
         g
     }};

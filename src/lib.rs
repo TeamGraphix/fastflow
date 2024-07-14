@@ -3,6 +3,7 @@
 //! From the Python side, bindings are visible as `fastflow._impl.XXX`.
 
 #[cfg(test)]
+#[macro_use]
 pub(crate) mod test_utils;
 
 pub(crate) mod common;
