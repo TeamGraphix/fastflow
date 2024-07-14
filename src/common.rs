@@ -1,7 +1,8 @@
 //! Common functionalities.
 
-use fixedbitset::FixedBitSet;
 use std::{collections::BTreeSet, hash::Hash, ops::Deref};
+
+use fixedbitset::FixedBitSet;
 
 pub type Nodes = hashbrown::HashSet<usize>;
 pub type OrderedNodes = BTreeSet<usize>;

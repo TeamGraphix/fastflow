@@ -1,11 +1,12 @@
 //! Maximally-delayed causal flow algorithm.
 
+use hashbrown;
+use pyo3::prelude::*;
+
 use crate::{
     common::{self, Graph, InPlaceSetOp, Layer, Nodes},
     validate,
 };
-use hashbrown;
-use pyo3::prelude::*;
 
 type Flow = hashbrown::HashMap<usize, usize>;
 
@@ -113,9 +114,10 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
 
 #[cfg(test)]
 mod tests {
+    use test_log;
+
     use super::*;
     use crate::test_utils::{self, TestCase};
-    use test_log;
 
     #[test_log::test]
     fn test_find_case0() {

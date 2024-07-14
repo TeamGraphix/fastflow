@@ -337,10 +337,11 @@ pub fn format_work(work: &[FixedBitSet], ncols: usize) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use rand::prelude::*;
     use rstest::rstest;
     use rstest_reuse::{apply, template};
+
+    use super::*;
 
     #[test]
     fn test_try_new_from() {

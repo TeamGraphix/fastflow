@@ -1,8 +1,10 @@
 //! Maximally-delayed Pauli flow algorithm.
 
-use crate::common::InPlaceSetOp;
-use crate::common::{self, Graph, Layer, Nodes, OrderedNodes};
-use crate::gf2_linalg::{self, GF2Solver};
+use std::{
+    iter,
+    ops::{Deref, DerefMut},
+};
+
 use fixedbitset::FixedBitSet;
 use hashbrown;
 use log::Level;
@@ -10,8 +12,11 @@ use num_derive::FromPrimitive;
 use num_enum::IntoPrimitive;
 use num_traits::cast::FromPrimitive;
 use pyo3::prelude::*;
-use std::iter;
-use std::ops::{Deref, DerefMut};
+
+use crate::{
+    common::{self, Graph, InPlaceSetOp, Layer, Nodes, OrderedNodes},
+    gf2_linalg::{self, GF2Solver},
+};
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive, IntoPrimitive)]
 #[repr(u8)]
@@ -514,9 +519,10 @@ pub fn find(
 
 #[cfg(test)]
 mod tests {
+    use test_log;
+
     use super::*;
     use crate::test_utils::{self, TestCase};
-    use test_log;
 
     #[test_log::test]
     fn test_find_case0() {

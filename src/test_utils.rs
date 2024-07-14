@@ -1,11 +1,11 @@
 //! Testing utilities.
 
-use crate::common::{Graph, Nodes};
 use std::sync::OnceLock;
 
+use crate::common::{Graph, Nodes};
+
 pub mod exports {
-    pub use hashbrown::HashMap;
-    pub use hashbrown::HashSet;
+    pub use hashbrown::{HashMap, HashSet};
 }
 
 macro_rules! nodeset {

@@ -1,11 +1,7 @@
 //! Maximally-delayed generalized flow algorithm.
 
-use crate::common::{self, Nodes, OrderedNodes};
-use crate::{
-    common::{Graph, InPlaceSetOp, Layer},
-    gf2_linalg::GF2Solver,
-};
-use crate::{gf2_linalg, validate};
+use std::iter;
+
 use fixedbitset::FixedBitSet;
 use hashbrown;
 use log::Level;
@@ -13,7 +9,12 @@ use num_derive::FromPrimitive;
 use num_enum::IntoPrimitive;
 use num_traits::cast::FromPrimitive;
 use pyo3::prelude::*;
-use std::iter;
+
+use crate::{
+    common::{self, Graph, InPlaceSetOp, Layer, Nodes, OrderedNodes},
+    gf2_linalg::{self, GF2Solver},
+    validate,
+};
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive, IntoPrimitive)]
 #[repr(u8)]
@@ -251,9 +252,10 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Optio
 
 #[cfg(test)]
 mod tests {
+    use test_log;
+
     use super::*;
     use crate::test_utils::{self, TestCase};
-    use test_log;
 
     #[test_log::test]
     fn test_find_case0() {
