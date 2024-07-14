@@ -147,10 +147,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::nodeset;
-    use crate::test_utils::{self, TestCase, CASE3};
-
     use super::*;
+    use crate::test_utils::{self, TestCase, CASE3};
 
     #[test]
     fn test_odd_neighbors() {

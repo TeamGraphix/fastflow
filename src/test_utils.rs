@@ -1,8 +1,7 @@
 //! Testing utilities.
 
-use std::sync::OnceLock;
-
 use crate::common::{Graph, Nodes};
+use std::sync::OnceLock;
 
 #[macro_export]
 macro_rules! nodeset {

@@ -1,8 +1,10 @@
 //! Maximally-delayed generalized flow algorithm.
 
-use std::iter;
-
 use crate::common::{self, Nodes, OrderedNodes};
+use crate::{
+    common::{Graph, InPlaceSetOp, Layer},
+    gf2_linalg::GF2Solver,
+};
 use crate::{gf2_linalg, validate};
 use fixedbitset::FixedBitSet;
 use hashbrown;
@@ -11,11 +13,7 @@ use num_derive::FromPrimitive;
 use num_enum::IntoPrimitive;
 use num_traits::cast::FromPrimitive;
 use pyo3::prelude::*;
-
-use crate::{
-    common::{Graph, InPlaceSetOp, Layer},
-    gf2_linalg::GF2Solver,
-};
+use std::iter;
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive, IntoPrimitive)]
 #[repr(u8)]

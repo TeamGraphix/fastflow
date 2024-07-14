@@ -1,12 +1,11 @@
 //! Maximally-delayed causal flow algorithm.
 
-use hashbrown;
-use pyo3::prelude::*;
-
 use crate::{
     common::{self, Graph, InPlaceSetOp, Layer, Nodes},
     validate,
 };
+use hashbrown;
+use pyo3::prelude::*;
 
 type Flow = hashbrown::HashMap<usize, usize>;
 
