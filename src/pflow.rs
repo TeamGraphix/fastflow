@@ -546,10 +546,10 @@ mod tests {
         let flen = g.len() - oset.len();
         let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
-        assert_eq!(f[&0], nodeset![1]);
-        assert_eq!(f[&1], nodeset![2]);
-        assert_eq!(f[&2], nodeset![3]);
-        assert_eq!(f[&3], nodeset![4]);
+        assert_eq!(f[&0], nodes![1]);
+        assert_eq!(f[&1], nodes![2]);
+        assert_eq!(f[&2], nodes![3]);
+        assert_eq!(f[&3], nodes![4]);
         assert_eq!(layer, vec![4, 3, 2, 1, 0]);
     }
 
@@ -565,10 +565,10 @@ mod tests {
         let flen = g.len() - oset.len();
         let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
-        assert_eq!(f[&0], nodeset![2]);
-        assert_eq!(f[&1], nodeset![3]);
-        assert_eq!(f[&2], nodeset![4]);
-        assert_eq!(f[&3], nodeset![5]);
+        assert_eq!(f[&0], nodes![2]);
+        assert_eq!(f[&1], nodes![3]);
+        assert_eq!(f[&2], nodes![4]);
+        assert_eq!(f[&3], nodes![5]);
         assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
     }
 
@@ -583,9 +583,9 @@ mod tests {
         let flen = g.len() - oset.len();
         let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
-        assert_eq!(f[&0], nodeset![4, 5]);
-        assert_eq!(f[&1], nodeset![3, 4, 5]);
-        assert_eq!(f[&2], nodeset![3, 5]);
+        assert_eq!(f[&0], nodes![4, 5]);
+        assert_eq!(f[&1], nodes![3, 4, 5]);
+        assert_eq!(f[&2], nodes![3, 5]);
         assert_eq!(layer, vec![1, 1, 1, 0, 0, 0]);
     }
 
@@ -601,10 +601,10 @@ mod tests {
         let flen = g.len() - oset.len();
         let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
-        assert_eq!(f[&0], nodeset![2]);
-        assert_eq!(f[&1], nodeset![5]);
-        assert_eq!(f[&2], nodeset![2, 4]);
-        assert_eq!(f[&3], nodeset![3]);
+        assert_eq!(f[&0], nodes![2]);
+        assert_eq!(f[&1], nodes![5]);
+        assert_eq!(f[&2], nodes![2, 4]);
+        assert_eq!(f[&3], nodes![3]);
         assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
     }
 
@@ -630,10 +630,10 @@ mod tests {
         let flen = g.len() - oset.len();
         let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
-        assert_eq!(f[&0], nodeset![1]);
-        assert_eq!(f[&1], nodeset![4]);
-        assert_eq!(f[&2], nodeset![3]);
-        assert_eq!(f[&3], nodeset![2, 4]);
+        assert_eq!(f[&0], nodes![1]);
+        assert_eq!(f[&1], nodes![4]);
+        assert_eq!(f[&2], nodes![3]);
+        assert_eq!(f[&3], nodes![2, 4]);
         assert_eq!(layer, vec![1, 1, 0, 1, 0]);
     }
 
@@ -650,11 +650,11 @@ mod tests {
         let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
         // Graphix
-        // assert_eq!(f[&0], nodeset![0, 1]);
-        assert_eq!(f[&0], nodeset![0]);
-        assert_eq!(f[&1], nodeset![1]);
-        assert_eq!(f[&2], nodeset![2]);
-        assert_eq!(f[&3], nodeset![4]);
+        // assert_eq!(f[&0], nodes![0, 1]);
+        assert_eq!(f[&0], nodes![0]);
+        assert_eq!(f[&1], nodes![1]);
+        assert_eq!(f[&2], nodes![2]);
+        assert_eq!(f[&3], nodes![4]);
         assert_eq!(layer, vec![1, 0, 0, 1, 0]);
     }
 
@@ -670,10 +670,10 @@ mod tests {
         let (f, layer) = find(g, iset, oset, pplanes).unwrap();
         assert_eq!(f.len(), flen);
         // Graphix
-        // assert_eq!(f[&0], nodeset![0, 3, 4]);
-        assert_eq!(f[&0], nodeset![0, 2, 4]);
-        assert_eq!(f[&1], nodeset![1, 2]);
-        assert_eq!(f[&2], nodeset![4]);
+        // assert_eq!(f[&0], nodes![0, 3, 4]);
+        assert_eq!(f[&0], nodes![0, 2, 4]);
+        assert_eq!(f[&1], nodes![1, 2]);
+        assert_eq!(f[&2], nodes![4]);
         assert_eq!(layer, vec![1, 1, 1, 0, 0]);
     }
 }

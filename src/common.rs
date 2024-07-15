@@ -155,16 +155,13 @@ mod tests {
     fn test_odd_neighbors() {
         let TestCase { g, .. } = CASE3.get_or_init(test_utils::case3);
         for i in 0..g.len() {
-            assert_eq!(odd_neighbors(g, &nodeset![i]), g[i]);
+            assert_eq!(odd_neighbors(g, &nodes![i]), g[i]);
         }
-        assert_eq!(odd_neighbors(g, &nodeset![0, 3]), nodeset![0, 1, 3, 5]);
-        assert_eq!(odd_neighbors(g, &nodeset![1, 4]), nodeset![1, 2, 3, 4, 5]);
-        assert_eq!(odd_neighbors(g, &nodeset![2, 5]), nodeset![0, 1, 2, 4, 5]);
-        assert_eq!(odd_neighbors(g, &nodeset![0, 1, 2]), nodeset![5]);
-        assert_eq!(odd_neighbors(g, &nodeset![3, 4, 5]), nodeset![1]);
-        assert_eq!(
-            odd_neighbors(g, &nodeset![0, 1, 2, 3, 4, 5]),
-            nodeset![1, 5]
-        );
+        assert_eq!(odd_neighbors(g, &nodes![0, 3]), nodes![0, 1, 3, 5]);
+        assert_eq!(odd_neighbors(g, &nodes![1, 4]), nodes![1, 2, 3, 4, 5]);
+        assert_eq!(odd_neighbors(g, &nodes![2, 5]), nodes![0, 1, 2, 4, 5]);
+        assert_eq!(odd_neighbors(g, &nodes![0, 1, 2]), nodes![5]);
+        assert_eq!(odd_neighbors(g, &nodes![3, 4, 5]), nodes![1]);
+        assert_eq!(odd_neighbors(g, &nodes![0, 1, 2, 3, 4, 5]), nodes![1, 5]);
     }
 }

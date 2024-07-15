@@ -10,7 +10,7 @@ pub mod exports {
     pub use hashbrown::{HashMap, HashSet};
 }
 
-macro_rules! nodeset {
+macro_rules! nodes {
     ($($x:expr),*) => {
         $crate::test_utils::exports::HashSet::from_iter([$($x),*].iter().copied())
     };
@@ -57,8 +57,8 @@ pub fn case0() -> TestCase {
     // 0 - 1
     TestCase {
         g: graph![(0, 1)],
-        iset: nodeset![0, 1],
-        oset: nodeset![0, 1],
+        iset: nodes![0, 1],
+        oset: nodes![0, 1],
     }
 }
 
@@ -66,8 +66,8 @@ pub fn case1() -> TestCase {
     // 0 - 1 - 2 - 3 - 4
     TestCase {
         g: graph![(0, 1), (1, 2), (2, 3), (3, 4)],
-        iset: nodeset![0],
-        oset: nodeset![4],
+        iset: nodes![0],
+        oset: nodes![4],
     }
 }
 
@@ -77,8 +77,8 @@ pub fn case2() -> TestCase {
     // 1 - 3 - 5
     TestCase {
         g: graph![(0, 2), (1, 3), (2, 4), (3, 5), (2, 3)],
-        iset: nodeset![0, 1],
-        oset: nodeset![4, 5],
+        iset: nodes![0, 1],
+        oset: nodes![4, 5],
     }
 }
 
@@ -96,8 +96,8 @@ pub fn case3() -> TestCase {
     // 2 - 5
     TestCase {
         g: graph![(0, 3), (0, 5), (1, 3), (1, 4), (1, 5), (2, 4), (2, 5)],
-        iset: nodeset![0, 1, 2],
-        oset: nodeset![3, 4, 5],
+        iset: nodes![0, 1, 2],
+        oset: nodes![3, 4, 5],
     }
 }
 
@@ -109,8 +109,8 @@ pub fn case4() -> TestCase {
     //   2 - 5 - 3
     TestCase {
         g: graph![(0, 1), (0, 2), (0, 4), (1, 5), (2, 4), (2, 5), (3, 5)],
-        iset: nodeset![0, 1],
-        oset: nodeset![4, 5],
+        iset: nodes![0, 1],
+        oset: nodes![4, 5],
     }
 }
 
@@ -122,8 +122,8 @@ pub fn case5() -> TestCase {
     // 1 - 3
     TestCase {
         g: graph![(0, 2), (0, 3), (1, 2), (1, 3)],
-        iset: nodeset![0, 1],
-        oset: nodeset![2, 3],
+        iset: nodes![0, 1],
+        oset: nodes![2, 3],
     }
 }
 
@@ -135,8 +135,8 @@ pub fn case6() -> TestCase {
     // 0 - 1 - 4
     TestCase {
         g: graph![(0, 1), (1, 2), (1, 4), (2, 3)],
-        iset: nodeset![0],
-        oset: nodeset![4],
+        iset: nodes![0],
+        oset: nodes![4],
     }
 }
 
@@ -146,8 +146,8 @@ pub fn case7() -> TestCase {
     // 0 - - - 4
     TestCase {
         g: graph![(0, 1), (0, 2), (0, 4), (3, 4)],
-        iset: nodeset![0],
-        oset: nodeset![4],
+        iset: nodes![0],
+        oset: nodes![4],
     }
 }
 
@@ -159,8 +159,8 @@ pub fn case8() -> TestCase {
     //     2 -- 4
     TestCase {
         g: graph![(0, 1), (0, 4), (1, 2), (1, 3), (2, 3), (2, 4), (3, 4)],
-        iset: nodeset![0],
-        oset: nodeset![3, 4],
+        iset: nodes![0],
+        oset: nodes![3, 4],
     }
 }
 
