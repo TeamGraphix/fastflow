@@ -35,7 +35,7 @@ macro_rules! graph {
     () => {
         vec![]
     };
-    ($(($u:literal, $v:literal)),+) => {{
+    ($(($u:expr, $v:expr)),+) => {{
         let n = $crate::test_utils::exports::cmp::max(static_max!($($u),+), static_max!($($v),+)) + 1;
         let mut g = vec![$crate::test_utils::exports::HashSet::new(); n];
         $(
