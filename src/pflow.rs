@@ -177,6 +177,9 @@ fn init_work_upper_rhs<const K: BranchKind>(
     rowset: &OrderedNodes,
     colset: &OrderedNodes,
 ) {
+    const {
+        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
+    };
     debug_assert!(rowset.contains(&u));
     let rowset2i = rowset
         .iter()
@@ -208,6 +211,9 @@ fn init_work_lower_rhs<const K: BranchKind>(
     rowset: &OrderedNodes,
     colset: &OrderedNodes,
 ) {
+    const {
+        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
+    };
     let rowset2i = rowset
         .iter()
         .enumerate()
@@ -234,6 +240,9 @@ fn init_work<const K: BranchKind>(
     rowset_lower: &OrderedNodes,
     colset: &OrderedNodes,
 ) {
+    const {
+        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
+    };
     let nrows_upper = rowset_upper.len();
     init_work_upper_co(&mut work[..nrows_upper], g, rowset_upper, colset);
     init_work_lower_co(&mut work[nrows_upper..], g, rowset_lower, colset);
@@ -243,6 +252,9 @@ fn init_work<const K: BranchKind>(
 
 /// Decodes the solution returned by `GF2Solver`.
 fn decode_solution<const K: BranchKind>(u: usize, x: &FixedBitSet, i2v: &[usize]) -> Nodes {
+    const {
+        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
+    };
     let mut fu = x.ones().map(|c| i2v[c]).collect::<Nodes>();
     if K != BRANCH_XY {
         fu.insert(u);
