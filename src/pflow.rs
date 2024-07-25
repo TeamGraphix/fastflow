@@ -249,11 +249,15 @@ fn init_work<const K: BranchKind>(
 }
 
 /// Decodes the solution returned by `GF2Solver`.
-fn decode_solution<const K: BranchKind>(u: usize, x: &FixedBitSet, i2v: &[usize]) -> Nodes {
+fn decode_solution<const K: BranchKind>(u: usize, x: &FixedBitSet, colset: &OrderedNodes) -> Nodes {
     const {
         assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
     };
-    let mut fu = x.ones().map(|c| i2v[c]).collect::<Nodes>();
+    let mut fu = colset
+        .iter()
+        .enumerate()
+        .filter_map(|(i, &v)| if x[i] { Some(v) } else { None })
+        .collect::<Nodes>();
     if K != BRANCH_XY {
         fu.insert(u);
     }
@@ -318,7 +322,6 @@ pub fn find(
     let mut f = PFlow::with_capacity(ocset.len());
     let mut layer = vec![0_usize; n];
     let mut work = vec![FixedBitSet::new(); rowset_upper.len() + rowset_lower.len()];
-    let mut i2v = Vec::new();
     for l in 0_usize.. {
         log::debug!("=====layer {l}=====");
         cset.clear();
@@ -341,8 +344,6 @@ pub fn find(
             work.resize_with(nrows_upper + nrows_lower, || {
                 FixedBitSet::with_capacity(ncols + 1)
             });
-            i2v.clear();
-            i2v.extend(colset.iter().copied());
             let mut x = FixedBitSet::with_capacity(ncols);
             let mut done = false;
             if !done && matches!(ppu, PPlane::XY | PPlane::X | PPlane::Y) {
@@ -354,7 +355,7 @@ pub fn find(
                 log::debug!("{solver:?}");
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (XY)");
-                    f.insert(u, decode_solution::<BRANCH_XY>(u, &x, &i2v));
+                    f.insert(u, decode_solution::<BRANCH_XY>(u, &x, &colset));
                     done = true;
                 } else {
                     log::debug!("solution not found: {u} (XY)");
@@ -370,7 +371,7 @@ pub fn find(
                 log::debug!("{solver:?}");
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (YZ)");
-                    f.insert(u, decode_solution::<BRANCH_YZ>(u, &x, &i2v));
+                    f.insert(u, decode_solution::<BRANCH_YZ>(u, &x, &colset));
                     done = true;
                 } else {
                     log::debug!("solution not found: {u} (YZ)");
@@ -386,7 +387,7 @@ pub fn find(
                 log::debug!("{solver:?}");
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (ZX)");
-                    f.insert(u, decode_solution::<BRANCH_ZX>(u, &x, &i2v));
+                    f.insert(u, decode_solution::<BRANCH_ZX>(u, &x, &colset));
                     done = true;
                 } else {
                     log::debug!("solution not found: {u} (ZX)");
