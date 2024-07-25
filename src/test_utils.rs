@@ -1,6 +1,6 @@
 //! Testing utilities.
 
-use std::sync::OnceLock;
+use std::sync::LazyLock;
 
 use crate::common::{Graph, Nodes};
 
@@ -53,25 +53,25 @@ pub struct TestCase {
     pub oset: Nodes,
 }
 
-pub fn case0() -> TestCase {
+pub static CASE0: LazyLock<TestCase> = LazyLock::new(|| {
     // 0 - 1
     TestCase {
         g: graph![(0, 1)],
         iset: nodes![0, 1],
         oset: nodes![0, 1],
     }
-}
+});
 
-pub fn case1() -> TestCase {
+pub static CASE1: LazyLock<TestCase> = LazyLock::new(|| {
     // 0 - 1 - 2 - 3 - 4
     TestCase {
         g: graph![(0, 1), (1, 2), (2, 3), (3, 4)],
         iset: nodes![0],
         oset: nodes![4],
     }
-}
+});
 
-pub fn case2() -> TestCase {
+pub static CASE2: LazyLock<TestCase> = LazyLock::new(|| {
     // 0 - 2 - 4
     //     |
     // 1 - 3 - 5
@@ -80,9 +80,9 @@ pub fn case2() -> TestCase {
         iset: nodes![0, 1],
         oset: nodes![4, 5],
     }
-}
+});
 
-pub fn case3() -> TestCase {
+pub static CASE3: LazyLock<TestCase> = LazyLock::new(|| {
     //   ______
     //  /      |
     // 0 - 3   |
@@ -99,9 +99,9 @@ pub fn case3() -> TestCase {
         iset: nodes![0, 1, 2],
         oset: nodes![3, 4, 5],
     }
-}
+});
 
-pub fn case4() -> TestCase {
+pub static CASE4: LazyLock<TestCase> = LazyLock::new(|| {
     //   0 - 1
     //  /|   |
     // 4 |   |
@@ -112,9 +112,9 @@ pub fn case4() -> TestCase {
         iset: nodes![0, 1],
         oset: nodes![4, 5],
     }
-}
+});
 
-pub fn case5() -> TestCase {
+pub static CASE5: LazyLock<TestCase> = LazyLock::new(|| {
     // 0 - 2
     //  \ /
     //   X
@@ -125,9 +125,9 @@ pub fn case5() -> TestCase {
         iset: nodes![0, 1],
         oset: nodes![2, 3],
     }
-}
+});
 
-pub fn case6() -> TestCase {
+pub static CASE6: LazyLock<TestCase> = LazyLock::new(|| {
     //     3
     //     |
     //     2
@@ -138,9 +138,9 @@ pub fn case6() -> TestCase {
         iset: nodes![0],
         oset: nodes![4],
     }
-}
+});
 
-pub fn case7() -> TestCase {
+pub static CASE7: LazyLock<TestCase> = LazyLock::new(|| {
     // 1   2   3
     // | /     |
     // 0 - - - 4
@@ -149,9 +149,9 @@ pub fn case7() -> TestCase {
         iset: nodes![0],
         oset: nodes![4],
     }
-}
+});
 
-pub fn case8() -> TestCase {
+pub static CASE8: LazyLock<TestCase> = LazyLock::new(|| {
     // 0 - 1 -- 3
     //    \|   /|
     //     |\ / |
@@ -162,14 +162,4 @@ pub fn case8() -> TestCase {
         iset: nodes![0],
         oset: nodes![3, 4],
     }
-}
-
-pub static CASE0: OnceLock<TestCase> = OnceLock::new();
-pub static CASE1: OnceLock<TestCase> = OnceLock::new();
-pub static CASE2: OnceLock<TestCase> = OnceLock::new();
-pub static CASE3: OnceLock<TestCase> = OnceLock::new();
-pub static CASE4: OnceLock<TestCase> = OnceLock::new();
-pub static CASE5: OnceLock<TestCase> = OnceLock::new();
-pub static CASE6: OnceLock<TestCase> = OnceLock::new();
-pub static CASE7: OnceLock<TestCase> = OnceLock::new();
-pub static CASE8: OnceLock<TestCase> = OnceLock::new();
+});

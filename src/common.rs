@@ -149,11 +149,11 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::{self, TestCase, CASE3};
+    use crate::test_utils::{TestCase, CASE3};
 
     #[test]
     fn test_odd_neighbors() {
-        let TestCase { g, .. } = CASE3.get_or_init(test_utils::case3);
+        let TestCase { g, .. } = &*CASE3;
         for i in 0..g.len() {
             assert_eq!(odd_neighbors(g, &nodes![i]), g[i]);
         }
