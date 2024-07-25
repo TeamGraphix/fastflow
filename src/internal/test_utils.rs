@@ -12,13 +12,13 @@ pub mod exports {
 
 macro_rules! nodes {
     ($($x:expr),*) => {
-        $crate::test_utils::exports::HashSet::from_iter([$($x),*].iter().copied())
+        $crate::internal::test_utils::exports::HashSet::from_iter([$($x),*].iter().copied())
     };
 }
 
 macro_rules! measurements {
     ($($u:literal: $v:expr),*) => {
-        $crate::test_utils::exports::HashMap::from_iter([$(($u, ($v).into())),*].iter().copied())
+        $crate::internal::test_utils::exports::HashMap::from_iter([$(($u, ($v).into())),*].iter().copied())
     };
 }
 
@@ -36,8 +36,8 @@ macro_rules! graph {
         vec![]
     };
     ($(($u:expr, $v:expr)),+) => {{
-        let n = $crate::test_utils::exports::cmp::max(static_max!($($u),+), static_max!($($v),+)) + 1;
-        let mut g = vec![$crate::test_utils::exports::HashSet::new(); n];
+        let n = $crate::internal::test_utils::exports::cmp::max(static_max!($($u),+), static_max!($($v),+)) + 1;
+        let mut g = vec![$crate::internal::test_utils::exports::HashSet::new(); n];
         $(
         g[$u].insert($v);
         g[$v].insert($u);

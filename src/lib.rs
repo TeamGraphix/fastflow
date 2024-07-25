@@ -2,13 +2,8 @@
 //!
 //! From the Python side, bindings are visible as `fastflow._impl.XXX`.
 
-#[cfg(test)]
 #[macro_use]
-mod test_utils;
-
-mod gf2_linalg;
-mod utils;
-mod validate;
+mod internal;
 
 pub mod common;
 pub mod flow;

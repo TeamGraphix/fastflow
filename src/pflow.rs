@@ -11,9 +11,11 @@ use pyo3::prelude::*;
 
 use crate::{
     common::{Graph, Layer, Nodes, OrderedNodes},
-    gf2_linalg::GF2Solver,
-    utils::{self, InPlaceSetOp, ScopedExclude, ScopedInclude},
-    validate,
+    internal::{
+        gf2_linalg::GF2Solver,
+        utils::{self, InPlaceSetOp, ScopedExclude, ScopedInclude},
+        validate,
+    },
 };
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive, IntoPrimitive)]
@@ -440,7 +442,7 @@ mod tests {
     use test_log;
 
     use super::*;
-    use crate::test_utils::{self, TestCase};
+    use crate::internal::test_utils::{self, TestCase};
 
     #[test_log::test]
     fn test_find_case0() {

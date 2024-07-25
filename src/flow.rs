@@ -5,8 +5,7 @@ use pyo3::prelude::*;
 
 use crate::{
     common::{Graph, Layer, Nodes},
-    utils::InPlaceSetOp,
-    validate,
+    internal::{utils::InPlaceSetOp, validate},
 };
 
 type Flow = hashbrown::HashMap<usize, usize>;
@@ -118,7 +117,7 @@ mod tests {
     use test_log;
 
     use super::*;
-    use crate::test_utils::{self, TestCase};
+    use crate::internal::test_utils::{self, TestCase};
 
     #[test_log::test]
     fn test_find_case0() {

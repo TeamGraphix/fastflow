@@ -167,7 +167,7 @@ impl Drop for ScopedExclude<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::test_utils::{TestCase, CASE3};
+    use crate::internal::test_utils::{TestCase, CASE3};
 
     #[test]
     fn test_odd_neighbors() {
