@@ -297,6 +297,7 @@ pub fn find(
     pplanes: InternalPPlanes,
 ) -> Option<(PFlow, Layer)> {
     log::debug!("pflow::find");
+    validate::check_graph(&g, &iset, &oset).unwrap();
     let pplanes = pplanes
         .into_iter()
         .map(|(k, v)| (k, PPlane::from_u8(v).expect("pplane is in 0..6")))
