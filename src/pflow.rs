@@ -1,9 +1,6 @@
 //! Maximally-delayed Pauli flow algorithm.
 
-use std::{
-    iter,
-    ops::{Deref, DerefMut},
-};
+use std::iter;
 
 use fixedbitset::FixedBitSet;
 use hashbrown;
@@ -14,8 +11,10 @@ use num_traits::cast::FromPrimitive;
 use pyo3::prelude::*;
 
 use crate::{
-    common::{self, Graph, InPlaceSetOp, Layer, Nodes, OrderedNodes},
+    common::{Graph, Layer, Nodes, OrderedNodes},
     gf2_linalg::{self, GF2Solver},
+    utils::{self, InPlaceSetOp, ScopedExclude, ScopedInclude},
+    validate,
 };
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive, IntoPrimitive)]
@@ -54,7 +53,7 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> a
                 _ => {}
             }
         }
-        let odd_fi = common::odd_neighbors(g, fi);
+        let odd_fi = utils::odd_neighbors(g, fi);
         for &j in &odd_fi {
             match (i != j, layer[i] <= layer[j]) {
                 (true, true) if !matches!(pplanes[&j], PPlane::Y | PPlane::Z) => {
@@ -272,82 +271,6 @@ macro_rules! matching_nodes {
     };
 }
 
-#[derive(Debug)]
-/// RAII guard for inserting a node into a set.
-///
-/// Inserts `u` on construction and reverts on drop.
-struct ScopedInclude<'a> {
-    target: &'a mut OrderedNodes,
-    u: Option<usize>,
-}
-
-impl<'a> ScopedInclude<'a> {
-    pub fn new(target: &'a mut OrderedNodes, u: usize) -> Self {
-        let u = if target.insert(u) { Some(u) } else { None };
-        Self { target, u }
-    }
-}
-
-impl Deref for ScopedInclude<'_> {
-    type Target = OrderedNodes;
-
-    fn deref(&self) -> &Self::Target {
-        self.target
-    }
-}
-
-impl DerefMut for ScopedInclude<'_> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.target
-    }
-}
-
-impl Drop for ScopedInclude<'_> {
-    fn drop(&mut self) {
-        if let Some(u) = self.u {
-            self.target.remove(&u);
-        }
-    }
-}
-
-#[derive(Debug)]
-/// RAII guard for deleting a node from a set.
-///
-/// Removes `u` on construction and reverts on drop.
-struct ScopedExclude<'a> {
-    target: &'a mut OrderedNodes,
-    u: Option<usize>,
-}
-
-impl<'a> ScopedExclude<'a> {
-    pub fn new(target: &'a mut OrderedNodes, u: usize) -> Self {
-        let u = if target.remove(&u) { Some(u) } else { None };
-        Self { target, u }
-    }
-}
-
-impl Deref for ScopedExclude<'_> {
-    type Target = OrderedNodes;
-
-    fn deref(&self) -> &Self::Target {
-        self.target
-    }
-}
-
-impl DerefMut for ScopedExclude<'_> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        self.target
-    }
-}
-
-impl Drop for ScopedExclude<'_> {
-    fn drop(&mut self) {
-        if let Some(u) = self.u {
-            self.target.insert(u);
-        }
-    }
-}
-
 /// Logs the working storage.
 ///
 /// For debugging purposes only.
@@ -443,7 +366,7 @@ pub fn find(
             if !done && matches!(ppu, PPlane::XY | PPlane::X | PPlane::Y) {
                 log::debug!("===XY branch===");
                 x.clear();
-                common::zerofill(&mut work, ncols + 1);
+                utils::zerofill(&mut work, ncols + 1);
                 init_work::<BRANCH_XY>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
                 log_work(&work[..nrows_upper], &work[nrows_upper..]);
                 let mut solver = GF2Solver::attach(work, 1);
@@ -459,7 +382,7 @@ pub fn find(
             if !done && matches!(ppu, PPlane::YZ | PPlane::Y | PPlane::Z) {
                 log::debug!("===YZ branch===");
                 x.clear();
-                common::zerofill(&mut work, ncols + 1);
+                utils::zerofill(&mut work, ncols + 1);
                 init_work::<BRANCH_YZ>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
                 log_work(&work[..nrows_upper], &work[nrows_upper..]);
                 let mut solver = GF2Solver::attach(work, 1);
@@ -475,7 +398,7 @@ pub fn find(
             if !done && matches!(ppu, PPlane::ZX | PPlane::Z | PPlane::X) {
                 log::debug!("===ZX branch===");
                 x.clear();
-                common::zerofill(&mut work, ncols + 1);
+                utils::zerofill(&mut work, ncols + 1);
                 init_work::<BRANCH_ZX>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
                 log_work(&work[..nrows_upper], &work[nrows_upper..]);
                 let mut solver = GF2Solver::attach(work, 1);
@@ -518,8 +441,8 @@ pub fn find(
         let f_flatiter = f
             .iter()
             .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
-        common::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
-        common::check_initial(&layer, &oset, false).unwrap();
+        validate::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
+        validate::check_initial(&layer, &oset, false).unwrap();
         check_definition(&f, &layer, &g, &pplanes).unwrap();
         // }
         Some((f, layer))

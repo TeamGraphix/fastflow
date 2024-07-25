@@ -11,8 +11,9 @@ use num_traits::cast::FromPrimitive;
 use pyo3::prelude::*;
 
 use crate::{
-    common::{self, Graph, InPlaceSetOp, Layer, Nodes, OrderedNodes},
+    common::{Graph, Layer, Nodes, OrderedNodes},
     gf2_linalg::{self, GF2Solver},
+    utils::{self, InPlaceSetOp},
     validate,
 };
 
@@ -51,7 +52,7 @@ fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> any
                 return Err(err);
             }
         }
-        let odd_fi = common::odd_neighbors(g, fi);
+        let odd_fi = utils::odd_neighbors(g, fi);
         for &j in &odd_fi {
             if i != j && layer[i] <= layer[j] {
                 let err = anyhow::anyhow!("layer check failed").context(format!(
@@ -186,7 +187,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Optio
         work.truncate(nrows);
         // Decrease over time
         debug_assert!(work[0].len() >= ncols + neqs);
-        common::zerofill(&mut work, ncols + neqs);
+        utils::zerofill(&mut work, ncols + neqs);
         log::debug!("rowset: {ocset:?}");
         log::debug!("colset: {omiset:?}");
         log::debug!("eqset : {ocset:?}");
@@ -239,8 +240,8 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Optio
         let f_flatiter = f
             .iter()
             .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
-        common::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
-        common::check_initial(&layer, &oset, true).unwrap();
+        validate::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
+        validate::check_initial(&layer, &oset, true).unwrap();
         check_definition(&f, &layer, &g, &planes).unwrap();
         // }
         Some((f, layer))

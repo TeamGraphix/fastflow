@@ -4,7 +4,8 @@ use hashbrown;
 use pyo3::prelude::*;
 
 use crate::{
-    common::{self, Graph, InPlaceSetOp, Layer, Nodes},
+    common::{Graph, Layer, Nodes},
+    utils::InPlaceSetOp,
     validate,
 };
 
@@ -101,8 +102,8 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         log::debug!("layer: {layer:?}");
         // TODO: Uncomment once ready
         // if cfg!(debug_assertions) {
-        common::check_domain(f.iter(), &vset, &iset, &oset_orig).unwrap();
-        common::check_initial(&layer, &oset_orig, true).unwrap();
+        validate::check_domain(f.iter(), &vset, &iset, &oset_orig).unwrap();
+        validate::check_initial(&layer, &oset_orig, true).unwrap();
         check_definition(&f, &layer, &g).unwrap();
         // }
         Some((f, layer))
