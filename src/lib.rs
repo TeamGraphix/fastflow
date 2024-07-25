@@ -4,7 +4,7 @@
 
 #[cfg(test)]
 #[macro_use]
-pub(crate) mod test_utils;
+mod test_utils;
 
 mod gf2_linalg;
 mod utils;
@@ -12,7 +12,6 @@ mod validate;
 
 pub mod common;
 pub mod flow;
-pub(crate) mod gf2_linalg;
 pub mod gflow;
 pub mod pflow;
 
