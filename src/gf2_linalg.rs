@@ -23,55 +23,6 @@ pub struct GF2Solver {
 }
 
 impl GF2Solver {
-    /// Creates a new solver from the coefficient matrix and the right-hand side.
-    ///
-    /// # Arguments
-    ///
-    /// - `co`: Coefficient matrix as a sequence of bitsets (row vectors).
-    /// - `rhs`: Right-hand sides. Can solve multiple equations at once.
-    ///
-    /// # Returns
-    ///
-    /// `None` if the input is invalid.
-    ///
-    /// - If `co` or `rhs` is empty.
-    /// - If `co` or `rhs` is jagged (of different sizes).
-    #[allow(dead_code)]
-    pub fn try_new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> anyhow::Result<Self> {
-        let rows = co.len();
-        anyhow::ensure!(rows > 0, "co is empty");
-        let neqs = rhs.len();
-        anyhow::ensure!(neqs > 0, "rhs is empty");
-        anyhow::ensure!(
-            rhs.iter().map(|rhsi| rhsi.len()).all_equal_value() == Ok(rows),
-            "rhs size mismatch"
-        );
-        let Ok(cols) = co.iter().map(|row| row.len()).all_equal_value() else {
-            anyhow::bail!("co is jagged");
-        };
-        anyhow::ensure!(cols > 0, "zero-length columns");
-        let mut work = vec![FixedBitSet::with_capacity(cols + neqs); rows];
-        for (r, row) in co.iter().enumerate() {
-            for c in row.ones() {
-                work[r].insert(c);
-            }
-        }
-        for (ieq, rhsc) in rhs.iter().enumerate() {
-            let c = cols + ieq;
-            for r in rhsc.ones() {
-                work[r].insert(c);
-            }
-        }
-        Ok(Self {
-            rows,
-            cols,
-            neqs,
-            rank: None,
-            perm: (0..cols).collect(),
-            work,
-        })
-    }
-
     /// Checks the arguments of `attach`.
     fn attach_check(work: &GF2Matrix, neqs: usize) -> anyhow::Result<()> {
         anyhow::ensure!(neqs > 0, "neqs is zero");
@@ -307,16 +258,6 @@ impl GF2Solver {
         }
         true
     }
-
-    /// Solves the equation indexed by `ieq`.
-    #[allow(dead_code)]
-    pub fn solve(&mut self, ieq: usize) -> Option<FixedBitSet> {
-        let mut out = FixedBitSet::with_capacity(self.cols);
-        match self.solve_in_place(&mut out, ieq) {
-            false => None,
-            true => Some(out),
-        }
-    }
 }
 
 /// Formats the solver working storage.
@@ -344,35 +285,6 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_try_new_from() {
-        let co = vec![
-            // 1000
-            FixedBitSet::with_capacity_and_blocks(4, vec![0b0001]),
-            // 0100
-            FixedBitSet::with_capacity_and_blocks(4, vec![0b0010]),
-            // 0010
-            FixedBitSet::with_capacity_and_blocks(4, vec![0b0100]),
-        ];
-        let rhs = vec![
-            // 100
-            FixedBitSet::with_capacity_and_blocks(3, vec![0b001]),
-            // 110
-            FixedBitSet::with_capacity_and_blocks(3, vec![0b011]),
-            // 111
-            FixedBitSet::with_capacity_and_blocks(3, vec![0b111]),
-        ];
-        let sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
-        assert_eq!(sol.rows, 3);
-        assert_eq!(sol.cols, 4);
-        assert_eq!(sol.neqs, 3);
-        assert_eq!(sol.rank, None);
-        assert_eq!(sol.perm, &[0, 1, 2, 3]);
-        assert_eq!(format!("{:}", sol.work[0]), "1000111");
-        assert_eq!(format!("{:}", sol.work[1]), "0100011");
-        assert_eq!(format!("{:}", sol.work[2]), "0010001");
-    }
-
-    #[test]
     fn test_attach() {
         let work = vec![
             // 1000111
@@ -391,6 +303,42 @@ mod tests {
         assert_eq!(format!("{:}", sol.work[0]), "1000111");
         assert_eq!(format!("{:}", sol.work[1]), "0100011");
         assert_eq!(format!("{:}", sol.work[2]), "0010001");
+    }
+
+    /// Helper function to create a solver from the coefficient matrix and the right-hand side.
+    fn new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> GF2Solver {
+        let rows = co.len();
+        assert!(rows > 0);
+        let neqs = rhs.len();
+        assert!(neqs > 0);
+        assert_eq!(
+            rhs.iter().map(|rhsi| rhsi.len()).all_equal_value(),
+            Ok(rows)
+        );
+        let Ok(cols) = co.iter().map(|row| row.len()).all_equal_value() else {
+            panic!("co is jagged");
+        };
+        assert!(cols > 0);
+        let mut work = vec![FixedBitSet::with_capacity(cols + neqs); rows];
+        for (r, row) in co.iter().enumerate() {
+            for c in row.ones() {
+                work[r].insert(c);
+            }
+        }
+        for (ieq, rhsc) in rhs.iter().enumerate() {
+            let c = cols + ieq;
+            for r in rhsc.ones() {
+                work[r].insert(c);
+            }
+        }
+        GF2Solver {
+            rows,
+            cols,
+            neqs,
+            rank: None,
+            perm: (0..cols).collect(),
+            work,
+        }
     }
 
     fn compute_lhs(co: &[FixedBitSet], x: &FixedBitSet) -> FixedBitSet {
@@ -454,7 +402,7 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
+            let mut sol = new_from(&co, &rhs);
             sol.eliminate_lower();
             assert!(sol.validate_afterlower());
         }
@@ -467,7 +415,7 @@ mod tests {
             let co = rand_co(rows, cols, p);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, 0.5));
-            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
+            let mut sol = new_from(&co, &rhs);
             sol.eliminate_lower();
             assert!(sol.validate_afterlower());
         }
@@ -483,7 +431,7 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
+            let mut sol = new_from(&co, &rhs);
             sol.eliminate();
             assert!(sol.validate_afterupper());
         }
@@ -496,7 +444,7 @@ mod tests {
             let co = rand_co(rows, cols, p);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, 0.5));
-            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
+            let mut sol = new_from(&co, &rhs);
             sol.eliminate();
             assert!(sol.validate_afterupper());
         }
@@ -512,11 +460,11 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
+            let mut sol = new_from(&co, &rhs);
             sol.eliminate();
             for (ieq, rhsi) in rhs.iter().enumerate() {
-                let x = sol.solve(ieq);
-                if x.is_none() {
+                let mut x = FixedBitSet::with_capacity(cols);
+                if !sol.solve_in_place(&mut x, ieq) {
                     assert!(sol.rank.unwrap() < sol.rows);
                     continue;
                 }
@@ -524,7 +472,6 @@ mod tests {
                     assert!(sol.work[i].count_ones(..sol.cols) == 0);
                     assert!(!sol.work[i][cols + ieq]);
                 }
-                let x = x.unwrap();
                 let b = compute_lhs(&co, &x);
                 assert_eq!(&b, rhsi);
                 let rank = sol.rank.unwrap();
@@ -543,11 +490,11 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = GF2Solver::try_new_from(&co, &rhs).unwrap();
+            let mut sol = new_from(&co, &rhs);
             sol.eliminate();
             for (ieq, rhsi) in rhs.iter().enumerate() {
-                let x = sol.solve(ieq);
-                if x.is_none() {
+                let mut x = FixedBitSet::with_capacity(cols);
+                if !sol.solve_in_place(&mut x, ieq) {
                     assert!(sol.rank.unwrap() < sol.rows);
                     continue;
                 }
@@ -555,7 +502,6 @@ mod tests {
                     assert!(sol.work[i].count_ones(..sol.cols) == 0);
                     assert!(!sol.work[i][cols + ieq]);
                 }
-                let x = x.unwrap();
                 let b = compute_lhs(&co, &x);
                 assert_eq!(&b, rhsi);
                 let rank = sol.rank.unwrap();
