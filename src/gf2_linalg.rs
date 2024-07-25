@@ -1,12 +1,17 @@
 //! GF(2) linear solver for gflow algorithm.
 
+use std::{
+    collections::BTreeMap,
+    fmt::{self, Debug, Formatter},
+};
+
 use fixedbitset::FixedBitSet;
 use itertools::Itertools;
 
 type GF2Matrix = Vec<FixedBitSet>;
 
 /// Solver for GF(2) linear equations.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct GF2Solver {
     /// Number of rows in the coefficient matrix.
     rows: usize,
@@ -260,20 +265,35 @@ impl GF2Solver {
     }
 }
 
-/// Formats the solver working storage.
-pub fn format_work(work: &[FixedBitSet], ncols: usize) -> Vec<String> {
-    let mut ret = Vec::with_capacity(work.len());
-    for row in work.iter() {
-        let mut s = String::new();
-        for c in 0..row.len() {
-            if c == ncols {
-                s.push(' ');
+impl Debug for GF2Solver {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mut ret = f.debug_struct("GF2Solver");
+        ret.field("rows", &self.rows)
+            .field("cols", &self.cols)
+            .field("neqs", &self.neqs)
+            .field("rank", &self.rank)
+            .field("perm", &self.perm);
+        let mut work = BTreeMap::new();
+        for (r, row) in self.work.iter().enumerate() {
+            let mut s = String::with_capacity(self.cols);
+            for c in 0..self.cols {
+                s.push(if row[c] { '1' } else { '0' });
             }
-            s.push(if row.contains(c) { '1' } else { '0' });
+            work.insert(r, s);
         }
-        ret.push(s);
+        ret.field("co", &work);
+        let mut work = BTreeMap::new();
+        for (r, row) in self.work.iter().enumerate() {
+            let mut s = String::with_capacity(self.neqs);
+            for ieq in 0..self.neqs {
+                let c = self.cols + ieq;
+                s.push(if row[c] { '1' } else { '0' });
+            }
+            work.insert(r, s);
+        }
+        ret.field("rhs", &work);
+        ret.finish()
     }
-    ret
 }
 
 #[cfg(test)]

@@ -4,7 +4,6 @@ use std::iter;
 
 use fixedbitset::FixedBitSet;
 use hashbrown;
-use log::Level;
 use num_derive::FromPrimitive;
 use num_enum::IntoPrimitive;
 use num_traits::cast::FromPrimitive;
@@ -12,7 +11,7 @@ use pyo3::prelude::*;
 
 use crate::{
     common::{Graph, Layer, Nodes, OrderedNodes},
-    gf2_linalg::{self, GF2Solver},
+    gf2_linalg::GF2Solver,
     utils::{self, InPlaceSetOp},
     validate,
 };
@@ -196,14 +195,9 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Optio
             ocset.iter().map(|&u| planes[&u]).collect::<Vec<_>>()
         );
         init_work(&mut work, &g, &planes, &ocset, &omiset);
-        if log::log_enabled!(Level::Debug) {
-            log::debug!("work:");
-            for row in gf2_linalg::format_work(&work, omiset.len()) {
-                log::debug!("  {}", row);
-            }
-        }
         let mut solver = GF2Solver::attach(work, neqs);
         let mut x = FixedBitSet::with_capacity(ncols);
+        log::debug!("{solver:?}");
         // i2v[i] = node assigned to one-hot vector x[i]
         i2v.clear();
         i2v.extend(omiset.iter().copied());
