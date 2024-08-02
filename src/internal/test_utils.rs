@@ -5,15 +5,7 @@ use std::sync::LazyLock;
 use crate::common::{Graph, Nodes};
 
 pub mod exports {
-    pub use std::cmp;
-
-    pub use hashbrown::{HashMap, HashSet};
-}
-
-macro_rules! nodes {
-    ($($x:expr),*) => {
-        $crate::internal::test_utils::exports::HashSet::from_iter([$($x),*].iter().copied())
-    };
+    pub use hashbrown::HashMap;
 }
 
 macro_rules! measurements {
@@ -22,28 +14,19 @@ macro_rules! measurements {
     };
 }
 
-macro_rules! static_max {
-    ($x:expr) => {
-        $x
-    };
-    ($x:expr, $($y:expr),+) => {
-        $x.max(static_max!($($y),+))
-    };
-}
-
-macro_rules! graph {
-    () => {
-        vec![]
-    };
-    ($(($u:expr, $v:expr)),+) => {{
-        let n = $crate::internal::test_utils::exports::cmp::max(static_max!($($u),+), static_max!($($v),+)) + 1;
-        let mut g = vec![$crate::internal::test_utils::exports::HashSet::new(); n];
-        $(
-        g[$u].insert($v);
-        g[$v].insert($u);
-        )+
-        g
-    }};
+/// Creates a undirected graph from edges.
+fn graph<const N: usize>(edges: &[(usize, usize); N]) -> Graph {
+    let n = edges
+        .iter()
+        .map(|&(u, v)| u.max(v) + 1)
+        .max()
+        .unwrap_or_default();
+    let mut g = vec![Nodes::new(); n];
+    for &(u, v) in edges {
+        g[u].insert(v);
+        g[v].insert(u);
+    }
+    g
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -56,18 +39,18 @@ pub struct TestCase {
 pub static CASE0: LazyLock<TestCase> = LazyLock::new(|| {
     // 0 - 1
     TestCase {
-        g: graph![(0, 1)],
-        iset: nodes![0, 1],
-        oset: nodes![0, 1],
+        g: graph(&[(0, 1)]),
+        iset: Nodes::from([0, 1]),
+        oset: Nodes::from([0, 1]),
     }
 });
 
 pub static CASE1: LazyLock<TestCase> = LazyLock::new(|| {
     // 0 - 1 - 2 - 3 - 4
     TestCase {
-        g: graph![(0, 1), (1, 2), (2, 3), (3, 4)],
-        iset: nodes![0],
-        oset: nodes![4],
+        g: graph(&[(0, 1), (1, 2), (2, 3), (3, 4)]),
+        iset: Nodes::from([0]),
+        oset: Nodes::from([4]),
     }
 });
 
@@ -76,9 +59,9 @@ pub static CASE2: LazyLock<TestCase> = LazyLock::new(|| {
     //     |
     // 1 - 3 - 5
     TestCase {
-        g: graph![(0, 2), (1, 3), (2, 4), (3, 5), (2, 3)],
-        iset: nodes![0, 1],
-        oset: nodes![4, 5],
+        g: graph(&[(0, 2), (1, 3), (2, 4), (3, 5), (2, 3)]),
+        iset: Nodes::from([0, 1]),
+        oset: Nodes::from([4, 5]),
     }
 });
 
@@ -95,9 +78,9 @@ pub static CASE3: LazyLock<TestCase> = LazyLock::new(|| {
     //  / \  /
     // 2 - 5
     TestCase {
-        g: graph![(0, 3), (0, 5), (1, 3), (1, 4), (1, 5), (2, 4), (2, 5)],
-        iset: nodes![0, 1, 2],
-        oset: nodes![3, 4, 5],
+        g: graph(&[(0, 3), (0, 5), (1, 3), (1, 4), (1, 5), (2, 4), (2, 5)]),
+        iset: Nodes::from([0, 1, 2]),
+        oset: Nodes::from([3, 4, 5]),
     }
 });
 
@@ -108,9 +91,9 @@ pub static CASE4: LazyLock<TestCase> = LazyLock::new(|| {
     //  \|   |
     //   2 - 5 - 3
     TestCase {
-        g: graph![(0, 1), (0, 2), (0, 4), (1, 5), (2, 4), (2, 5), (3, 5)],
-        iset: nodes![0, 1],
-        oset: nodes![4, 5],
+        g: graph(&[(0, 1), (0, 2), (0, 4), (1, 5), (2, 4), (2, 5), (3, 5)]),
+        iset: Nodes::from([0, 1]),
+        oset: Nodes::from([4, 5]),
     }
 });
 
@@ -121,9 +104,9 @@ pub static CASE5: LazyLock<TestCase> = LazyLock::new(|| {
     //  / \
     // 1 - 3
     TestCase {
-        g: graph![(0, 2), (0, 3), (1, 2), (1, 3)],
-        iset: nodes![0, 1],
-        oset: nodes![2, 3],
+        g: graph(&[(0, 2), (0, 3), (1, 2), (1, 3)]),
+        iset: Nodes::from([0, 1]),
+        oset: Nodes::from([2, 3]),
     }
 });
 
@@ -134,9 +117,9 @@ pub static CASE6: LazyLock<TestCase> = LazyLock::new(|| {
     //     |
     // 0 - 1 - 4
     TestCase {
-        g: graph![(0, 1), (1, 2), (1, 4), (2, 3)],
-        iset: nodes![0],
-        oset: nodes![4],
+        g: graph(&[(0, 1), (1, 2), (1, 4), (2, 3)]),
+        iset: Nodes::from([0]),
+        oset: Nodes::from([4]),
     }
 });
 
@@ -145,9 +128,9 @@ pub static CASE7: LazyLock<TestCase> = LazyLock::new(|| {
     // | /     |
     // 0 - - - 4
     TestCase {
-        g: graph![(0, 1), (0, 2), (0, 4), (3, 4)],
-        iset: nodes![0],
-        oset: nodes![4],
+        g: graph(&[(0, 1), (0, 2), (0, 4), (3, 4)]),
+        iset: Nodes::from([0]),
+        oset: Nodes::from([4]),
     }
 });
 
@@ -158,8 +141,8 @@ pub static CASE8: LazyLock<TestCase> = LazyLock::new(|| {
     //     | /\ |
     //     2 -- 4
     TestCase {
-        g: graph![(0, 1), (0, 4), (1, 2), (1, 3), (2, 3), (2, 4), (3, 4)],
-        iset: nodes![0],
-        oset: nodes![3, 4],
+        g: graph(&[(0, 1), (0, 4), (1, 2), (1, 3), (2, 3), (2, 4), (3, 4)]),
+        iset: Nodes::from([0]),
+        oset: Nodes::from([3, 4]),
     }
 });
