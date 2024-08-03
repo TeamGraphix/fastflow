@@ -4,9 +4,6 @@ use std::iter;
 
 use fixedbitset::FixedBitSet;
 use hashbrown;
-use num_derive::FromPrimitive;
-use num_enum::IntoPrimitive;
-use num_traits::cast::FromPrimitive;
 use pyo3::prelude::*;
 
 use crate::{
@@ -18,19 +15,18 @@ use crate::{
     },
 };
 
-#[derive(PartialEq, Eq, Clone, Copy, Debug, FromPrimitive, IntoPrimitive)]
-#[repr(u8)]
+#[pyclass(eq, hash, frozen)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 /// Measurement planes or Pauli index.
-enum PPlane {
-    XY = 0,
-    YZ = 1,
-    ZX = 2,
-    X = 3,
-    Y = 4,
-    Z = 5,
+pub enum PPlane {
+    XY,
+    YZ,
+    ZX,
+    X,
+    Y,
+    Z,
 }
 
-type InternalPPlanes = hashbrown::HashMap<usize, u8>;
 type PPlanes = hashbrown::HashMap<usize, PPlane>;
 type PFlow = hashbrown::HashMap<usize, Nodes>;
 
@@ -113,14 +109,6 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> a
         }
     }
     Ok(())
-}
-
-/// Decodes the internal representation.
-fn from_internal(pplanes: InternalPPlanes) -> PPlanes {
-    pplanes
-        .into_iter()
-        .map(|(k, v)| (k, PPlane::from_u8(v).expect("pplane is in 0..6")))
-        .collect::<PPlanes>()
 }
 
 /// Sellects nodes from `src` with `pred`.
@@ -330,15 +318,9 @@ fn find_impl<const K: BranchKind>(ctx: &mut PFlowContext) -> bool {
 /// - Arguments are **NOT** verified.
 #[pyfunction]
 #[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
-pub fn find(
-    g: Graph,
-    iset: Nodes,
-    oset: Nodes,
-    pplanes: InternalPPlanes,
-) -> Option<(PFlow, Layer)> {
+pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFlow, Layer)> {
     log::debug!("pflow::find");
     validate::check_graph(&g, &iset, &oset).unwrap();
-    let pplanes = from_internal(pplanes);
     let yset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::Y));
     let xyset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::X | PPlane::Y));
     let yzset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::Y | PPlane::Z));

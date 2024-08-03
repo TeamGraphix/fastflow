@@ -5,7 +5,7 @@ from __future__ import annotations
 import dataclasses
 
 import networkx as nx
-from fastflow.common import FlowResult, GFlowResult, PauliPlane, Plane
+from fastflow.common import FlowResult, GFlowResult, Plane, PPlane
 
 
 @dataclasses.dataclass(frozen=True)
@@ -16,7 +16,7 @@ class FlowTestCase:
     iset: set[int]
     oset: set[int]
     plane: dict[int, Plane] | None
-    pplane: dict[int, PauliPlane] | None
+    pplane: dict[int, PPlane] | None
     flow: FlowResult[int] | None
     gflow: GFlowResult[int] | None
     pflow: GFlowResult[int] | None
@@ -96,7 +96,7 @@ CASE4 = FlowTestCase(
     {0, 1},
     {4, 5},
     {0: Plane.XY, 1: Plane.XY, 2: Plane.ZX, 3: Plane.YZ},
-    {0: PauliPlane.XY, 1: PauliPlane.XY, 2: PauliPlane.ZX, 3: PauliPlane.YZ},
+    {0: PPlane.XY, 1: PPlane.XY, 2: PPlane.ZX, 3: PPlane.YZ},
     None,
     GFlowResult({0: {2}, 1: {5}, 2: {2, 4}, 3: {3}}, {0: 2, 1: 2, 2: 1, 3: 1, 4: 0, 5: 0}),
     GFlowResult({0: {2}, 1: {5}, 2: {2, 4}, 3: {3}}, {0: 2, 1: 2, 2: 1, 3: 1, 4: 0, 5: 0}),
@@ -129,7 +129,7 @@ CASE6 = FlowTestCase(
     {0},
     {4},
     {0: Plane.XY, 1: Plane.XY, 2: Plane.XY, 3: Plane.XY},
-    {0: PauliPlane.XY, 1: PauliPlane.X, 2: PauliPlane.XY, 3: PauliPlane.X},
+    {0: PPlane.XY, 1: PPlane.X, 2: PPlane.XY, 3: PPlane.X},
     None,
     None,
     GFlowResult({0: {1}, 1: {4}, 2: {3}, 3: {2, 4}}, {0: 1, 1: 1, 2: 0, 3: 1, 4: 0}),
@@ -143,7 +143,7 @@ CASE7 = FlowTestCase(
     {0},
     {4},
     {0: Plane.YZ, 1: Plane.ZX, 2: Plane.XY, 3: Plane.YZ},
-    {0: PauliPlane.Z, 1: PauliPlane.Z, 2: PauliPlane.Y, 3: PauliPlane.Y},
+    {0: PPlane.Z, 1: PPlane.Z, 2: PPlane.Y, 3: PPlane.Y},
     None,
     None,
     GFlowResult({0: {0}, 1: {1}, 2: {2}, 3: {4}}, {0: 1, 1: 0, 2: 0, 3: 1, 4: 0}),
@@ -159,7 +159,7 @@ CASE8 = FlowTestCase(
     {0},
     {3, 4},
     {0: Plane.YZ, 1: Plane.ZX, 2: Plane.XY},
-    {0: PauliPlane.Z, 1: PauliPlane.ZX, 2: PauliPlane.Y},
+    {0: PPlane.Z, 1: PPlane.ZX, 2: PPlane.Y},
     None,
     None,
     GFlowResult({0: {0, 2, 4}, 1: {1, 2}, 2: {4}}, {0: 1, 1: 1, 2: 1, 3: 0, 4: 0}),

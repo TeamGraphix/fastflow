@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Mapping
 
 from fastflow import common
 from fastflow._impl import gflow
-from fastflow.common import GFlowResult, IndexMap, Plane, V, _Plane
+from fastflow.common import GFlowResult, IndexMap, Plane, V
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
@@ -57,7 +57,7 @@ def find(
     g_ = codec.encode_graph(g)
     iset_ = codec.encode_set(iset)
     oset_ = codec.encode_set(oset)
-    plane_: dict[int, _Plane] = {codec.v2i[k]: v.value for k, v in plane.items() if k not in oset}
+    plane_ = codec.encode_dictkey(plane)
     if len(plane_) != len(plane):
         msg = "Ignoring plane[v] where v in oset."
         warnings.warn(msg, stacklevel=1)

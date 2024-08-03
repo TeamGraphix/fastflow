@@ -5,42 +5,17 @@ from __future__ import annotations
 import dataclasses
 from collections.abc import Hashable, Mapping
 from collections.abc import Set as AbstractSet
-from enum import Enum
-from types import MappingProxyType
-from typing import Generic, Literal, TypeVar
+from typing import Generic, TypeVar
 
 import networkx as nx
 
+from fastflow._impl import gflow, pflow
+
+Plane = gflow.Plane
+PPlane = pflow.PPlane
+
 # Vertex type
 V = TypeVar("V", bound=Hashable)
-
-# Plane-like
-P = TypeVar("P")
-
-
-class Plane(Enum):
-    """Measurement planes in MBQC."""
-
-    # DO NOT change the associated values!
-    XY = 0
-    YZ = 1
-    ZX = 2
-
-
-class PauliPlane(Enum):
-    """Measurement planes for Pauli flow."""
-
-    # DO NOT change the associated values!
-    XY = 0
-    YZ = 1
-    ZX = 2
-    X = 3
-    Y = 4
-    Z = 5
-
-
-_Plane = Literal[0, 1, 2]
-_PPlane = Literal[0, 1, 2, 3, 4, 5]
 
 
 @dataclasses.dataclass(frozen=True)
@@ -110,6 +85,10 @@ def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> N
         raise ValueError(msg)
 
 
+# Plane-like
+P = TypeVar("P", bound=Plane | PPlane)
+
+
 def check_planelike(vset: AbstractSet[V], oset: AbstractSet[V], plike: Mapping[V, P]) -> None:
     """Check if measurement config. is valid."""
     if plike.keys() > vset:
@@ -152,6 +131,10 @@ class IndexMap(Generic[V]):
         """Encode set."""
         return {self.encode(v) for v in vset}
 
+    def encode_dictkey(self, mapping: Mapping[V, P]) -> dict[int, P]:
+        """Encode dict key."""
+        return {self.encode(k): v for k, v in mapping.items()}
+
     def decode(self, i: int) -> V:
         """Decode the index."""
         v = self.__i2v.get(i)
@@ -175,13 +158,3 @@ class IndexMap(Generic[V]):
     def decode_layer(self, layer_: list[int]) -> dict[V, int]:
         """Decode layer."""
         return {self.decode(i): li for i, li in enumerate(layer_)}
-
-    @property
-    def v2i(self) -> MappingProxyType[V, int]:
-        """Return the mapping from `V` to the index."""
-        return MappingProxyType(self.__v2i)
-
-    @property
-    def i2v(self) -> MappingProxyType[int, V]:
-        """Return the mapping from the index to `V`."""
-        return MappingProxyType(self.__i2v)
