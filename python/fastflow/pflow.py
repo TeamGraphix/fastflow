@@ -23,13 +23,14 @@ def find(
     vset = g.nodes
     if pplane is None:
         pplane = dict.fromkeys(vset - oset, PauliPlane.XY)
-        warnings.warn("pflow.find is inefficient. Use gflow.find instead.", stacklevel=1)
     if pplane.keys() > vset:
         msg = "Keys of pplane must be in g.nodes."
         raise ValueError(msg)
     if pplane.keys() < vset - oset:
         msg = "pplanes should be specified for all u in V\\O."
         raise ValueError(msg)
+    if all(pp not in (PauliPlane.X, PauliPlane.Y, PauliPlane.Z) for pp in pplane.values()):
+        warnings.warn("No Pauli measurement found. Use gflow.find instead.", stacklevel=1)
     codec = IndexMap(vset)
     g_ = codec.encode_graph(g)
     iset_ = codec.encode_set(iset)
