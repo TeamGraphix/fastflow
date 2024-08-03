@@ -6,7 +6,7 @@ build-backend = "maturin"
 name = "fastflow"
 # Must be consistent with Cargo.toml
 version = "0.1.0"
-dependencies = ["eval_type_backport", "networkx", "types-networkx", "pydantic"]
+dependencies = ["networkx", "types-networkx"]
 requires-python = ">=3.8,<3.13"
 
 [project.optional-dependencies]
