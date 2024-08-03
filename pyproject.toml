@@ -31,44 +31,41 @@ docstring-code-format = true
 select = ["ALL"]
 ignore = [
   # Conclicts with ruff format
-  "W191",
+  "COM812",
+  "COM819",
+  "D206",
+  "D300",
   "E111",
   "E114",
   "E117",
-  "D206",
-  "D300",
+  "ISC001",
+  "ISC002",
   "Q000",
   "Q001",
   "Q002",
   "Q003",
-  "COM812",
-  "COM819",
-  "ISC001",
-  "ISC002",
+  "W191",
 
   # Not necessary for this project
+  "AIR",
   "ASYNC",
   "DJ",
   "PD",
-  "AIR",
 
   # Manually disabled
-  "FBT",   # boolean-trap
-  "T20",   # print
-  "TD",    # todo
-  "FIX",   # fixme
-  "ERA",   # eradicate
   "ANN10", # `self`/`cls` not annotated
+  "CPY",   # copyright missing
   "D105",  # undocumented magic method
   "D203",  # blank line before class (conflicts with D211)
   "D213",  # break after `"""` in docstring (conflicts with D212)
+  "ERA",   # eradicate
+  "FBT",   # boolean-trap
+  "FIX",   # fixme
   "S101",  # `assert` detected
+  "T20",   # print
   "T20",   # `print`/`pprint` detected
-  "CPY",   # copyright missing
+  "TD",    # todo
 ]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
-
-[tool.ruff.lint.extend-per-file-ignores]
-"scratchpad/*.py" = ["INP"]
