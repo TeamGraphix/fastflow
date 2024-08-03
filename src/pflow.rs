@@ -265,6 +265,7 @@ struct PFlowContext<'a> {
 }
 
 /// Implements the branch-specific part of the algorithm.
+#[tracing::instrument]
 fn find_impl<const K: BranchKind>(ctx: &mut PFlowContext) -> bool {
     const {
         assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
@@ -282,13 +283,13 @@ fn find_impl<const K: BranchKind>(ctx: &mut PFlowContext) -> bool {
         ctx.colset,
     );
     let mut solver = GF2Solver::attach(ctx.work, 1);
-    log::debug!("{solver:?}");
+    tracing::debug!("{solver:?}");
     if solver.solve_in_place(ctx.x, 0) {
-        log::debug!("solution found for {u}");
+        tracing::debug!("solution found for {u}");
         ctx.f.insert(u, decode_solution::<K>(u, ctx.x, ctx.colset));
         true
     } else {
-        log::debug!("solution not found: {u}");
+        tracing::debug!("solution not found: {u}");
         false
     }
 }
@@ -311,9 +312,9 @@ fn find_impl<const K: BranchKind>(ctx: &mut PFlowContext) -> bool {
 /// - Node indices are assumed to be `0..g.len()`.
 /// - Arguments are **NOT** verified.
 #[pyfunction]
+#[tracing::instrument]
 #[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
 pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFlow, Layer)> {
-    log::debug!("pflow::find");
     validate::check_graph(&g, &iset, &oset).unwrap();
     let yset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::Y));
     let xyset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::X | PPlane::Y));
@@ -329,7 +330,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFl
     let mut layer = vec![0_usize; n];
     let mut work = vec![FixedBitSet::new(); rowset_upper.len() + rowset_lower.len()];
     for l in 0_usize.. {
-        log::debug!("=====layer {l}=====");
+        tracing::debug!("=====layer {l}=====");
         cset.clear();
         for &u in &ocset {
             let rowset_upper = ScopedInclude::new(&mut rowset_upper, u);
@@ -342,10 +343,10 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFl
                 continue;
             }
             let ppu = pplanes[&u];
-            log::debug!("====checking {u} ({ppu:?})====");
-            log::debug!("rowset_upper: {:?}", &*rowset_upper);
-            log::debug!("rowset_lower: {:?}", &*rowset_lower);
-            log::debug!("colset      : {:?}", &*colset);
+            tracing::debug!("====checking {u} ({ppu:?})====");
+            tracing::debug!("rowset_upper: {:?}", &*rowset_upper);
+            tracing::debug!("rowset_lower: {:?}", &*rowset_lower);
+            tracing::debug!("colset      : {:?}", &*colset);
             // No monotonicity guarantees
             work.resize_with(nrows_upper + nrows_lower, || {
                 FixedBitSet::with_capacity(ncols + 1)
@@ -363,24 +364,24 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFl
                 f: &mut f,
             };
             if !done && matches!(ppu, PPlane::XY | PPlane::X | PPlane::Y) {
-                log::debug!("===XY branch===");
+                tracing::debug!("===XY branch===");
                 done |= find_impl::<BRANCH_XY>(&mut ctx);
             }
             if !done && matches!(ppu, PPlane::YZ | PPlane::Y | PPlane::Z) {
-                log::debug!("===YZ branch===");
+                tracing::debug!("===YZ branch===");
                 done |= find_impl::<BRANCH_YZ>(&mut ctx);
             }
             if !done && matches!(ppu, PPlane::ZX | PPlane::Z | PPlane::X) {
-                log::debug!("===ZX branch===");
+                tracing::debug!("===ZX branch===");
                 done |= find_impl::<BRANCH_ZX>(&mut ctx);
             }
             if done {
-                log::debug!("f({}) = {:?}", u, &f[&u]);
-                log::debug!("layer({u}) = {l}");
+                tracing::debug!("f({}) = {:?}", u, &f[&u]);
+                tracing::debug!("layer({u}) = {l}");
                 layer[u] = l;
                 cset.insert(u);
             } else {
-                log::debug!("solution not found: {u} (all branches)");
+                tracing::debug!("solution not found: {u} (all branches)");
             }
         }
         if l == 0 {
@@ -396,9 +397,9 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFl
         colset.extend(cset.difference(&iset));
     }
     if ocset.is_empty() {
-        log::debug!("pflow found");
-        log::debug!("pflow: {f:?}");
-        log::debug!("layer: {layer:?}");
+        tracing::debug!("pflow found");
+        tracing::debug!("pflow: {f:?}");
+        tracing::debug!("layer: {layer:?}");
         // TODO: Uncomment once ready
         // if cfg!(debug_assertions) {
         let f_flatiter = f
@@ -410,7 +411,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFl
         // }
         Some((f, layer))
     } else {
-        log::debug!("pflow not found");
+        tracing::debug!("pflow not found");
         None
     }
 }

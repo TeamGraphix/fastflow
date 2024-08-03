@@ -54,9 +54,9 @@ fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
 /// - Node indices are assumed to be `0..g.len()`.
 /// - Arguments are **NOT** verified.
 #[pyfunction]
+#[tracing::instrument]
 #[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
 pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
-    log::debug!("flow::find");
     validate::check_graph(&g, &iset, &oset).unwrap();
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();
@@ -71,7 +71,7 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
     let mut oset_work = Nodes::new();
     let mut cset_work = Nodes::new();
     for l in 1_usize.. {
-        log::debug!("=====layer {l}=====");
+        tracing::debug!("=====layer {l}=====");
         oset_work.clear();
         cset_work.clear();
         for &v in &cset {
@@ -80,9 +80,9 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
                 continue;
             }
             let u = *checkv.iter().next().expect("one element here");
-            log::debug!("f({u}) = {v}");
+            tracing::debug!("f({u}) = {v}");
             f.insert(u, v);
-            log::debug!("layer({u}) = {l}");
+            tracing::debug!("layer({u}) = {l}");
             layer[u] = l;
             oset_work.insert(u);
             cset_work.insert(v);
@@ -101,9 +101,9 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         cset.extend(oset_work.intersection(&icset));
     }
     if oset == vset {
-        log::debug!("flow found");
-        log::debug!("flow : {f:?}");
-        log::debug!("layer: {layer:?}");
+        tracing::debug!("flow found");
+        tracing::debug!("flow : {f:?}");
+        tracing::debug!("layer: {layer:?}");
         // TODO: Uncomment once ready
         // if cfg!(debug_assertions) {
         validate::check_domain(f.iter(), &vset, &iset, &oset_orig).unwrap();
@@ -112,7 +112,7 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         // }
         Some((f, layer))
     } else {
-        log::debug!("flow not found");
+        tracing::debug!("flow not found");
         None
     }
 }

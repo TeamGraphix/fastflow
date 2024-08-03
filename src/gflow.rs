@@ -142,9 +142,9 @@ fn init_work(
 /// - Node indices are assumed to be `0..g.len()`.
 /// - Arguments are **NOT** verified.
 #[pyfunction]
+#[tracing::instrument]
 #[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
 pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: Planes) -> Option<(GFlow, Layer)> {
-    log::debug!("gflow::find");
     validate::check_graph(&g, &iset, &oset).unwrap();
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();
@@ -163,7 +163,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: Planes) -> Option<(GFlow
         if ocset.is_empty() || omiset.is_empty() {
             break;
         }
-        log::debug!("=====layer {l}=====");
+        tracing::debug!("=====layer {l}=====");
         // Decrease over time
         nrows = ocset.len();
         ncols = omiset.len();
@@ -173,20 +173,20 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: Planes) -> Option<(GFlow
         // Decrease over time
         debug_assert!(work[0].len() >= ncols + neqs);
         utils::zerofill(&mut work, ncols + neqs);
-        log::debug!("rowset: {ocset:?}");
-        log::debug!("colset: {omiset:?}");
-        log::debug!("eqset : {ocset:?}");
-        log::debug!(
+        tracing::debug!("rowset: {ocset:?}");
+        tracing::debug!("colset: {omiset:?}");
+        tracing::debug!("eqset : {ocset:?}");
+        tracing::debug!(
             "planes: {:?}",
             ocset.iter().map(|&u| planes[&u]).collect::<Vec<_>>()
         );
         init_work(&mut work, &g, &planes, &ocset, &omiset);
         let mut solver = GF2Solver::attach(&mut work, neqs);
         let mut x = FixedBitSet::with_capacity(ncols);
-        log::debug!("{solver:?}");
+        tracing::debug!("{solver:?}");
         for (ieq, &u) in ocset.iter().enumerate() {
             if !solver.solve_in_place(&mut x, ieq) {
-                log::debug!("solution not found: {u}");
+                tracing::debug!("solution not found: {u}");
                 continue;
             }
             cset.insert(u);
@@ -200,9 +200,9 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: Planes) -> Option<(GFlow
                 // Include u
                 fu.insert(u);
             }
-            log::debug!("f({u}) = {fu:?}");
+            tracing::debug!("f({u}) = {fu:?}");
             f.insert(u, fu);
-            log::debug!("layer({u}) = {l}");
+            tracing::debug!("layer({u}) = {l}");
             layer[u] = l;
         }
         if cset.is_empty() {
@@ -212,9 +212,9 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: Planes) -> Option<(GFlow
         omiset.extend(cset.difference(&iset));
     }
     if ocset.is_empty() {
-        log::debug!("gflow found");
-        log::debug!("gflow: {f:?}");
-        log::debug!("layer: {layer:?}");
+        tracing::debug!("gflow found");
+        tracing::debug!("gflow: {f:?}");
+        tracing::debug!("layer: {layer:?}");
         // TODO: Uncomment once ready
         // if cfg!(debug_assertions) {
         let f_flatiter = f
@@ -226,7 +226,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: Planes) -> Option<(GFlow
         // }
         Some((f, layer))
     } else {
-        log::debug!("gflow not found");
+        tracing::debug!("gflow not found");
         None
     }
 }
