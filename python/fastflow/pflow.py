@@ -25,14 +25,16 @@ def find(
         pplane = dict.fromkeys(vset - oset, PauliPlane.XY)
     common.check_planelike(vset, oset, pplane)
     if all(pp not in (PauliPlane.X, PauliPlane.Y, PauliPlane.Z) for pp in pplane.values()):
-        warnings.warn("No Pauli measurement found. Use gflow.find instead.", stacklevel=1)
+        msg = "No Pauli measurement found. Use gflow.find instead."
+        warnings.warn(msg, stacklevel=1)
     codec = IndexMap(vset)
     g_ = codec.encode_graph(g)
     iset_ = codec.encode_set(iset)
     oset_ = codec.encode_set(oset)
     pplane_: dict[int, _PPlane] = {codec.v2i[k]: v.value for k, v in pplane.items() if k not in oset}
     if len(pplane_) != len(pplane):
-        warnings.warn("Ignoring pplane[v] where v in oset.", stacklevel=1)
+        msg = "Ignoring pplane[v] where v in oset."
+        warnings.warn(msg, stacklevel=1)
     if ret_ := pflow.find(g_, iset_, oset_, pplane_):
         f_, layer_ = ret_
         f = codec.decode_gflow(f_)

@@ -56,7 +56,8 @@ def find(
     oset_ = codec.encode_set(oset)
     plane_: dict[int, _Plane] = {codec.v2i[k]: v.value for k, v in plane.items() if k not in oset}
     if len(plane_) != len(plane):
-        warnings.warn("Ignoring plane[v] where v in oset.", stacklevel=1)
+        msg = "Ignoring plane[v] where v in oset."
+        warnings.warn(msg, stacklevel=1)
     if ret_ := gflow.find(g_, iset_, oset_, plane_):
         f_, layer_ = ret_
         f = codec.decode_gflow(f_)
