@@ -88,6 +88,14 @@ fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> any
     Ok(())
 }
 
+/// Decodes the internal representation.
+fn from_internal(planes: InternalPlanes) -> Planes {
+    planes
+        .into_iter()
+        .map(|(k, v)| (k, Plane::from_u8(v).expect("plane is either 0, 1, or 2")))
+        .collect::<Planes>()
+}
+
 /// Initializes the working matrix.
 fn init_work(
     work: &mut [FixedBitSet],
@@ -154,10 +162,7 @@ fn init_work(
 pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Option<(GFlow, Layer)> {
     log::debug!("gflow::find");
     validate::check_graph(&g, &iset, &oset).unwrap();
-    let planes = planes
-        .into_iter()
-        .map(|(k, v)| (k, Plane::from_u8(v).expect("plane is either 0, 1, or 2")))
-        .collect::<Planes>();
+    let planes = from_internal(planes);
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();
     let mut cset = Nodes::new();

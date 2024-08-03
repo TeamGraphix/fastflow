@@ -116,6 +116,21 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> a
     Ok(())
 }
 
+/// Decodes the internal representation.
+fn from_internal(pplanes: InternalPPlanes) -> PPlanes {
+    pplanes
+        .into_iter()
+        .map(|(k, v)| (k, PPlane::from_u8(v).expect("pplane is in 0..6")))
+        .collect::<PPlanes>()
+}
+
+/// Sellects nodes from `src` with `pred`.
+fn matching_nodes(src: &PPlanes, mut pred: impl FnMut(&PPlane) -> bool) -> Nodes {
+    src.iter()
+        .filter_map(|(&k, v)| if pred(v) { Some(k) } else { None })
+        .collect()
+}
+
 /// Initializes the upper block of working storage.
 fn init_work_upper_co(
     work: &mut [FixedBitSet],
@@ -250,11 +265,45 @@ fn decode_solution<const K: BranchKind>(u: usize, x: &FixedBitSet, colset: &Orde
     fu
 }
 
-/// Sellects nodes from `src` with `pred`.
-fn matching_nodes(src: &PPlanes, mut pred: impl FnMut(&PPlane) -> bool) -> Nodes {
-    src.iter()
-        .filter_map(|(&k, v)| if pred(v) { Some(k) } else { None })
-        .collect()
+#[derive(Debug)]
+struct PFlowContext<'a> {
+    work: &'a mut [FixedBitSet],
+    g: &'a Graph,
+    u: usize,
+    rowset_upper: &'a OrderedNodes,
+    rowset_lower: &'a OrderedNodes,
+    colset: &'a OrderedNodes,
+    x: &'a mut FixedBitSet,
+    f: &'a mut PFlow,
+}
+
+/// Implements the branch-specific part of the algorithm.
+fn find_impl<const K: BranchKind>(ctx: &mut PFlowContext) -> bool {
+    const {
+        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
+    };
+    let u = ctx.u;
+    ctx.x.clear();
+    let ncols = ctx.colset.len();
+    utils::zerofill(ctx.work, ncols + 1);
+    init_work::<K>(
+        ctx.work,
+        u,
+        ctx.g,
+        ctx.rowset_upper,
+        ctx.rowset_lower,
+        ctx.colset,
+    );
+    let mut solver = GF2Solver::attach(ctx.work, 1);
+    log::debug!("{solver:?}");
+    if solver.solve_in_place(ctx.x, 0) {
+        log::debug!("solution found for {u}");
+        ctx.f.insert(u, decode_solution::<K>(u, ctx.x, ctx.colset));
+        true
+    } else {
+        log::debug!("solution not found: {u}");
+        false
+    }
 }
 
 /// Finds the maximally-delayed Pauli flow.
@@ -290,16 +339,10 @@ pub fn find(
 ) -> Option<(PFlow, Layer)> {
     log::debug!("pflow::find");
     validate::check_graph(&g, &iset, &oset).unwrap();
-    let pplanes = pplanes
-        .into_iter()
-        .map(|(k, v)| (k, PPlane::from_u8(v).expect("pplane is in 0..6")))
-        .collect::<PPlanes>();
+    let pplanes = from_internal(pplanes);
     let yset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::Y));
     let xyset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::X | PPlane::Y));
     let yzset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::Y | PPlane::Z));
-    debug_assert!(yset.is_disjoint(&oset));
-    debug_assert!(xyset.is_disjoint(&oset));
-    debug_assert!(yzset.is_disjoint(&oset));
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();
     let mut cset = Nodes::new();
@@ -334,50 +377,27 @@ pub fn find(
             });
             let mut x = FixedBitSet::with_capacity(ncols);
             let mut done = false;
+            let mut ctx = PFlowContext {
+                work: &mut work,
+                g: &g,
+                u,
+                rowset_upper: &rowset_upper,
+                rowset_lower: &rowset_lower,
+                colset: &colset,
+                x: &mut x,
+                f: &mut f,
+            };
             if !done && matches!(ppu, PPlane::XY | PPlane::X | PPlane::Y) {
                 log::debug!("===XY branch===");
-                x.clear();
-                utils::zerofill(&mut work, ncols + 1);
-                init_work::<BRANCH_XY>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
-                let mut solver = GF2Solver::attach(&mut work, 1);
-                log::debug!("{solver:?}");
-                if solver.solve_in_place(&mut x, 0) {
-                    log::debug!("solution found for {u} (XY)");
-                    f.insert(u, decode_solution::<BRANCH_XY>(u, &x, &colset));
-                    done = true;
-                } else {
-                    log::debug!("solution not found: {u} (XY)");
-                }
+                done |= find_impl::<BRANCH_XY>(&mut ctx);
             }
             if !done && matches!(ppu, PPlane::YZ | PPlane::Y | PPlane::Z) {
                 log::debug!("===YZ branch===");
-                x.clear();
-                utils::zerofill(&mut work, ncols + 1);
-                init_work::<BRANCH_YZ>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
-                let mut solver = GF2Solver::attach(&mut work, 1);
-                log::debug!("{solver:?}");
-                if solver.solve_in_place(&mut x, 0) {
-                    log::debug!("solution found for {u} (YZ)");
-                    f.insert(u, decode_solution::<BRANCH_YZ>(u, &x, &colset));
-                    done = true;
-                } else {
-                    log::debug!("solution not found: {u} (YZ)");
-                }
+                done |= find_impl::<BRANCH_YZ>(&mut ctx);
             }
             if !done && matches!(ppu, PPlane::ZX | PPlane::Z | PPlane::X) {
                 log::debug!("===ZX branch===");
-                x.clear();
-                utils::zerofill(&mut work, ncols + 1);
-                init_work::<BRANCH_ZX>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
-                let mut solver = GF2Solver::attach(&mut work, 1);
-                log::debug!("{solver:?}");
-                if solver.solve_in_place(&mut x, 0) {
-                    log::debug!("solution found for {u} (ZX)");
-                    f.insert(u, decode_solution::<BRANCH_ZX>(u, &x, &colset));
-                    done = true;
-                } else {
-                    log::debug!("solution not found: {u} (ZX)");
-                }
+                done |= find_impl::<BRANCH_ZX>(&mut ctx);
             }
             if done {
                 log::debug!("f({}) = {:?}", u, &f[&u]);
