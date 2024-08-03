@@ -24,7 +24,7 @@ def find(
     if pplane is None:
         pplane = dict.fromkeys(vset - oset, PauliPlane.XY)
     common.check_planelike(vset, oset, pplane)
-    if all(pp not in (PauliPlane.X, PauliPlane.Y, PauliPlane.Z) for pp in pplane.values()):
+    if all(pp not in {PauliPlane.X, PauliPlane.Y, PauliPlane.Z} for pp in pplane.values()):
         msg = "No Pauli measurement found. Use gflow.find instead."
         warnings.warn(msg, stacklevel=1)
     codec = IndexMap(vset)
