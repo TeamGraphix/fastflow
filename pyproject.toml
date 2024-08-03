@@ -62,9 +62,7 @@ ignore = [
   "FBT",   # boolean-trap
   "FIX",   # fixme
   "S101",  # `assert` detected
-  "T20",   # print
   "T20",   # `print`/`pprint` detected
-  "TD",    # todo
 ]
 
 [tool.ruff.lint.pydocstyle]
