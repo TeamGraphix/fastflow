@@ -15,7 +15,7 @@ V = TypeVar("V", bound=Hashable)
 
 
 # Plane-like
-P = TypeVar("P", bound=Plane | PPlane)
+P = TypeVar("P", Plane, PPlane)
 
 
 def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> None:
