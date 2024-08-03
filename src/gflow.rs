@@ -34,10 +34,10 @@ type GFlow = hashbrown::HashMap<usize, Nodes>;
 /// Checks the definition of gflow.
 ///
 /// 1. i -> g(i)
-/// 2. j in `odd_neighbors(g(i))` => i == j or i -> j
-/// 3. i not in g(i) and in `odd_neighbors(g(i))` if plane(i) == XY
-/// 4. i in g(i) and in `odd_neighbors(g(i))` if plane(i) == YZ
-/// 5. i in g(i) and not in `odd_neighbors(g(i))` if plane(i) == ZX
+/// 2. j in Odd(g(i)) => i == j or i -> j
+/// 3. i not in g(i) and in Odd(g(i)) if plane(i) == XY
+/// 4. i in g(i) and in Odd(g(i)) if plane(i) == YZ
+/// 5. i in g(i) and not in Odd(g(i)) if plane(i) == ZX
 fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> anyhow::Result<()> {
     anyhow::ensure!(
         f.len() == planes.len(),
