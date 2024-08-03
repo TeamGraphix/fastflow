@@ -334,7 +334,7 @@ pub fn find(
                 x.clear();
                 utils::zerofill(&mut work, ncols + 1);
                 init_work::<BRANCH_XY>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
-                let mut solver = GF2Solver::attach(work, 1);
+                let mut solver = GF2Solver::attach(&mut work, 1);
                 log::debug!("{solver:?}");
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (XY)");
@@ -343,14 +343,13 @@ pub fn find(
                 } else {
                     log::debug!("solution not found: {u} (XY)");
                 }
-                work = solver.detach();
             }
             if !done && matches!(ppu, PPlane::YZ | PPlane::Y | PPlane::Z) {
                 log::debug!("===YZ branch===");
                 x.clear();
                 utils::zerofill(&mut work, ncols + 1);
                 init_work::<BRANCH_YZ>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
-                let mut solver = GF2Solver::attach(work, 1);
+                let mut solver = GF2Solver::attach(&mut work, 1);
                 log::debug!("{solver:?}");
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (YZ)");
@@ -359,14 +358,13 @@ pub fn find(
                 } else {
                     log::debug!("solution not found: {u} (YZ)");
                 }
-                work = solver.detach();
             }
             if !done && matches!(ppu, PPlane::ZX | PPlane::Z | PPlane::X) {
                 log::debug!("===ZX branch===");
                 x.clear();
                 utils::zerofill(&mut work, ncols + 1);
                 init_work::<BRANCH_ZX>(&mut work, u, &g, &rowset_upper, &rowset_lower, &colset);
-                let mut solver = GF2Solver::attach(work, 1);
+                let mut solver = GF2Solver::attach(&mut work, 1);
                 log::debug!("{solver:?}");
                 if solver.solve_in_place(&mut x, 0) {
                     log::debug!("solution found for {u} (ZX)");
@@ -375,7 +373,6 @@ pub fn find(
                 } else {
                     log::debug!("solution not found: {u} (ZX)");
                 }
-                work = solver.detach();
             }
             if done {
                 log::debug!("f({}) = {:?}", u, &f[&u]);

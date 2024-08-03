@@ -11,8 +11,8 @@ use itertools::Itertools;
 type GF2Matrix = Vec<FixedBitSet>;
 
 /// Solver for GF(2) linear equations.
-#[derive(Clone, PartialEq, Eq)]
-pub struct GF2Solver {
+#[derive(PartialEq, Eq)]
+pub struct GF2Solver<'a> {
     /// Number of rows in the coefficient matrix.
     rows: usize,
     /// Number of columns in the coefficient matrix.
@@ -24,10 +24,10 @@ pub struct GF2Solver {
     /// Permutation of columns.
     perm: Vec<usize>,
     /// Working storage for the Gauss-Jordan elimination.
-    work: GF2Matrix,
+    work: &'a mut GF2Matrix,
 }
 
-impl GF2Solver {
+impl<'a> GF2Solver<'a> {
     /// Checks the arguments of `attach`.
     fn attach_check(work: &GF2Matrix, neqs: usize) -> anyhow::Result<()> {
         anyhow::ensure!(neqs > 0, "neqs is zero");
@@ -53,8 +53,8 @@ impl GF2Solver {
     /// # Panics
     ///
     /// - If similar conditions to `try_new_from` are not met.
-    pub fn attach(work: GF2Matrix, neqs: usize) -> Self {
-        if let Err(e) = Self::attach_check(&work, neqs) {
+    pub fn attach(work: &'a mut GF2Matrix, neqs: usize) -> Self {
+        if let Err(e) = Self::attach_check(work, neqs) {
             panic!("invalid argument detected: {:}", e);
         }
         let rows = work.len();
@@ -68,13 +68,6 @@ impl GF2Solver {
             perm: (0..cols).collect(),
             work,
         }
-    }
-
-    /// Detaches the working storage, consuming the solver.
-    ///
-    /// This method is intended to be used with `attach`.
-    pub fn detach(self) -> GF2Matrix {
-        self.work
     }
 
     /// Moves `(r, c)` to `(i, i)` and updates the permutation.
@@ -265,7 +258,7 @@ impl GF2Solver {
     }
 }
 
-impl Debug for GF2Solver {
+impl Debug for GF2Solver<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut ret = f.debug_struct("GF2Solver");
         ret.field("rows", &self.rows)
@@ -306,7 +299,7 @@ mod tests {
 
     #[test]
     fn test_attach() {
-        let work = vec![
+        let mut work = vec![
             // 1000111
             FixedBitSet::with_capacity_and_blocks(7, vec![0b1110001]),
             // 0100011
@@ -314,7 +307,7 @@ mod tests {
             // 0010001
             FixedBitSet::with_capacity_and_blocks(7, vec![0b1000100]),
         ];
-        let sol = GF2Solver::attach(work, 3);
+        let sol = GF2Solver::attach(&mut work, 3);
         assert_eq!(sol.rows, 3);
         assert_eq!(sol.cols, 4);
         assert_eq!(sol.neqs, 3);
@@ -325,8 +318,8 @@ mod tests {
         assert_eq!(format!("{:}", sol.work[2]), "0010001");
     }
 
-    /// Helper function to create a solver from the coefficient matrix and the right-hand side.
-    fn new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> GF2Solver {
+    /// Helper function to create a solver storage from the coefficient matrix and the right-hand side.
+    fn new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> GF2Matrix {
         let rows = co.len();
         assert!(rows > 0);
         let neqs = rhs.len();
@@ -351,14 +344,7 @@ mod tests {
                 work[r].insert(c);
             }
         }
-        GF2Solver {
-            rows,
-            cols,
-            neqs,
-            rank: None,
-            perm: (0..cols).collect(),
-            work,
-        }
+        work
     }
 
     fn compute_lhs(co: &[FixedBitSet], x: &FixedBitSet) -> FixedBitSet {
@@ -422,7 +408,8 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = new_from(&co, &rhs);
+            let mut work = new_from(&co, &rhs);
+            let mut sol = GF2Solver::attach(&mut work, neqs);
             sol.eliminate_lower();
             assert!(sol.validate_afterlower());
         }
@@ -435,7 +422,8 @@ mod tests {
             let co = rand_co(rows, cols, p);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, 0.5));
-            let mut sol = new_from(&co, &rhs);
+            let mut work = new_from(&co, &rhs);
+            let mut sol = GF2Solver::attach(&mut work, neqs);
             sol.eliminate_lower();
             assert!(sol.validate_afterlower());
         }
@@ -451,7 +439,8 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = new_from(&co, &rhs);
+            let mut work = new_from(&co, &rhs);
+            let mut sol = GF2Solver::attach(&mut work, neqs);
             sol.eliminate();
             assert!(sol.validate_afterupper());
         }
@@ -464,7 +453,8 @@ mod tests {
             let co = rand_co(rows, cols, p);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, 0.5));
-            let mut sol = new_from(&co, &rhs);
+            let mut work = new_from(&co, &rhs);
+            let mut sol = GF2Solver::attach(&mut work, neqs);
             sol.eliminate();
             assert!(sol.validate_afterupper());
         }
@@ -480,7 +470,8 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = new_from(&co, &rhs);
+            let mut work = new_from(&co, &rhs);
+            let mut sol = GF2Solver::attach(&mut work, neqs);
             sol.eliminate();
             for (ieq, rhsi) in rhs.iter().enumerate() {
                 let mut x = FixedBitSet::with_capacity(cols);
@@ -510,7 +501,8 @@ mod tests {
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
-            let mut sol = new_from(&co, &rhs);
+            let mut work = new_from(&co, &rhs);
+            let mut sol = GF2Solver::attach(&mut work, neqs);
             sol.eliminate();
             for (ieq, rhsi) in rhs.iter().enumerate() {
                 let mut x = FixedBitSet::with_capacity(cols);

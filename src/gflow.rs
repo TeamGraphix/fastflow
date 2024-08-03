@@ -188,7 +188,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Optio
             ocset.iter().map(|&u| planes[&u]).collect::<Vec<_>>()
         );
         init_work(&mut work, &g, &planes, &ocset, &omiset);
-        let mut solver = GF2Solver::attach(work, neqs);
+        let mut solver = GF2Solver::attach(&mut work, neqs);
         let mut x = FixedBitSet::with_capacity(ncols);
         log::debug!("{solver:?}");
         for (ieq, &u) in ocset.iter().enumerate() {
@@ -217,7 +217,6 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Optio
         }
         ocset.difference_with(&cset);
         omiset.extend(cset.difference(&iset));
-        work = solver.detach();
     }
     if ocset.is_empty() {
         log::debug!("gflow found");
