@@ -2,7 +2,7 @@
 
 For given undirected graph, input nodes, and output nodes, compute the generalized flow having \
 the minimum number of layers.
-See Mhalla et al. (2008) for more details.
+See [Mhalla and Perdrix, Proc. of 35th ICALP, 857 (2008)] and [Backens et al., Quantum 5, 421 (2021)] for more details.
 """
 
 from __future__ import annotations
