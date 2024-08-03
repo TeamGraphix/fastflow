@@ -1,6 +1,7 @@
 //! Entry point of the Rust binding.
 //!
 //! From the Python side, bindings are visible as `fastflow._impl.XXX`.
+#![warn(clippy::pedantic)]
 
 #[macro_use]
 mod internal;
