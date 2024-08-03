@@ -39,7 +39,7 @@ def find(
     oset : `AbstractSet[V]`
         Output nodes.
         Must be a subset of `g.nodes`.
-    plane : `Mapping[V, Plane]` | None, optional
+    plane : `Mapping[V, Plane] | None`, optional
         Measurement planes of each vertex in V\O.
         If `None`, defaults to all `Plane.XY`.
 

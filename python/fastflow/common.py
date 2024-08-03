@@ -57,6 +57,8 @@ def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> N
 
     Raises
     ------
+    TypeError
+        If input types are incorrect.
     ValueError
         If the graph is empty, has self-loops, or iset/oset are not subsets of the vertices.
     """
@@ -90,7 +92,18 @@ P = TypeVar("P", bound=Plane | PPlane)
 
 
 def check_planelike(vset: AbstractSet[V], oset: AbstractSet[V], plike: Mapping[V, P]) -> None:
-    """Check if measurement config. is valid."""
+    r"""Check if measurement config. is valid.
+
+    Raises
+    ------
+    TypeError
+        If input types are incorrect.
+    ValueError
+        If plike is not a subset of the vertices, or measurement planes are not specified for all u in V\O.
+    """
+    if not isinstance(plike, Mapping):
+        msg = "Measurement planes must be passed as a mapping."
+        raise TypeError(msg)
     if plike.keys() > vset:
         msg = "Cannot find corresponding vertices in the graph."
         raise ValueError(msg)
@@ -111,7 +124,17 @@ class IndexMap(Generic[V]):
         self.__i2v = {i: v for v, i in self.__v2i.items()}
 
     def encode(self, v: V) -> int:
-        """Encode `v` to the index."""
+        """Encode `v` to the index.
+
+        Returns
+        -------
+        Index of `v`.
+
+        Raises
+        ------
+        ValueError
+            If `v` is not initially registered.
+        """
         ind = self.__v2i.get(v)
         if ind is None:
             msg = f"{v} not found."
@@ -119,7 +142,12 @@ class IndexMap(Generic[V]):
         return ind
 
     def encode_graph(self, g: nx.Graph[V]) -> list[set[int]]:
-        """Encode graph."""
+        """Encode graph.
+
+        Returns
+        -------
+        Input graph with vertices encoded to indices.
+        """
         n = len(g)
         g_: list[set[int]] = [set() for _ in range(n)]
         for u, i in self.__v2i.items():
@@ -128,15 +156,35 @@ class IndexMap(Generic[V]):
         return g_
 
     def encode_set(self, vset: AbstractSet[V]) -> set[int]:
-        """Encode set."""
+        """Encode set.
+
+        Returns
+        -------
+        Transformed set.
+        """
         return {self.encode(v) for v in vset}
 
     def encode_dictkey(self, mapping: Mapping[V, P]) -> dict[int, P]:
-        """Encode dict key."""
+        """Encode dict key.
+
+        Returns
+        -------
+        Dict with transformed keys.
+        """
         return {self.encode(k): v for k, v in mapping.items()}
 
     def decode(self, i: int) -> V:
-        """Decode the index."""
+        """Decode the index.
+
+        Returns
+        -------
+        Value corresponding to the index.
+
+        Raises
+        ------
+        ValueError
+            If `i` is out of range.
+        """
         v = self.__i2v.get(i)
         if v is None:
             msg = f"{i} not found."
@@ -144,17 +192,37 @@ class IndexMap(Generic[V]):
         return v
 
     def decode_set(self, iset: AbstractSet[int]) -> set[V]:
-        """Decode set."""
+        """Decode set.
+
+        Returns
+        -------
+        Transformed set.
+        """
         return {self.decode(i) for i in iset}
 
     def decode_flow(self, f_: dict[int, int]) -> dict[V, V]:
-        """Decode flow."""
+        """Decode MBQC flow.
+
+        Returns
+        -------
+        Transformed flow.
+        """
         return {self.decode(i): self.decode(j) for i, j in f_.items()}
 
     def decode_gflow(self, f_: dict[int, set[int]]) -> dict[V, set[V]]:
-        """Decode gflow."""
+        """Decode MBQC gflow.
+
+        Returns
+        -------
+        Transformed gflow.
+        """
         return {self.decode(i): self.decode_set(si) for i, si in f_.items()}
 
     def decode_layer(self, layer_: list[int]) -> dict[V, int]:
-        """Decode layer."""
+        """Decode MBQC layer.
+
+        Returns
+        -------
+        Transformed layer as dict.
+        """
         return {self.decode(i): li for i, li in enumerate(layer_)}

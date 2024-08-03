@@ -21,7 +21,33 @@ def find(
     oset: AbstractSet[V],
     pplane: Mapping[V, PPlane] | None = None,
 ) -> GFlowResult[V] | None:
-    r"""Compute the maximally-delayed Pauli flow, if any."""
+    r"""Compute the maximally-delayed Pauli flow, if any.
+
+    Parameters
+    ----------
+    g : `nx.Graph[V]`
+        Undirected graph representing MBQC pattern.
+        Cannot have self-loops.
+    iset : `AbstractSet[V]`
+        Input nodes.
+        Must be a subset of `g.nodes`.
+    oset : `AbstractSet[V]`
+        Output nodes.
+        Must be a subset of `g.nodes`.
+    pplane : `Mapping[V, PPlane] | None`, optional
+        Measurement planes or Pauli indices of each vertex in V\O.
+        If `None`, defaults to all `PPlane.XY`.
+
+    Returns
+    -------
+    If a Pauli flow exists, return it as `GFlowResult[V]` object.
+    Otherwise, return `None`.
+
+    Notes
+    -----
+    Do not pass `None` to `pplane`.
+    For that case, use `gflow.find` instead.
+    """
     common.check_graph(g, iset, oset)
     vset = g.nodes
     if pplane is None:
