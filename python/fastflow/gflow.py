@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Mapping
 
 from fastflow import common
 from fastflow._impl import gflow
-from fastflow.common import GFlowResult, Plane, V, _Plane
+from fastflow.common import GFlowResult, IndexMap, Plane, V, _Plane
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
@@ -46,32 +46,25 @@ def find(
     Otherwise, return `None`.
     """
     common.check_graph(g, iset, oset)
-    v2i = {v: i for i, v in enumerate(g.nodes)}
-    i2v = {i: v for v, i in v2i.items()}
+    vset = g.nodes
     if plane is None:
-        plane = dict.fromkeys(v2i.keys() - oset, Plane.XY)
-    if plane.keys() > g.nodes:
+        plane = dict.fromkeys(vset - oset, Plane.XY)
+    if plane.keys() > vset:
         msg = "Keys of plane must be in g.nodes."
         raise ValueError(msg)
-    if plane.keys() < g.nodes - oset:
+    if plane.keys() < vset - oset:
         msg = "Planes should be specified for all u in V\\O."
         raise ValueError(msg)
-    n = len(g)
-    g_: list[set[int]] = [set() for _ in range(n)]
-    for u, i in v2i.items():
-        for v in g[u]:
-            g_[i].add(v2i[v])
-    iset_ = {v2i[v] for v in iset}
-    oset_ = {v2i[v] for v in oset}
-    plane_: dict[int, _Plane] = {v2i[k]: v.value for k, v in plane.items() if k not in oset}
+    codec = IndexMap(vset)
+    g_ = codec.encode_graph(g)
+    iset_ = codec.encode_set(iset)
+    oset_ = codec.encode_set(oset)
+    plane_: dict[int, _Plane] = {codec.v2i[k]: v.value for k, v in plane.items() if k not in oset}
     if len(plane_) != len(plane):
         warnings.warn("Ignoring plane[v] where v in oset.", stacklevel=1)
-    ret_ = gflow.find(g_, iset_, oset_, plane_)
-    if ret_ is None:
-        return None
-    f_, layer_ = ret_
-    f: dict[V, set[V]] = {}
-    for i, si in f_.items():
-        f[i2v[i]] = {i2v[j] for j in si}
-    layer = {i2v[i]: li for i, li in enumerate(layer_)}
-    return GFlowResult(f, layer)
+    if ret_ := gflow.find(g_, iset_, oset_, plane_):
+        f_, layer_ = ret_
+        f = codec.decode_gflow(f_)
+        layer = codec.decode_layer(layer_)
+        return GFlowResult(f, layer)
+    return None
