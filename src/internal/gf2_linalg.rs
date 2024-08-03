@@ -33,7 +33,7 @@ impl<'a> GF2Solver<'a> {
         anyhow::ensure!(neqs > 0, "neqs is zero");
         let rows = work.len();
         anyhow::ensure!(rows > 0, "work is empty");
-        let Ok(width) = work.iter().map(|worki| worki.len()).all_equal_value() else {
+        let Ok(width) = work.iter().map(FixedBitSet::len).all_equal_value() else {
             anyhow::bail!("work is jagged");
         };
         anyhow::ensure!(width > 0, "zero-length columns");
@@ -55,7 +55,7 @@ impl<'a> GF2Solver<'a> {
     /// - If similar conditions to `try_new_from` are not met.
     pub fn attach(work: &'a mut GF2Matrix, neqs: usize) -> Self {
         if let Err(e) = Self::attach_check(work, neqs) {
-            panic!("invalid argument detected: {:}", e);
+            panic!("invalid argument detected: {e}");
         }
         let rows = work.len();
         let width = work[0].len();
@@ -76,7 +76,7 @@ impl<'a> GF2Solver<'a> {
         if i == c {
             return;
         }
-        for row in self.work[..self.rows].iter_mut() {
+        for row in &mut self.work[..self.rows] {
             let bi = row[i];
             let bc = row[c];
             row.set(i, bc);
@@ -143,7 +143,7 @@ impl<'a> GF2Solver<'a> {
                 }
             }
         }
-        for row in self.work[rank..self.rows].iter() {
+        for row in &self.work[rank..self.rows] {
             if row.count_ones(..self.cols) != 0 {
                 return false;
             }
@@ -188,7 +188,7 @@ impl<'a> GF2Solver<'a> {
                 }
             }
         }
-        for row in self.work[rank..self.rows].iter() {
+        for row in &self.work[rank..self.rows] {
             if row.count_ones(..self.cols) != 0 {
                 return false;
             }
@@ -229,18 +229,24 @@ impl<'a> GF2Solver<'a> {
     /// - If `ieq` is out of range.
     pub fn solve_in_place(&mut self, out: &mut FixedBitSet, ieq: usize) -> bool {
         // Eliminate if not done yet
-        if out.len() != self.cols {
-            panic!("output size mismatch: {:} != {:}", out.len(), self.cols);
-        }
+        assert!(
+            out.len() == self.cols,
+            "output size mismatch: {:} != {:}",
+            out.len(),
+            self.cols
+        );
         self.eliminate();
-        if ieq >= self.neqs {
-            panic!("equation index out of range: {:} >= {:}", ieq, self.neqs);
-        }
+        assert!(
+            ieq < self.neqs,
+            "equation index out of range: {:} >= {:}",
+            ieq,
+            self.neqs
+        );
         let rank = self.rank.expect("rank already known here");
         let c = self.cols + ieq;
         // Overdetermined
         if rank < self.rows {
-            for row in self.work[rank..self.rows].iter() {
+            for row in &self.work[rank..self.rows] {
                 // = 1 in the zeroed area
                 if row[c] {
                     return false;
@@ -301,11 +307,11 @@ mod tests {
     fn test_attach() {
         let mut work = vec![
             // 1000111
-            FixedBitSet::with_capacity_and_blocks(7, vec![0b1110001]),
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b111_0001]),
             // 0100011
-            FixedBitSet::with_capacity_and_blocks(7, vec![0b1100010]),
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b110_0010]),
             // 0010001
-            FixedBitSet::with_capacity_and_blocks(7, vec![0b1000100]),
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b100_0100]),
         ];
         let sol = GF2Solver::attach(&mut work, 3);
         assert_eq!(sol.rows, 3);
@@ -324,11 +330,8 @@ mod tests {
         assert!(rows > 0);
         let neqs = rhs.len();
         assert!(neqs > 0);
-        assert_eq!(
-            rhs.iter().map(|rhsi| rhsi.len()).all_equal_value(),
-            Ok(rows)
-        );
-        let Ok(cols) = co.iter().map(|row| row.len()).all_equal_value() else {
+        assert_eq!(rhs.iter().map(FixedBitSet::len).all_equal_value(), Ok(rows));
+        let Ok(cols) = co.iter().map(FixedBitSet::len).all_equal_value() else {
             panic!("co is jagged");
         };
         assert!(cols > 0);

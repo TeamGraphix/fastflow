@@ -18,6 +18,7 @@ use pyo3::prelude::*;
 // fastflow._impl
 #[pymodule]
 #[pyo3(name = "_impl")]
+#[allow(clippy::similar_names)]
 fn entrypoint(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // fastflow._impl.flow
     let mod_flow = PyModule::new_bound(m.py(), "flow")?;

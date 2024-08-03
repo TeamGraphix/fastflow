@@ -126,7 +126,7 @@ fn init_work_upper_co(
     let colset2i = utils::indexmap::<hashbrown::HashMap<_, _>>(colset);
     for (r, &v) in rowset.iter().enumerate() {
         let gv = &g[v];
-        for &w in gv.iter() {
+        for &w in gv {
             if let Some(&c) = colset2i.get(&w) {
                 work[r].insert(c);
             }
@@ -148,7 +148,7 @@ fn init_work_lower_co(
             work[r].insert(c);
         }
         let gv = &g[v];
-        for &w in gv.iter() {
+        for &w in gv {
             if let Some(&c) = colset2i.get(&w) {
                 work[r].insert(c);
             }
@@ -184,7 +184,7 @@ fn init_work_upper_rhs<const K: BranchKind>(
         return;
     }
     // Include u
-    for &v in gu.iter() {
+    for &v in gu {
         if let Some(&r) = rowset2i.get(&v) {
             work[r].toggle(c);
         }
@@ -208,7 +208,7 @@ fn init_work_lower_rhs<const K: BranchKind>(
     if K == BRANCH_XY {
         return;
     }
-    for &v in gu.iter() {
+    for &v in gu {
         if let Some(&r) = rowset2i.get(&v) {
             work[r].toggle(c);
         }
@@ -272,11 +272,16 @@ fn matching_nodes(src: &PPlanes, mut pred: impl FnMut(&PPlane) -> bool) -> Nodes
 ///   - `4`: Y
 ///   - `5`: Z
 ///
+/// # Panics
+///
+/// If inputs/outputs do not pass the validation.
+///
 /// # Note
 ///
 /// - Node indices are assumed to be `0..g.len()`.
 /// - Arguments are **NOT** verified.
 #[pyfunction]
+#[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
 pub fn find(
     g: Graph,
     iset: Nodes,

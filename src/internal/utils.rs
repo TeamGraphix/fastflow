@@ -16,9 +16,7 @@ use crate::common::{Graph, Nodes, OrderedNodes};
 ///
 /// - Naive implementation only for post-verification.
 pub fn odd_neighbors(g: &Graph, kset: &Nodes) -> Nodes {
-    if kset.iter().any(|&ki| ki >= g.len()) {
-        panic!("kset out of range");
-    }
+    assert!(kset.iter().all(|&ki| ki < g.len()), "kset out of range");
     let mut work = kset.clone();
     work.extend(kset.iter().flat_map(|&ki| g[ki].iter().copied()));
     work.retain(|&u| kset.intersection(&g[u]).count() % 2 == 1);
@@ -28,9 +26,9 @@ pub fn odd_neighbors(g: &Graph, kset: &Nodes) -> Nodes {
 /// Resizes `mat` to `mat.len()` x `ncols` and fills with zeros.
 pub fn zerofill(mat: &mut [FixedBitSet], ncols: usize) {
     let src = FixedBitSet::with_capacity(ncols);
-    mat.iter_mut().for_each(|x| {
+    for x in mat.iter_mut() {
         x.clone_from(&src);
-    });
+    }
 }
 
 /// Helper trait for in-place set operations.
@@ -50,7 +48,7 @@ where
         U: Deref<Target = T>,
     {
         other.into_iter().for_each(|x| {
-            self.remove(x.deref());
+            self.remove(&*x);
         });
     }
 }
@@ -64,7 +62,7 @@ where
         U: Deref<Target = T>,
     {
         other.into_iter().for_each(|x| {
-            self.remove(x.deref());
+            self.remove(&*x);
         });
     }
 }

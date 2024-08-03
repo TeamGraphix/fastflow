@@ -34,10 +34,10 @@ type GFlow = hashbrown::HashMap<usize, Nodes>;
 /// Checks the definition of gflow.
 ///
 /// 1. i -> g(i)
-/// 2. j in odd_neighbors(g(i)) => i == j or i -> j
-/// 3. i not in g(i) and in odd_neighbors(g(i)) if plane(i) == XY
-/// 4. i in g(i) and in odd_neighbors(g(i)) if plane(i) == YZ
-/// 5. i in g(i) and not in odd_neighbors(g(i)) if plane(i) == ZX
+/// 2. j in `odd_neighbors(g(i))` => i == j or i -> j
+/// 3. i not in g(i) and in `odd_neighbors(g(i))` if plane(i) == XY
+/// 4. i in g(i) and in `odd_neighbors(g(i))` if plane(i) == YZ
+/// 5. i in g(i) and not in `odd_neighbors(g(i))` if plane(i) == ZX
 fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> anyhow::Result<()> {
     anyhow::ensure!(
         f.len() == planes.len(),
@@ -105,7 +105,7 @@ fn init_work(
         let gu = &g[u];
         // Initialize adjacency matrix
         let r = i;
-        for &v in gu.iter() {
+        for &v in gu {
             if let Some(&c) = omi2i.get(&v) {
                 work[r].insert(c);
             }
@@ -121,7 +121,7 @@ fn init_work(
             continue;
         }
         // Include u
-        for &v in gu.iter() {
+        for &v in gu {
             if let Some(&r) = oc2i.get(&v) {
                 work[r].toggle(c);
             }
@@ -141,11 +141,16 @@ fn init_work(
 ///   - `1`: YZ
 ///   - `2`: ZX
 ///
+/// # Panics
+///
+/// If inputs/outputs do not pass the validation.
+///
 /// # Note
 ///
 /// - Node indices are assumed to be `0..g.len()`.
 /// - Arguments are **NOT** verified.
 #[pyfunction]
+#[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
 pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Option<(GFlow, Layer)> {
     log::debug!("gflow::find");
     validate::check_graph(&g, &iset, &oset).unwrap();

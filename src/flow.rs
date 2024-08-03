@@ -16,7 +16,7 @@ type Flow = hashbrown::HashMap<usize, usize>;
 /// 2. j in neighbors(f(i)) => i == j or i -> j
 /// 3. i in neighbors(f(i))
 fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
-    for (&i, &fi) in f.iter() {
+    for (&i, &fi) in f {
         if layer[i] <= layer[fi] {
             let err = anyhow::anyhow!("layer check failed").context(format!("must be {i} -> {fi}"));
             return Err(err);
@@ -45,11 +45,16 @@ fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
 /// - `iset`: The set of initial nodes.
 /// - `oset`: The set of output nodes.
 ///
+/// # Panics
+///
+/// If inputs/outputs do not pass the validation.
+///
 /// # Note
 ///
 /// - Node indices are assumed to be `0..g.len()`.
 /// - Arguments are **NOT** verified.
 #[pyfunction]
+#[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
 pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
     log::debug!("flow::find");
     validate::check_graph(&g, &iset, &oset).unwrap();
