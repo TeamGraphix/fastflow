@@ -266,14 +266,11 @@ fn decode_solution<const K: BranchKind>(u: usize, x: &FixedBitSet, colset: &Orde
     fu
 }
 
-/// Filters and collects nodes that match the given pattern.
-macro_rules! matching_nodes {
-    ($src:expr, $p:pat) => {
-        $src.iter()
-            .filter_map(|(k, &v)| if let $p = v { Some(k) } else { None })
-            .copied()
-            .collect::<Nodes>()
-    };
+/// Sellects nodes from `src` with `pred`.
+fn matching_nodes(src: &PPlanes, mut pred: impl FnMut(&PPlane) -> bool) -> Nodes {
+    src.iter()
+        .filter_map(|(&k, v)| if pred(v) { Some(k) } else { None })
+        .collect()
 }
 
 /// Finds the maximally-delayed Pauli flow.
@@ -308,9 +305,9 @@ pub fn find(
         .into_iter()
         .map(|(k, v)| (k, PPlane::from_u8(v).expect("pplane is in 0..6")))
         .collect::<PPlanes>();
-    let yset = matching_nodes!(pplanes, PPlane::Y);
-    let xyset = matching_nodes!(pplanes, PPlane::X | PPlane::Y);
-    let yzset = matching_nodes!(pplanes, PPlane::Y | PPlane::Z);
+    let yset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::Y));
+    let xyset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::X | PPlane::Y));
+    let yzset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::Y | PPlane::Z));
     debug_assert!(yset.is_disjoint(&oset));
     debug_assert!(xyset.is_disjoint(&oset));
     debug_assert!(yzset.is_disjoint(&oset));
