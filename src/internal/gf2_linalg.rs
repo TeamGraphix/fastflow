@@ -143,8 +143,8 @@ impl<'a> GF2Solver<'a> {
                 }
             }
         }
-        for i in rank..self.rows {
-            if self.work[i].count_ones(..self.cols) != 0 {
+        for row in self.work[rank..self.rows].iter() {
+            if row.count_ones(..self.cols) != 0 {
                 return false;
             }
         }
@@ -188,8 +188,8 @@ impl<'a> GF2Solver<'a> {
                 }
             }
         }
-        for i in rank..self.rows {
-            if self.work[i].count_ones(..self.cols) != 0 {
+        for row in self.work[rank..self.rows].iter() {
+            if row.count_ones(..self.cols) != 0 {
                 return false;
             }
         }
@@ -240,17 +240,17 @@ impl<'a> GF2Solver<'a> {
         let c = self.cols + ieq;
         // Overdetermined
         if rank < self.rows {
-            for r in rank..self.rows {
+            for row in self.work[rank..self.rows].iter() {
                 // = 1 in the zeroed area
-                if self.work[r][c] {
+                if row[c] {
                     return false;
                 }
             }
         }
         // One of the possible solutions (eagerly use `0`)
         out.clear();
-        for i in 0..rank {
-            if self.work[i][c] {
+        for (i, row) in self.work.iter().enumerate() {
+            if row[c] {
                 out.insert(self.perm[i]);
             }
         }
