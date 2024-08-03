@@ -10,9 +10,6 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING, Mapping
 
-import pydantic
-from pydantic import NonNegativeInt, ValidationError
-
 from fastflow import common
 from fastflow._impl import gflow
 from fastflow.common import GFlowResult, Plane, V, _Plane
@@ -21,16 +18,6 @@ if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
 
     import networkx as nx
-
-
-@pydantic.validate_call(validate_return=True)
-def _find_validated(
-    g: list[set[NonNegativeInt]],
-    iset: set[NonNegativeInt],
-    oset: set[NonNegativeInt],
-    plane: dict[NonNegativeInt, _Plane],
-) -> tuple[dict[NonNegativeInt, set[NonNegativeInt]], list[NonNegativeInt]] | None:
-    return gflow.find(g, iset, oset, plane)
 
 
 def find(
@@ -79,11 +66,7 @@ def find(
     plane_: dict[int, _Plane] = {v2i[k]: v.value for k, v in plane.items() if k not in oset}
     if len(plane_) != len(plane):
         warnings.warn("Ignoring plane[v] where v in oset.", stacklevel=1)
-    try:
-        ret_ = _find_validated(g_, iset_, oset_, plane_)
-    except ValidationError as e:
-        msg = "Failed to validate types at bindcall."
-        raise ValueError(msg) from e
+    ret_ = gflow.find(g_, iset_, oset_, plane_)
     if ret_ is None:
         return None
     f_, layer_ = ret_

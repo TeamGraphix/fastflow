@@ -81,6 +81,15 @@ def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> N
     ValueError
         If the graph is empty, has self-loops, or iset/oset are not subsets of the vertices.
     """
+    if not isinstance(g, nx.Graph):
+        msg = "g must be a networkx.Graph."
+        raise TypeError(msg)
+    if not isinstance(iset, AbstractSet):
+        msg = "iset must be a set."
+        raise TypeError(msg)
+    if not isinstance(oset, AbstractSet):
+        msg = "oset must be a set."
+        raise TypeError(msg)
     if len(g) == 0:
         msg = "Graph is empty."
         raise ValueError(msg)

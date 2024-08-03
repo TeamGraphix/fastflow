@@ -5,9 +5,6 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING, Mapping
 
-import pydantic
-from pydantic import NonNegativeInt, ValidationError
-
 from fastflow import common
 from fastflow._impl import pflow
 from fastflow.common import GFlowResult, PauliPlane, V, _PPlane
@@ -16,16 +13,6 @@ if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
 
     import networkx as nx
-
-
-@pydantic.validate_call(validate_return=True)
-def _find_validated(
-    g: list[set[NonNegativeInt]],
-    iset: set[NonNegativeInt],
-    oset: set[NonNegativeInt],
-    pplane: dict[NonNegativeInt, _PPlane],
-) -> tuple[dict[NonNegativeInt, set[NonNegativeInt]], list[NonNegativeInt]] | None:
-    return pflow.find(g, iset, oset, pplane)
 
 
 def find(
@@ -54,11 +41,7 @@ def find(
     pplane_: dict[int, _PPlane] = {v2i[k]: v.value for k, v in pplane.items() if k not in oset}
     if len(pplane_) != len(pplane):
         warnings.warn("Ignoring pplane[v] where v in oset.", stacklevel=1)
-    try:
-        ret_ = _find_validated(g_, iset_, oset_, pplane_)
-    except ValidationError as e:
-        msg = "Failed to validate types at bindcall."
-        raise ValueError(msg) from e
+    ret_ = pflow.find(g_, iset_, oset_, pplane_)
     if ret_ is None:
         return None
     f_, layer_ = ret_
