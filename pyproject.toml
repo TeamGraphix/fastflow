@@ -64,7 +64,7 @@ ignore = [
   "D213",  # break after `"""` in docstring (conflicts with D212)
   "S101",  # `assert` detected
   "T20",   # `print`/`pprint` detected
-  "CPY",   # copywright missing
+  "CPY",   # copyright missing
 ]
 
 [tool.ruff.lint.pydocstyle]
