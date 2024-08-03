@@ -64,7 +64,6 @@ def find(
     f_, layer_ = ret_
     f: dict[V, set[V]] = {}
     for i, si in f_.items():
-        si_ = {i2v[j] for j in si}
-        f[i2v[i]] = si_
+        f[i2v[i]] = {i2v[j] for j in si}
     layer = {i2v[i]: li for i, li in enumerate(layer_)}
     return GFlowResult(f, layer)
