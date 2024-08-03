@@ -16,7 +16,7 @@ _V = TypeVar("_V", bound=Hashable)
 
 @dataclasses.dataclass(frozen=True)
 class FlowResult(Generic[_V]):
-    """Causal flow [Danos and Kashefi, Phys. Rev. A 74, 052310] of an open graph. 
+    """Causal flow [Danos and Kashefi, Phys. Rev. A 74, 052310] of an open graph.
 
     Attributes
     ----------

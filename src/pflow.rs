@@ -301,12 +301,6 @@ fn find_impl<const K: BranchKind>(ctx: &mut PFlowContext) -> bool {
 /// - `iset`: The set of initial nodes.
 /// - `oset`: The set of output nodes.
 /// - `pplanes`: Measurement plane of each node in `&vset - &oset`.
-///   - `0`: XY
-///   - `1`: YZ
-///   - `2`: ZX
-///   - `3`: X
-///   - `4`: Y
-///   - `5`: Z
 ///
 /// # Panics
 ///

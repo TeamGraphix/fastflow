@@ -132,9 +132,6 @@ fn init_work(
 /// - `iset`: The set of initial nodes.
 /// - `oset`: The set of output nodes.
 /// - `planes`: Measurement plane of each node in V\O.
-///   - `0`: XY
-///   - `1`: YZ
-///   - `2`: ZX
 ///
 /// # Panics
 ///

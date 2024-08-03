@@ -19,7 +19,7 @@ P = TypeVar("P", Plane, PPlane)
 
 
 def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> None:
-    """Check if g is a valid MBQC graph.
+    """Check if `(g, iset, oset)` is a valid open graph for MBQC.
 
     Raises
     ------
