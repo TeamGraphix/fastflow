@@ -8,7 +8,7 @@ use std::{
 use fixedbitset::FixedBitSet;
 use itertools::Itertools;
 
-type GF2Matrix = Vec<FixedBitSet>;
+type GF2Matrix = [FixedBitSet];
 
 /// Solver for GF(2) linear equations.
 #[derive(PartialEq, Eq)]
@@ -325,7 +325,7 @@ mod tests {
     }
 
     /// Helper function to create a solver storage from the coefficient matrix and the right-hand side.
-    fn new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> GF2Matrix {
+    fn new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> Vec<FixedBitSet> {
         let rows = co.len();
         assert!(rows > 0);
         let neqs = rhs.len();
@@ -362,7 +362,7 @@ mod tests {
         lhs
     }
 
-    fn rand_co(rows: usize, cols: usize, p: f64) -> GF2Matrix {
+    fn rand_co(rows: usize, cols: usize, p: f64) -> Vec<FixedBitSet> {
         assert!((0.0..=1.0).contains(&p));
         let mut rng = thread_rng();
         let mut co = Vec::with_capacity(rows);
