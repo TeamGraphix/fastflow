@@ -69,6 +69,11 @@ where
     }
 }
 
+/// Computes element-to-index mapping for an ordered set.
+pub fn indexmap<T: FromIterator<(usize, usize)>>(set: &OrderedNodes) -> T {
+    set.iter().enumerate().map(|(i, &x)| (x, i)).collect()
+}
+
 #[derive(Debug)]
 /// RAII guard for inserting a node into a set.
 ///

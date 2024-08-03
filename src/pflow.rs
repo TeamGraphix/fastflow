@@ -123,11 +123,7 @@ fn init_work_upper_co(
     rowset: &OrderedNodes,
     colset: &OrderedNodes,
 ) {
-    let colset2i = colset
-        .iter()
-        .enumerate()
-        .map(|(i, &v)| (v, i))
-        .collect::<hashbrown::HashMap<_, _>>();
+    let colset2i = utils::indexmap::<hashbrown::HashMap<_, _>>(colset);
     for (r, &v) in rowset.iter().enumerate() {
         let gv = &g[v];
         for &w in gv.iter() {
@@ -145,11 +141,7 @@ fn init_work_lower_co(
     rowset: &OrderedNodes,
     colset: &OrderedNodes,
 ) {
-    let colset2i = colset
-        .iter()
-        .enumerate()
-        .map(|(i, &v)| (v, i))
-        .collect::<hashbrown::HashMap<_, _>>();
+    let colset2i = utils::indexmap::<hashbrown::HashMap<_, _>>(colset);
     for (r, &v) in rowset.iter().enumerate() {
         // need to introduce self-loops
         if let Some(&c) = colset2i.get(&v) {
@@ -181,11 +173,7 @@ fn init_work_upper_rhs<const K: BranchKind>(
         assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
     };
     debug_assert!(rowset.contains(&u));
-    let rowset2i = rowset
-        .iter()
-        .enumerate()
-        .map(|(i, &v)| (v, i))
-        .collect::<hashbrown::HashMap<_, _>>();
+    let rowset2i = utils::indexmap::<hashbrown::HashMap<_, _>>(rowset);
     let c = colset.len();
     let gu = &g[u];
     if K != BRANCH_YZ {
@@ -214,11 +202,7 @@ fn init_work_lower_rhs<const K: BranchKind>(
     const {
         assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
     };
-    let rowset2i = rowset
-        .iter()
-        .enumerate()
-        .map(|(i, &v)| (v, i))
-        .collect::<hashbrown::HashMap<_, _>>();
+    let rowset2i = utils::indexmap::<hashbrown::HashMap<_, _>>(rowset);
     let c = colset.len();
     let gu = &g[u];
     if K == BRANCH_XY {

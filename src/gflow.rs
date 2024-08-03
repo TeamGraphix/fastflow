@@ -98,16 +98,8 @@ fn init_work(
 ) {
     let ncols = omiset.len();
     // Set-to-index maps
-    let oc2i = ocset
-        .iter()
-        .enumerate()
-        .map(|(i, &v)| (v, i))
-        .collect::<hashbrown::HashMap<_, _>>();
-    let omi2i = omiset
-        .iter()
-        .enumerate()
-        .map(|(i, &v)| (v, i))
-        .collect::<hashbrown::HashMap<_, _>>();
+    let oc2i = utils::indexmap::<hashbrown::HashMap<_, _>>(ocset);
+    let omi2i = utils::indexmap::<hashbrown::HashMap<_, _>>(omiset);
     // Encode node as one-hot vector
     for (i, &u) in ocset.iter().enumerate() {
         let gu = &g[u];
