@@ -125,7 +125,7 @@ fn init_work(
             // = u
             work[ieq].insert(c);
         }
-        if let Plane::XY = planes[&u] {
+        if planes[&u] == Plane::XY {
             continue;
         }
         // Include u
