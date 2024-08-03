@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import dataclasses
-from collections.abc import Hashable
+from collections.abc import Hashable, Mapping
 from collections.abc import Set as AbstractSet
 from enum import Enum
 from types import MappingProxyType
@@ -13,6 +13,9 @@ import networkx as nx
 
 # Vertex type
 V = TypeVar("V", bound=Hashable)
+
+# Plane-like
+P = TypeVar("P")
 
 
 class Plane(Enum):
@@ -104,6 +107,16 @@ def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> N
         raise ValueError(msg)
     if not (oset <= vset):
         msg = "oset must be a subset of the vertices."
+        raise ValueError(msg)
+
+
+def check_planelike(vset: AbstractSet[V], oset: AbstractSet[V], plike: Mapping[V, P]) -> None:
+    """Check if measurement config. is valid."""
+    if plike.keys() > vset:
+        msg = "Cannot find corresponding vertices in the graph."
+        raise ValueError(msg)
+    if plike.keys() < vset - oset:
+        msg = "Measurement planes should be specified for all u in V\\O."
         raise ValueError(msg)
 
 

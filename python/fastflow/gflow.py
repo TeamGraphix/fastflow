@@ -49,12 +49,7 @@ def find(
     vset = g.nodes
     if plane is None:
         plane = dict.fromkeys(vset - oset, Plane.XY)
-    if plane.keys() > vset:
-        msg = "Keys of plane must be in g.nodes."
-        raise ValueError(msg)
-    if plane.keys() < vset - oset:
-        msg = "Planes should be specified for all u in V\\O."
-        raise ValueError(msg)
+    common.check_planelike(vset, oset, plane)
     codec = IndexMap(vset)
     g_ = codec.encode_graph(g)
     iset_ = codec.encode_set(iset)
