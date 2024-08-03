@@ -43,8 +43,7 @@ fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> any
         f.len() == planes.len(),
         "f and planes must have the same codomain"
     );
-    for &i in f.keys() {
-        let fi = &f[&i];
+    for (&i, fi) in f {
         let pi = planes[&i];
         for &fij in fi {
             if i != fij && layer[i] <= layer[fij] {
