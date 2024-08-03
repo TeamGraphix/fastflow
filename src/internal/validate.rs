@@ -97,15 +97,18 @@ pub fn check_domain<'a, 'b>(
 ) -> anyhow::Result<()> {
     let icset = vset - iset;
     let ocset = vset - oset;
+    let mut dom = Nodes::new();
     for (&i, &fi) in f_flatiter {
-        if !ocset.contains(&i) {
-            let err = anyhow::anyhow!("domain check failed").context(format!("{i} not in V\\O"));
-            return Err(err);
-        }
+        dom.insert(i);
         if i != fi && !icset.contains(&fi) {
             let err = anyhow::anyhow!("domain check failed").context(format!("{fi} not in V\\I"));
             return Err(err);
         }
+    }
+    if dom != ocset {
+        let err = anyhow::anyhow!("domain check failed")
+            .context(format!("invalid domain: {dom:?} != V\\O"));
+        return Err(err);
     }
     Ok(())
 }
