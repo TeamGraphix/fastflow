@@ -9,9 +9,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from fastflow import common
+from fastflow import _common
+from fastflow._common import IndexMap, V
 from fastflow._impl import flow
-from fastflow.common import FlowResult, IndexMap, V
+from fastflow.common import FlowResult
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
@@ -39,7 +40,7 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResu
     If a flow exists, return a `FlowResult[V]` object.
     Otherwise, return `None`.
     """
-    common.check_graph(g, iset, oset)
+    _common.check_graph(g, iset, oset)
     vset = g.nodes
     codec = IndexMap(vset)
     g_ = codec.encode_graph(g)

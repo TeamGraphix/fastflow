@@ -10,9 +10,10 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING, Mapping
 
-from fastflow import common
+from fastflow import _common
+from fastflow._common import IndexMap, V
 from fastflow._impl import gflow
-from fastflow.common import GFlowResult, IndexMap, Plane, V
+from fastflow.common import GFlowResult, Plane
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
@@ -48,11 +49,11 @@ def find(
     If a gflow exists, return a `GFlowResult[V]` object.
     Otherwise, return `None`.
     """
-    common.check_graph(g, iset, oset)
+    _common.check_graph(g, iset, oset)
     vset = g.nodes
     if plane is None:
         plane = dict.fromkeys(vset - oset, Plane.XY)
-    common.check_planelike(vset, oset, plane)
+    _common.check_planelike(vset, oset, plane)
     codec = IndexMap(vset)
     g_ = codec.encode_graph(g)
     iset_ = codec.encode_set(iset)

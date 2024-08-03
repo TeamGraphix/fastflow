@@ -5,9 +5,10 @@ from __future__ import annotations
 import warnings
 from typing import TYPE_CHECKING, Mapping
 
-from fastflow import common
+from fastflow import _common
+from fastflow._common import IndexMap, V
 from fastflow._impl import pflow
-from fastflow.common import GFlowResult, IndexMap, PPlane, V
+from fastflow.common import GFlowResult, PPlane
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
@@ -48,11 +49,11 @@ def find(
     Do not pass `None` to `pplane`.
     For that case, use `gflow.find` instead.
     """
-    common.check_graph(g, iset, oset)
+    _common.check_graph(g, iset, oset)
     vset = g.nodes
     if pplane is None:
         pplane = dict.fromkeys(vset - oset, PPlane.XY)
-    common.check_planelike(vset, oset, pplane)
+    _common.check_planelike(vset, oset, pplane)
     if all(pp not in {PPlane.X, PPlane.Y, PPlane.Z} for pp in pplane.values()):
         msg = "No Pauli measurement found. Use gflow.find instead."
         warnings.warn(msg, stacklevel=1)
