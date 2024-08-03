@@ -13,7 +13,7 @@ use crate::{
     common::{Graph, Layer, Nodes, OrderedNodes},
     internal::{
         gf2_linalg::GF2Solver,
-        utils::{self, InPlaceSetOp, ScopedExclude, ScopedInclude},
+        utils::{self, InPlaceSetDiff, ScopedExclude, ScopedInclude},
         validate,
     },
 };
@@ -405,14 +405,14 @@ pub fn find(
         if l == 0 {
             rowset_upper.difference_with(&oset);
             rowset_lower.difference_with(&oset);
-            colset.union_with(oset.difference(&iset));
+            colset.extend(oset.difference(&iset));
         } else if cset.is_empty() {
             break;
         }
         ocset.difference_with(&cset);
         rowset_upper.difference_with(&cset);
         rowset_lower.difference_with(&cset);
-        colset.union_with(cset.difference(&iset));
+        colset.extend(cset.difference(&iset));
     }
     if ocset.is_empty() {
         log::debug!("pflow found");

@@ -5,7 +5,7 @@ use pyo3::prelude::*;
 
 use crate::{
     common::{Graph, Layer, Nodes},
-    internal::{utils::InPlaceSetOp, validate},
+    internal::{utils::InPlaceSetDiff, validate},
 };
 
 type Flow = hashbrown::HashMap<usize, usize>;
@@ -91,9 +91,9 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
                 check[u].remove(&v);
             });
         }
-        oset.union_with(&oset_work);
+        oset.extend(&oset_work);
         cset.difference_with(&cset_work);
-        cset.union_with(oset_work.intersection(&icset));
+        cset.extend(oset_work.intersection(&icset));
     }
     if oset == vset {
         log::debug!("flow found");

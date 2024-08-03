@@ -13,7 +13,7 @@ use crate::{
     common::{Graph, Layer, Nodes, OrderedNodes},
     internal::{
         gf2_linalg::GF2Solver,
-        utils::{self, InPlaceSetOp},
+        utils::{self, InPlaceSetDiff},
         validate,
     },
 };
@@ -224,7 +224,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: InternalPlanes) -> Optio
             break;
         }
         ocset.difference_with(&cset);
-        omiset.union_with(cset.difference(&iset));
+        omiset.extend(cset.difference(&iset));
         work = solver.detach();
     }
     if ocset.is_empty() {

@@ -34,29 +34,17 @@ pub fn zerofill(mat: &mut [FixedBitSet], ncols: usize) {
 }
 
 /// Helper trait for in-place set operations.
-pub trait InPlaceSetOp<T: Clone> {
-    /// Extends self with the elements from `other`.
-    fn union_with<U>(&mut self, other: impl IntoIterator<Item = U>)
-    where
-        U: Deref<Target = T>;
-
+pub trait InPlaceSetDiff<T> {
     /// Drops the elements from `other` from self.
     fn difference_with<U>(&mut self, other: impl IntoIterator<Item = U>)
     where
         U: Deref<Target = T>;
 }
 
-impl<T> InPlaceSetOp<T> for hashbrown::HashSet<T>
+impl<T> InPlaceSetDiff<T> for hashbrown::HashSet<T>
 where
-    T: Eq + Clone + Hash,
+    T: Eq + Hash,
 {
-    fn union_with<U>(&mut self, other: impl IntoIterator<Item = U>)
-    where
-        U: Deref<Target = T>,
-    {
-        self.extend(other.into_iter().map(|x| x.deref().clone()));
-    }
-
     fn difference_with<U>(&mut self, other: impl IntoIterator<Item = U>)
     where
         U: Deref<Target = T>,
@@ -67,17 +55,10 @@ where
     }
 }
 
-impl<T> InPlaceSetOp<T> for BTreeSet<T>
+impl<T> InPlaceSetDiff<T> for BTreeSet<T>
 where
-    T: Eq + Clone + Ord,
+    T: Eq + Ord,
 {
-    fn union_with<U>(&mut self, other: impl IntoIterator<Item = U>)
-    where
-        U: Deref<Target = T>,
-    {
-        self.extend(other.into_iter().map(|x| x.deref().clone()));
-    }
-
     fn difference_with<U>(&mut self, other: impl IntoIterator<Item = U>)
     where
         U: Deref<Target = T>,
