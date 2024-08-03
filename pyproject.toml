@@ -56,14 +56,15 @@ ignore = [
   "ANN10", # `self`/`cls` not annotated
   "CPY",   # copyright missing
   "D105",  # undocumented magic method
-  "D203",  # blank line before class (conflicts with D211)
-  "D213",  # break after `"""` in docstring (conflicts with D212)
-  "ERA",   # eradicate
+  "ERA",   # commented-out code
   "FBT",   # boolean-trap
   "FIX",   # fixme
-  "S101",  # `assert` detected
-  "T20",   # `print`/`pprint` detected
 ]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = [
+  "S101", # `assert` detected
+]
