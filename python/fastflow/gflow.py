@@ -21,7 +21,10 @@ if TYPE_CHECKING:
 
 
 def find(
-    g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V], plane: Mapping[V, Plane] | None = None
+    g: nx.Graph[V],
+    iset: AbstractSet[V],
+    oset: AbstractSet[V],
+    plane: Mapping[V, Plane] | None = None,
 ) -> GFlowResult[V] | None:
     r"""Compute the maximally-delayed generalized flow, if any.
 

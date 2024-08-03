@@ -16,7 +16,10 @@ if TYPE_CHECKING:
 
 
 def find(
-    g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V], pplane: Mapping[V, PauliPlane] | None = None
+    g: nx.Graph[V],
+    iset: AbstractSet[V],
+    oset: AbstractSet[V],
+    pplane: Mapping[V, PauliPlane] | None = None,
 ) -> GFlowResult[V] | None:
     r"""Compute the maximally-delayed Pauli flow, if any."""
     common.check_graph(g, iset, oset)
