@@ -1,7 +1,7 @@
 class Plane:
     XY: Plane
     YZ: Plane
-    ZX: Plane
+    XZ: Plane
 
 def find(
     g: list[set[int]], iset: set[int], oset: set[int], plane: dict[int, Plane]

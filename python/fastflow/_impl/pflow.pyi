@@ -1,7 +1,7 @@
 class PPlane:
     XY: PPlane
     YZ: PPlane
-    ZX: PPlane
+    XZ: PPlane
     X: PPlane
     Y: PPlane
     Z: PPlane

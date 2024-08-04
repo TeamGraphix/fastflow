@@ -21,7 +21,7 @@ use crate::{
 pub enum Plane {
     XY,
     YZ,
-    ZX,
+    XZ,
 }
 
 type Planes = hashbrown::HashMap<usize, Plane>;
@@ -33,7 +33,7 @@ type GFlow = hashbrown::HashMap<usize, Nodes>;
 /// 2. j in Odd(g(i)) => i == j or i -> j
 /// 3. i not in g(i) and in Odd(g(i)) if plane(i) == XY
 /// 4. i in g(i) and in Odd(g(i)) if plane(i) == YZ
-/// 5. i in g(i) and not in Odd(g(i)) if plane(i) == ZX
+/// 5. i in g(i) and not in Odd(g(i)) if plane(i) == XZ
 fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> anyhow::Result<()> {
     anyhow::ensure!(
         f.len() == planes.len(),
@@ -71,9 +71,9 @@ fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> any
                 ));
                 return Err(err);
             }
-            Plane::ZX if in_info != (true, true) => {
+            Plane::XZ if in_info != (true, true) => {
                 let err = anyhow::anyhow!("plane check failed").context(format!(
-                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (true, true): ZX"
+                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (true, true): XZ"
                 ));
                 return Err(err);
             }
@@ -108,7 +108,7 @@ fn init_work(
         // Initialize rhs
         let ieq = i;
         let c = ncols + ieq;
-        if let Plane::XY | Plane::ZX = planes[&u] {
+        if let Plane::XY | Plane::XZ = planes[&u] {
             // = u
             work[ieq].insert(c);
         }
@@ -196,7 +196,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: Planes) -> Option<(GFlow
                 .enumerate()
                 .filter_map(|(i, &v)| if x[i] { Some(v) } else { None })
                 .collect::<Nodes>();
-            if let Plane::YZ | Plane::ZX = planes[&u] {
+            if let Plane::YZ | Plane::XZ = planes[&u] {
                 // Include u
                 fu.insert(u);
             }
@@ -309,7 +309,7 @@ mod tests {
         let planes = measurements! {
             0: Plane::XY,
             1: Plane::XY,
-            2: Plane::ZX,
+            2: Plane::XZ,
             3: Plane::YZ
         };
         let flen = g.len() - oset.len();
@@ -349,7 +349,7 @@ mod tests {
         let TestCase { g, iset, oset } = test_utils::CASE7.clone();
         let planes = measurements! {
             0: Plane::YZ,
-            1: Plane::ZX,
+            1: Plane::XZ,
             2: Plane::XY,
             3: Plane::YZ
         };
@@ -361,7 +361,7 @@ mod tests {
         let TestCase { g, iset, oset } = test_utils::CASE8.clone();
         let planes = measurements! {
             0: Plane::YZ,
-            1: Plane::ZX,
+            1: Plane::XZ,
             2: Plane::XY
         };
         assert!(find(g, iset, oset, planes).is_none());

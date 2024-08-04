@@ -21,7 +21,7 @@ use crate::{
 pub enum PPlane {
     XY,
     YZ,
-    ZX,
+    XZ,
     X,
     Y,
     Z,
@@ -83,9 +83,9 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> a
                 ));
                 return Err(err);
             }
-            PPlane::ZX if in_info != (true, true) => {
+            PPlane::XZ if in_info != (true, true) => {
                 let err = anyhow::anyhow!("pplane check failed").context(format!(
-                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (true, true): ZX"
+                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (true, true): XZ"
                 ));
                 return Err(err);
             }
@@ -161,7 +161,7 @@ fn init_work_lower_co(
 type BranchKind = u8;
 const BRANCH_XY: BranchKind = 0;
 const BRANCH_YZ: BranchKind = 1;
-const BRANCH_ZX: BranchKind = 2;
+const BRANCH_XZ: BranchKind = 2;
 
 /// Initializes the right-hand side of working storage for the upper block.
 fn init_work_upper_rhs<const K: BranchKind>(
@@ -172,7 +172,7 @@ fn init_work_upper_rhs<const K: BranchKind>(
     colset: &OrderedNodes,
 ) {
     const {
-        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
+        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_XZ);
     };
     debug_assert!(rowset.contains(&u));
     let rowset2i = utils::indexmap::<hashbrown::HashMap<_, _>>(rowset);
@@ -202,7 +202,7 @@ fn init_work_lower_rhs<const K: BranchKind>(
     colset: &OrderedNodes,
 ) {
     const {
-        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
+        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_XZ);
     };
     let rowset2i = utils::indexmap::<hashbrown::HashMap<_, _>>(rowset);
     let c = colset.len();
@@ -227,7 +227,7 @@ fn init_work<const K: BranchKind>(
     colset: &OrderedNodes,
 ) {
     const {
-        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
+        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_XZ);
     };
     let nrows_upper = rowset_upper.len();
     init_work_upper_co(&mut work[..nrows_upper], g, rowset_upper, colset);
@@ -239,7 +239,7 @@ fn init_work<const K: BranchKind>(
 /// Decodes the solution returned by `GF2Solver`.
 fn decode_solution<const K: BranchKind>(u: usize, x: &FixedBitSet, colset: &OrderedNodes) -> Nodes {
     const {
-        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
+        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_XZ);
     };
     let mut fu = colset
         .iter()
@@ -268,7 +268,7 @@ struct PFlowContext<'a> {
 #[tracing::instrument]
 fn find_impl<const K: BranchKind>(ctx: &mut PFlowContext) -> bool {
     const {
-        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_ZX);
+        assert!(K == BRANCH_XY || K == BRANCH_YZ || K == BRANCH_XZ);
     };
     let u = ctx.u;
     ctx.x.clear();
@@ -371,9 +371,9 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFl
                 tracing::debug!("===YZ branch===");
                 done |= find_impl::<BRANCH_YZ>(&mut ctx);
             }
-            if !done && matches!(ppu, PPlane::ZX | PPlane::Z | PPlane::X) {
-                tracing::debug!("===ZX branch===");
-                done |= find_impl::<BRANCH_ZX>(&mut ctx);
+            if !done && matches!(ppu, PPlane::XZ | PPlane::Z | PPlane::X) {
+                tracing::debug!("===XZ branch===");
+                done |= find_impl::<BRANCH_XZ>(&mut ctx);
             }
             if done {
                 tracing::debug!("f({}) = {:?}", u, &f[&u]);
@@ -494,7 +494,7 @@ mod tests {
         let pplanes = measurements! {
             0: PPlane::XY,
             1: PPlane::XY,
-            2: PPlane::ZX,
+            2: PPlane::XZ,
             3: PPlane::YZ
         };
         let flen = g.len() - oset.len();
@@ -562,7 +562,7 @@ mod tests {
         let TestCase { g, iset, oset } = test_utils::CASE8.clone();
         let pplanes = measurements! {
             0: PPlane::Z,
-            1: PPlane::ZX,
+            1: PPlane::XZ,
             2: PPlane::Y
         };
         let flen = g.len() - oset.len();
