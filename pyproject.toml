@@ -13,6 +13,8 @@ authors = [
 ]
 maintainers = [
   { name = "S.S.", email = "66886825+EarlMilktea@users.noreply.github.com" },
+  { name = "thierry-martinez", email = "thierry.martinez@inria.fr" },
+  { name = "Shinichi Sunami", email = "shinichi.sunami@gmail.com" },
 ]
 readme = "README.md"
 classifiers = [
