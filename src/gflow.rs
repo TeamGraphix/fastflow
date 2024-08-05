@@ -19,8 +19,11 @@ use crate::{
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 /// Measurement plane.
 pub enum Plane {
+    /// Measurement on the XY plane.
     XY,
+    /// Measurement on the YZ plane.
     YZ,
+    /// Measurement on the XZ plane.
     XZ,
 }
 
