@@ -56,7 +56,7 @@ docstring-code-format = true
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [
-  # Conclicts with ruff format
+  # Conflicts with ruff format
   "COM812",
   "COM819",
   "D206",
