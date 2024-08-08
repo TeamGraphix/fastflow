@@ -1,0 +1,42 @@
+name: test_py
+
+on:
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-latest", "windows-latest", "macos-latest"]
+        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+    name: "py${{ matrix.python }}_${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: rustup update
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      # Necessary for nektos/act
+      # - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - name: Run Python tests
+        # MEMO: DO NOT use `pip install .`
+        #  We need to test with debug build
+        run: |
+          python3 -m pip install -U pip
+          pip install pipenv
+          pipenv install maturin pytest
+          pipenv run maturin develop
+          pipenv run pytest

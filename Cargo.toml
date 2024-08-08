@@ -1,11 +1,30 @@
 [package]
 name = "fastflow"
-description = "rust binding of generalized and pauli flow finding algorithms."
+description = "Rust binding of generalized and pauli flow finding algorithms."
 homepage = "https://github.com/TeamGraphix/fastflow"
 repository = "https://github.com/TeamGraphix/fastflow"
-version = "0.0.0"
+# Must be consistent with pyproject.toml
+version = "0.1.0"
 authors = ["S.S <66886825+EarlMilktea@users.noreply.github.com>"]
-edition = "2024"
+edition = "2021"
 license = "Apache-2.0"
 readme = "README.md"
 keywords = ["mbqc", "quantum-computing", "quantum"]
+
+[lib]
+name = "fastflow"
+crate-type = ["cdylib"]
+
+[dependencies]
+anyhow = "1"
+fixedbitset = "0.5"
+hashbrown = "0.14"
+itertools = "0.13"
+pyo3 = { version = "0.22", features = ["abi3-py38", "hashbrown"] }
+tracing = "0.1"
+
+[dev-dependencies]
+rand = "0.8"
+rstest = "0.22"
+rstest_reuse = "0.7"
+test-log = { version = "0.2", features = ["trace"] }

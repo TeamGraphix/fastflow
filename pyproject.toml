@@ -1,0 +1,96 @@
+[build-system]
+requires = ["maturin>=1,<2"]
+build-backend = "maturin"
+
+[project]
+name = "fastflow"
+# Must be consistent with Cargo.toml
+version = "0.1.0"
+description = "Rust binding of generalized and pauli flow finding algorithms."
+license = { file = "LICENSE" }
+authors = [
+  { name = "S.S.", email = "66886825+EarlMilktea@users.noreply.github.com" },
+]
+maintainers = [
+  { name = "S.S.", email = "66886825+EarlMilktea@users.noreply.github.com" },
+  { name = "thierry-martinez", email = "thierry.martinez@inria.fr" },
+  { name = "Shinichi Sunami", email = "shinichi.sunami@gmail.com" },
+]
+readme = "README.md"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Rust",
+  "Topic :: Scientific/Engineering :: Physics",
+  "Typing :: Typed",
+]
+requires-python = ">=3.8,<3.13"
+dependencies = ["networkx", "types-networkx"]
+
+[project.optional-dependencies]
+dev = ["mypy", "pytest", "pytest-cov", "ruff"]
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+python-source = "python"
+module-name = "fastflow._impl"
+
+[tool.mypy]
+python_version = "3.8"
+
+[tool.ruff]
+line-length = 120
+extend-include = ["*.ipynb"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+  # Conflicts with ruff format
+  "COM812",
+  "COM819",
+  "D206",
+  "D300",
+  "E111",
+  "E114",
+  "E117",
+  "ISC001",
+  "ISC002",
+  "Q000",
+  "Q001",
+  "Q002",
+  "Q003",
+  "W191",
+
+  # Not necessary for this project
+  "AIR",
+  "ASYNC",
+  "DJ",
+  "PD",
+
+  # Manually disabled
+  "ANN10", # `self`/`cls` not annotated
+  "CPY",   # copyright missing
+  "D105",  # undocumented magic method
+  "ERA",   # commented-out code
+  "FBT",   # boolean-trap
+  "FIX",   # fixme
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = [
+  "S101", # `assert` detected
+]

@@ -1,0 +1,52 @@
+name: check_rs
+
+on:
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rustfmt:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: rustup update
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+
+      # Necessary for nektos/act
+      # - uses: actions-rust-lang/setup-rust-toolchain@v1
+      #   with:
+      #     components: rustfmt
+
+      - name: Run rustfmt
+        run: |
+          cargo fmt -- --check
+
+  clippy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: rustup update
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+
+      # Necessary for nektos/act
+      # - uses: actions-rust-lang/setup-rust-toolchain@v1
+      #   with:
+      #     components: clippy
+
+      - name: Run clippy
+        run: |
+          cargo clippy -- -D warnings
