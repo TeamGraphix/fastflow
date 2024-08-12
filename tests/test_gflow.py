@@ -1,5 +1,7 @@
 """Test gflow."""
 
+from __future__ import annotations
+
 import pytest
 from fastflow import gflow
 
