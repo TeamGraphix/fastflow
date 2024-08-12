@@ -6,6 +6,7 @@ from fastflow import pflow
 from tests.assets import CASES, FlowTestCase
 
 
+@pytest.mark.filterwarnings("ignore:No Pauli measurement found")
 @pytest.mark.parametrize("c", CASES)
 def test_pflow_graphix(c: FlowTestCase) -> None:
     """Compare the results with the graphix package."""
