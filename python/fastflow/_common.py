@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Hashable, Mapping
+from collections.abc import Hashable, Iterable, Mapping
 from collections.abc import Set as AbstractSet
 from typing import Generic, TypeVar
 
@@ -162,7 +162,7 @@ class IndexMap(Generic[V]):
         """
         return {self.decode(i) for i in iset}
 
-    def decode_flow(self, f_: dict[int, int]) -> dict[V, V]:
+    def decode_flow(self, f_: Mapping[int, int]) -> dict[V, V]:
         """Decode MBQC flow.
 
         Returns
@@ -171,7 +171,7 @@ class IndexMap(Generic[V]):
         """
         return {self.decode(i): self.decode(j) for i, j in f_.items()}
 
-    def decode_gflow(self, f_: dict[int, set[int]]) -> dict[V, set[V]]:
+    def decode_gflow(self, f_: Mapping[int, AbstractSet[int]]) -> dict[V, set[V]]:
         """Decode MBQC gflow.
 
         Returns
@@ -180,7 +180,7 @@ class IndexMap(Generic[V]):
         """
         return {self.decode(i): self.decode_set(si) for i, si in f_.items()}
 
-    def decode_layer(self, layer_: list[int]) -> dict[V, int]:
+    def decode_layer(self, layer_: Iterable[int]) -> dict[V, int]:
         """Decode MBQC layer.
 
         Returns
