@@ -8,6 +8,7 @@ name = "fastflow"
 version = "0.1.0"
 description = "Rust binding of generalized and pauli flow finding algorithms."
 license = { file = "LICENSE" }
+readme = "README.md"
 authors = [
   { name = "S.S.", email = "66886825+EarlMilktea@users.noreply.github.com" },
 ]
@@ -16,7 +17,6 @@ maintainers = [
   { name = "thierry-martinez", email = "thierry.martinez@inria.fr" },
   { name = "Shinichi Sunami", email = "shinichi.sunami@gmail.com" },
 ]
-readme = "README.md"
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
@@ -40,16 +40,25 @@ dev = ["mypy", "pytest", "pytest-cov", "ruff"]
 doc = ["sphinx", "sphinx_rtd_theme"]
 
 [tool.maturin]
+exclude = [
+  "Pipfile",
+  "docs/**",
+  "rustfmt.toml",
+  "tests/**",
+  ".github/**",
+  ".gitignore",
+  ".nojekyll",
+]
 features = ["pyo3/extension-module"]
-python-source = "python"
 module-name = "fastflow._impl"
+python-source = "python"
 
 [tool.mypy]
 python_version = "3.8"
 
 [tool.ruff]
-line-length = 120
 extend-include = ["*.ipynb"]
+line-length = 120
 
 [tool.ruff.format]
 docstring-code-format = true
@@ -92,10 +101,10 @@ ignore = [
 convention = "numpy"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*.py" = [
-  "S101", # `assert` detected
-]
 "docs/**/*.py" = [
   "D1",  # undocumented-XXX
   "INP", # implicit namespace package
+]
+"tests/*.py" = [
+  "S101", # `assert` detected
 ]
