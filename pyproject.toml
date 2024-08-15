@@ -95,3 +95,7 @@ convention = "numpy"
 "tests/*.py" = [
   "S101", # `assert` detected
 ]
+"docs/**/*.py" = [
+  "D1",  # undocumented-XXX
+  "INP", # implicit namespace package
+]
