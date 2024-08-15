@@ -6,13 +6,15 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-import os
 import sys
+from pathlib import Path
 
-sys.path.insert(0, os.path.abspath("../../python/fastflow"))
+ROOT_DIR = Path("../../python/fastflow").resolve()
+
+sys.path.insert(0, ROOT_DIR.as_posix())
 
 project = "fastflow"
-copyright = "2024, TeamGraphix"
+copyright = "2024, TeamGraphix"  # noqa: A001
 author = "S.S."
 release = "0.1.0"
 
