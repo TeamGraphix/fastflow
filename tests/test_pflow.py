@@ -24,5 +24,5 @@ def test_pflow_redundant() -> None:
     iset = {0}
     oset = {1}
     planes = {0: PPlane.X, 1: PPlane.Y}
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match=r".*Ignoring pplane\[v\] where v in oset\..*"):
         pflow.find(g, iset, oset, planes)
