@@ -150,6 +150,8 @@ impl Drop for ScopedExclude<'_> {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::BTreeMap;
+
     use super::*;
     use crate::internal::test_utils::{TestCase, CASE3};
 
@@ -177,5 +179,64 @@ mod tests {
             odd_neighbors(g, &Nodes::from([0, 1, 2, 3, 4, 5])),
             Nodes::from([1, 5])
         );
+    }
+
+    #[test]
+    fn test_zerofill() {
+        let mut mat = vec![FixedBitSet::new(), FixedBitSet::new(), FixedBitSet::new()];
+        zerofill(&mut mat, 10);
+        for row in &mat {
+            assert_eq!(row.len(), 10);
+            assert!(row.is_clear());
+        }
+    }
+
+    #[test]
+    fn test_difference_with_hashset() {
+        let mut set = hashbrown::HashSet::from([1, 2, 3]);
+        set.difference_with(&[2, 3, 4]);
+        assert_eq!(set, hashbrown::HashSet::from([1]));
+    }
+
+    #[test]
+    fn test_difference_with_btreeset() {
+        let mut set = BTreeSet::from([1, 2, 3]);
+        set.difference_with(&[2, 3, 4]);
+        assert_eq!(set, BTreeSet::from([1]));
+    }
+
+    #[test]
+    fn test_indexmap() {
+        let set = OrderedNodes::from([8, 1, 0]);
+        let imap = indexmap::<BTreeMap<_, _>>(&set);
+        assert_eq!(imap[&0], 0);
+        assert_eq!(imap[&1], 1);
+        assert_eq!(imap[&8], 2);
+    }
+
+    #[test]
+    fn test_scoped_include() {
+        let mut set = OrderedNodes::new();
+        {
+            let mut guard = ScopedInclude::new(&mut set, 0);
+            // Mutable borrow
+            guard.insert(1);
+            // Immutable borrow
+            assert_eq!(*guard, OrderedNodes::from([0, 1]));
+        }
+        assert_eq!(set, OrderedNodes::from([1]));
+    }
+
+    #[test]
+    fn test_scoped_exclude() {
+        let mut set = OrderedNodes::from([0]);
+        {
+            let mut guard = ScopedExclude::new(&mut set, 0);
+            // Mutable borrow
+            guard.insert(1);
+            // Immutable borrow
+            assert_eq!(*guard, OrderedNodes::from([1]));
+        }
+        assert_eq!(set, OrderedNodes::from([0, 1]));
     }
 }
