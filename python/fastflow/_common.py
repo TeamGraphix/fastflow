@@ -66,10 +66,10 @@ def check_planelike(vset: AbstractSet[V], oset: AbstractSet[V], plike: Mapping[V
     if not isinstance(plike, Mapping):
         msg = "Measurement planes must be passed as a mapping."
         raise TypeError(msg)
-    if plike.keys() > vset:
+    if not (plike.keys() <= vset):
         msg = "Cannot find corresponding vertices in the graph."
         raise ValueError(msg)
-    if plike.keys() < vset - oset:
+    if not (vset - oset <= plike.keys()):
         msg = "Measurement planes should be specified for all u in V\\O."
         raise ValueError(msg)
 
