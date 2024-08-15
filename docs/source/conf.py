@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT_DIR = Path("../../python/fastflow").resolve()
 
-sys.path.insert(0, ROOT_DIR.as_posix())
+sys.path.insert(0, str(ROOT_DIR))
 
 project = "fastflow"
 copyright = "2024, TeamGraphix"  # noqa: A001
