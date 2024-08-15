@@ -6,7 +6,33 @@ permissions:
   contents: read
 
 jobs:
-  coverage:
+  cov_py:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: rustup update
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Measure Python coverage
+        run: |
+          python3 -m pip install -U pip
+          pip install pipenv
+          # Use development build
+          pipenv install -e .[dev]
+          pipenv run pytest --cov=./python --cov-report=xml
+
+      - uses: codecov/codecov-action@v4
+        with:
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+          flags: python
+
+  cov_rs:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,18 +48,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Measure Python coverage
-        run: |
-          python3 -m pip install -U pip
-          pip install pipenv
-          # Use development build
-          pipenv install -e .[dev]
-          pipenv run pytest --cov=./python --cov-report=xml
-
       - name: Measure Rust coverage
         run: |
           cargo tarpaulin --out Xml
 
       - uses: codecov/codecov-action@v4
         with:
+          fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
+          flags: rust
