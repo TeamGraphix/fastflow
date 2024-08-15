@@ -88,13 +88,15 @@ ignore = [
   "DJ",
   "PD",
 
-  # Manually disabled
-  "ANN10", # `self`/`cls` not annotated
-  "CPY",   # copyright missing
-  "D105",  # undocumented magic method
-  "ERA",   # commented-out code
-  "FBT",   # boolean-trap
-  "FIX",   # fixme
+  # Manually-disabled (lints)
+  "CPY",
+  "ERA",
+  "FBT",
+  "FIX",
+
+  # Manually-disabled (rules)
+  "ANN10", # missing-type-self/cls (deprecated)
+  "D105",  # undocumented-magic-method
 ]
 
 [tool.ruff.lint.pydocstyle]
@@ -103,8 +105,8 @@ convention = "numpy"
 [tool.ruff.lint.per-file-ignores]
 "docs/**/*.py" = [
   "D1",  # undocumented-XXX
-  "INP", # implicit namespace package
+  "INP",
 ]
 "tests/*.py" = [
-  "S101", # `assert` detected
+  "S101", # assert
 ]
