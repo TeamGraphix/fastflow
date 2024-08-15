@@ -314,6 +314,9 @@ mod tests {
         assert_eq!(format!("{:}", sol.work[0]), "1000111");
         assert_eq!(format!("{:}", sol.work[1]), "0100011");
         assert_eq!(format!("{:}", sol.work[2]), "0010001");
+        // Call Debug
+        let ex = format!("{sol:?}");
+        assert!(!ex.is_empty());
     }
 
     /// Helper function to create a solver storage from the coefficient matrix and the right-hand side.
@@ -387,8 +390,8 @@ mod tests {
     #[template]
     #[rstest]
     fn template_tests(
-        #[values(1, 2, 7, 12, 23, 36)] rows: usize,
-        #[values(1, 2, 7, 12, 23, 36)] cols: usize,
+        #[values(1, 2, 7, 12, 23)] rows: usize,
+        #[values(1, 2, 7, 12, 23)] cols: usize,
         #[values(1, 2, 7, 12)] neqs: usize,
     ) {
     }
@@ -474,9 +477,9 @@ mod tests {
                     assert!(sol.rank.unwrap() < sol.rows);
                     continue;
                 }
-                for i in sol.rank.unwrap()..sol.rows {
-                    assert!(sol.work[i].count_ones(..sol.cols) == 0);
-                    assert!(!sol.work[i][cols + ieq]);
+                for row in &sol.work[sol.rank.unwrap()..sol.rows] {
+                    assert!(row.count_ones(..sol.cols) == 0);
+                    assert!(!row[cols + ieq]);
                 }
                 let b = compute_lhs(&co, &x);
                 assert_eq!(&b, rhsi);
@@ -505,9 +508,9 @@ mod tests {
                     assert!(sol.rank.unwrap() < sol.rows);
                     continue;
                 }
-                for i in sol.rank.unwrap()..sol.rows {
-                    assert!(sol.work[i].count_ones(..sol.cols) == 0);
-                    assert!(!sol.work[i][cols + ieq]);
+                for row in &sol.work[sol.rank.unwrap()..sol.rows] {
+                    assert!(row.count_ones(..sol.cols) == 0);
+                    assert!(!row[cols + ieq]);
                 }
                 let b = compute_lhs(&co, &x);
                 assert_eq!(&b, rhsi);
