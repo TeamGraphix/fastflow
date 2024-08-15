@@ -37,7 +37,7 @@ dependencies = ["networkx", "types-networkx"]
 
 [project.optional-dependencies]
 dev = ["mypy", "pytest", "pytest-cov", "ruff"]
-doc = ["sphinx"]
+doc = ["sphinx", "sphinx_rtd_theme"]
 
 [tool.maturin]
 features = ["pyo3/extension-module"]
