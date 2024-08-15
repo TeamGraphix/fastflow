@@ -22,7 +22,7 @@ jobs:
       - run: |
           rustup update
           # Use nightly for rustfmt
-          rustup toolchain install --allow-downgrade nightly
+          rustup component add --toolchain nightly rustfmt
 
       - uses: actions/setup-python@v5
         with:
