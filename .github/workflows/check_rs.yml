@@ -28,11 +28,6 @@ jobs:
         with:
           python-version: 3.8
 
-      # Necessary for nektos/act
-      # - uses: actions-rust-lang/setup-rust-toolchain@v1
-      #   with:
-      #     components: rustfmt
-
       - name: Run rustfmt
         run: |
           cargo +nightly fmt -- --check
@@ -48,11 +43,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: 3.8
-
-      # Necessary for nektos/act
-      # - uses: actions-rust-lang/setup-rust-toolchain@v1
-      #   with:
-      #     components: clippy
 
       - name: Run clippy
         run: |
