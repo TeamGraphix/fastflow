@@ -18,6 +18,16 @@ def test_pflow_graphix(c: FlowTestCase) -> None:
     assert result == c.pflow
 
 
+def test_pflow_nopauli() -> None:
+    """Run without Pauli measurements."""
+    g = nx.Graph([(0, 1)])
+    iset = {0}
+    oset = {1}
+    planes = {0: PPlane.XY}
+    with pytest.warns(UserWarning, match=r".*No Pauli measurement found\. Use gflow\.find instead\..*"):
+        pflow.find(g, iset, oset, planes)
+
+
 def test_pflow_redundant() -> None:
     """Specify redundant pplanes."""
     g = nx.Graph([(0, 1)])
