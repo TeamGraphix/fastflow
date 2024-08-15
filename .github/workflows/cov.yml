@@ -1,0 +1,31 @@
+name: cov_py
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  cov:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: rustup update
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Measure python coverage
+        run: |
+          python3 -m pip install -U pip
+          pip install pipenv
+          # Use development build
+          pipenv install -e .[dev]
+          pipenv run pytest --cov=./python --cov-report=xml
+
+      - uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
