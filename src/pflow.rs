@@ -321,7 +321,6 @@ fn find_impl<const K: BranchKind>(ctx: &mut PFlowContext) -> bool {
 #[tracing::instrument]
 #[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
 pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFlow, Layer)> {
-    validate::check_graph(&g, &iset, &oset).unwrap();
     let yset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::Y));
     let xyset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::X | PPlane::Y));
     let yzset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::Y | PPlane::Z));

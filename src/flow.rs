@@ -57,7 +57,6 @@ fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
 #[tracing::instrument]
 #[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
 pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
-    validate::check_graph(&g, &iset, &oset).unwrap();
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();
     let mut cset = &oset - &iset;
