@@ -480,7 +480,7 @@ mod tests {
     }
 
     #[test]
-    fn test_not_fullrank() {
+    fn test_solve_simple() {
         let mut work = vec![
             // 1001
             FixedBitSet::with_capacity_and_blocks(4, vec![0b1001]),
@@ -491,8 +491,12 @@ mod tests {
         ];
         let mut sol = GF2Solver::attach(&mut work, 1);
         let mut x = FixedBitSet::with_capacity(3);
+        assert_eq!(sol.rank, None);
         assert!(sol.solve_in_place(&mut x, 0));
         assert_eq!(sol.rank, Some(2));
+        let x_orig = x.clone();
+        assert!(sol.solve_in_place(&mut x, 0));
+        assert_eq!(x, x_orig);
         assert!(x[0]);
         assert!(x[1]);
         assert!(!x[2]);
