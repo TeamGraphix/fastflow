@@ -67,3 +67,49 @@ pub fn check_domain<'a, 'b>(
     }
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use std::iter;
+
+    use super::*;
+    use crate::common::Nodes;
+
+    #[test]
+    fn test_check_initial() {
+        let layer = vec![0, 0, 0, 1, 1, 1];
+        let oset = Nodes::from([0, 1]);
+        check_initial(&layer, &oset, false).unwrap();
+    }
+
+    #[test]
+    fn test_check_initial_iff() {
+        let layer = vec![0, 0, 0, 1, 1, 1];
+        let oset = Nodes::from([0, 1, 2]);
+        check_initial(&layer, &oset, true).unwrap();
+    }
+
+    #[test]
+    fn test_check_domain_flow() {
+        let f = hashbrown::HashMap::<usize, usize>::from([(0, 1), (1, 2)]);
+        let vset = Nodes::from([0, 1, 2]);
+        let iset = Nodes::from([0]);
+        let oset = Nodes::from([2]);
+        check_domain(f.iter(), &vset, &iset, &oset).unwrap();
+    }
+
+    #[test]
+    fn test_check_domain_gflow() {
+        let f = hashbrown::HashMap::<usize, Nodes>::from([
+            (0, Nodes::from([0, 1])),
+            (1, Nodes::from([2])),
+        ]);
+        let vset = Nodes::from([0, 1, 2]);
+        let iset = Nodes::from([0]);
+        let oset = Nodes::from([2]);
+        let f_flatiter = f
+            .iter()
+            .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
+        check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
+    }
+}
