@@ -83,9 +83,25 @@ mod tests {
     }
 
     #[test]
+    #[should_panic = "initial check failed"]
+    fn test_check_initial_ng() {
+        let layer = vec![0, 0, 0, 1, 1, 1];
+        let oset = Nodes::from([0, 1, 2, 3]);
+        check_initial(&layer, &oset, false).unwrap();
+    }
+
+    #[test]
     fn test_check_initial_iff() {
         let layer = vec![0, 0, 0, 1, 1, 1];
         let oset = Nodes::from([0, 1, 2]);
+        check_initial(&layer, &oset, true).unwrap();
+    }
+
+    #[test]
+    #[should_panic = "initial check failed"]
+    fn test_check_initial_iff_ng() {
+        let layer = vec![0, 0, 0, 1, 1, 1];
+        let oset = Nodes::from([0, 1]);
         check_initial(&layer, &oset, true).unwrap();
     }
 
