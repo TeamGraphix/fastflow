@@ -389,6 +389,71 @@ mod tests {
         rhs
     }
 
+    #[test]
+    #[should_panic = "neqs is zero"]
+    fn test_attach_noeq() {
+        GF2Solver::attach(&mut [], 0);
+    }
+
+    #[test]
+    #[should_panic = "work is empty"]
+    fn test_attach_empty_rows() {
+        GF2Solver::attach(&mut [], 1);
+    }
+
+    #[test]
+    #[should_panic = "zero-length columns"]
+    fn test_attach_empty_cols() {
+        let mut work = vec![FixedBitSet::with_capacity(0); 3];
+        GF2Solver::attach(&mut work, 1);
+    }
+
+    #[test]
+    #[should_panic = "work is jagged"]
+    fn test_attach_empty_jagged() {
+        let mut work = vec![FixedBitSet::with_capacity(3), FixedBitSet::with_capacity(4)];
+        GF2Solver::attach(&mut work, 1);
+    }
+
+    #[test]
+    #[should_panic = "neqs too large"]
+    fn test_attach_neqs_large() {
+        let mut work = vec![FixedBitSet::with_capacity(3); 3];
+        GF2Solver::attach(&mut work, 4);
+    }
+
+    #[test]
+    #[should_panic = "output size mismatch:"]
+    fn test_solve_invalid_size() {
+        let mut work = vec![
+            // 1000111
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b111_0001]),
+            // 0100011
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b110_0010]),
+            // 0010001
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b100_0100]),
+        ];
+        let mut sol = GF2Solver::attach(&mut work, 3);
+        let mut out = FixedBitSet::with_capacity(5);
+        sol.solve_in_place(&mut out, 0);
+    }
+
+    #[test]
+    #[should_panic = "equation index out of range:"]
+    fn test_solve_invalid_index() {
+        let mut work = vec![
+            // 1000111
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b111_0001]),
+            // 0100011
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b110_0010]),
+            // 0010001
+            FixedBitSet::with_capacity_and_blocks(7, vec![0b100_0100]),
+        ];
+        let mut sol = GF2Solver::attach(&mut work, 3);
+        let mut out = FixedBitSet::with_capacity(4);
+        sol.solve_in_place(&mut out, 9);
+    }
+
     const REP: usize = 1000;
 
     #[template]
@@ -398,6 +463,25 @@ mod tests {
         #[values(1, 2, 7, 12, 23)] cols: usize,
         #[values(1, 2, 7, 12)] neqs: usize,
     ) {
+    }
+
+    #[test]
+    fn test_not_fullrank() {
+        let mut work = vec![
+            // 1001
+            FixedBitSet::with_capacity_and_blocks(4, vec![0b1001]),
+            // 0101
+            FixedBitSet::with_capacity_and_blocks(4, vec![0b1010]),
+            // 0000
+            FixedBitSet::with_capacity_and_blocks(4, vec![0b0000]),
+        ];
+        let mut sol = GF2Solver::attach(&mut work, 1);
+        let mut x = FixedBitSet::with_capacity(3);
+        assert!(sol.solve_in_place(&mut x, 0));
+        assert_eq!(sol.rank, Some(2));
+        assert!(x[0]);
+        assert!(x[1]);
+        assert!(!x[2]);
     }
 
     #[apply(template_tests)]
