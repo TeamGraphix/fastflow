@@ -117,8 +117,41 @@ mod tests {
     #[test]
     fn test_check_domain_gflow() {
         let f = hashbrown::HashMap::<usize, Nodes>::from([
+            // OK: 0 in f(0)
             (0, Nodes::from([0, 1])),
             (1, Nodes::from([2])),
+        ]);
+        let vset = Nodes::from([0, 1, 2]);
+        let iset = Nodes::from([0]);
+        let oset = Nodes::from([2]);
+        let f_flatiter = f
+            .iter()
+            .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
+        check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
+    }
+
+    #[test]
+    #[should_panic = "domain check failed"]
+    fn test_check_domain_ng_iset() {
+        let f = hashbrown::HashMap::<usize, Nodes>::from([
+            (0, Nodes::from([0, 1])),
+            (2, Nodes::from([2])),
+        ]);
+        let vset = Nodes::from([0, 1, 2]);
+        let iset = Nodes::from([0]);
+        let oset = Nodes::from([2]);
+        let f_flatiter = f
+            .iter()
+            .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
+        check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
+    }
+
+    #[test]
+    #[should_panic = "domain check failed"]
+    fn test_check_domain_ng_oset() {
+        let f = hashbrown::HashMap::<usize, Nodes>::from([
+            (0, Nodes::from([1])),
+            (1, Nodes::from([0])),
         ]);
         let vset = Nodes::from([0, 1, 2]);
         let iset = Nodes::from([0]);
