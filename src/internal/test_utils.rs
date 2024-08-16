@@ -149,7 +149,18 @@ pub static CASE8: LazyLock<TestCase> = LazyLock::new(|| {
 
 #[cfg(test)]
 mod tests {
-    use crate::common::{Graph, Nodes};
+    use rstest::rstest;
+    use rstest_reuse::{apply, template};
+
+    use super::*;
+
+    #[template]
+    #[rstest]
+    fn template_tests(
+        #[values(&*CASE0, &*CASE1, &*CASE2, &*CASE3, &*CASE4, &*CASE5, &*CASE6, &*CASE7, &*CASE8)]
+        input: &TestCase,
+    ) {
+    }
 
     /// Checks if the graph is valid.
     ///
@@ -194,5 +205,11 @@ mod tests {
             Ok(())
         })?;
         Ok(())
+    }
+
+    #[apply(template_tests)]
+    fn test_input(input: &TestCase) {
+        let TestCase { g, iset, oset } = input;
+        check_graph(g, iset, oset).unwrap();
     }
 }
