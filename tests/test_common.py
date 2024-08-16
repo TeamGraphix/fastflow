@@ -48,7 +48,7 @@ def test_check_planelike_ng() -> None:
         _common.check_planelike({"a", "b"}, {"b"}, {})
 
 
-@pytest.fixture()
+@pytest.fixture
 def fx_indexmap() -> IndexMap:
     """IndexMap fixture."""
     return IndexMap({"a", "b", "c"})
