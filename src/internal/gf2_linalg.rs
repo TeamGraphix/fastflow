@@ -52,7 +52,11 @@ impl<'a> GF2Solver<'a> {
     ///
     /// # Panics
     ///
-    /// - If similar conditions to `try_new_from` are not met.
+    /// - If `neqs` is zero.
+    /// - If `work` is empty (no rows).
+    /// - If `work` is jagged, i.e., the number of columns is not uniform.
+    /// - If `work[...]` is empty (no columns).
+    /// - If `neqs` is so large that there is no room for the coefficient matrix.
     pub fn attach(work: &'a mut GF2Matrix, neqs: usize) -> Self {
         if let Err(e) = Self::attach_check(work, neqs) {
             panic!("invalid argument detected: {e}");
