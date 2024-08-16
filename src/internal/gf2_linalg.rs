@@ -454,14 +454,28 @@ mod tests {
         sol.solve_in_place(&mut out, 9);
     }
 
+    #[cfg(not(miri))]
     const REP: usize = 1000;
+    #[cfg(miri)]
+    const REP: usize = 1;
 
+    #[cfg(not(miri))]
     #[template]
     #[rstest]
     fn template_tests(
         #[values(1, 2, 7, 12, 23)] rows: usize,
         #[values(1, 2, 7, 12, 23)] cols: usize,
         #[values(1, 2, 7, 12)] neqs: usize,
+    ) {
+    }
+
+    #[cfg(miri)]
+    #[template]
+    #[rstest]
+    fn template_tests(
+        #[values(1, 2, 7)] rows: usize,
+        #[values(1, 2, 7)] cols: usize,
+        #[values(1, 2)] neqs: usize,
     ) {
     }
 
