@@ -28,3 +28,23 @@ jobs:
       - name: Run Rust tests
         run: |
           cargo test
+
+  cargo_miri:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: |
+          rustup update
+          # Use nightly for miri
+          rustup toolchain install --allow-downgrade nightly
+          rustup component add --toolchain nightly miri
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.8
+
+      - name: Run Rust tests with miri
+        run: |
+          cargo +nightly miri test
