@@ -36,7 +36,7 @@ requires-python = ">=3.8,<3.13"
 dependencies = ["networkx", "types-networkx"]
 
 [project.optional-dependencies]
-dev = ["mypy", "pytest", "pytest-cov", "ruff"]
+dev = ["mypy", "pyright", "pytest", "pytest-cov", "ruff"]
 doc = ["sphinx", "sphinx_rtd_theme"]
 
 [tool.maturin]
