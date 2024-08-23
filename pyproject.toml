@@ -55,6 +55,7 @@ python-source = "python"
 
 [tool.mypy]
 python_version = "3.8"
+strict = true
 
 [tool.ruff]
 extend-include = ["*.ipynb"]
