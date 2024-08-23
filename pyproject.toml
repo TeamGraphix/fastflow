@@ -109,6 +109,7 @@ convention = "numpy"
   "INP",
 ]
 "tests/*.py" = [
+  "INP",
   "PLR2004", # magic-value-comparison
   "S101",    # assert
 ]
