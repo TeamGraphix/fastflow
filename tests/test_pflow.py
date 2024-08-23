@@ -20,7 +20,7 @@ def test_pflow_graphix(c: FlowTestCase) -> None:
 
 def test_pflow_nopauli() -> None:
     """Run without Pauli measurements."""
-    g = nx.Graph([(0, 1)])
+    g: nx.Graph[int] = nx.Graph([(0, 1)])
     iset = {0}
     oset = {1}
     planes = {0: PPlane.XY}
@@ -30,7 +30,7 @@ def test_pflow_nopauli() -> None:
 
 def test_pflow_redundant() -> None:
     """Specify redundant pplanes."""
-    g = nx.Graph([(0, 1)])
+    g: nx.Graph[int] = nx.Graph([(0, 1)])
     iset = {0}
     oset = {1}
     planes = {0: PPlane.X, 1: PPlane.Y}
