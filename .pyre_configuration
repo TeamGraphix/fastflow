@@ -1,0 +1,14 @@
+{
+  "strict": true,
+  "site_package_search_strategy": "pep561",
+  "search_path": [
+    "python",
+    "tests"
+  ],
+  "source_directories": [
+    "."
+  ],
+  "exclude": [
+    ".*/docs/.*"
+  ]
+}
