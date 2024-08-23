@@ -49,7 +49,7 @@ def test_check_planelike_ng() -> None:
 
 
 @pytest.fixture
-def fx_indexmap() -> IndexMap:
+def fx_indexmap() -> IndexMap[str]:
     """IndexMap fixture."""
     return IndexMap({"a", "b", "c"})
 
@@ -58,7 +58,7 @@ class TestIndexMap:
     """Test IndexMap."""
 
     @staticmethod
-    def test_encode(fx_indexmap: IndexMap) -> None:
+    def test_encode(fx_indexmap: IndexMap[str]) -> None:
         """Test encode."""
         assert {
             fx_indexmap.encode("a"),
@@ -70,7 +70,7 @@ class TestIndexMap:
             fx_indexmap.encode("x")
 
     @staticmethod
-    def test_decode(fx_indexmap: IndexMap) -> None:
+    def test_decode(fx_indexmap: IndexMap[str]) -> None:
         """Test decode."""
         assert {
             fx_indexmap.decode(0),
@@ -82,7 +82,7 @@ class TestIndexMap:
             fx_indexmap.decode(3)
 
     @staticmethod
-    def test_encdec(fx_indexmap: IndexMap) -> None:
+    def test_encdec(fx_indexmap: IndexMap[str]) -> None:
         """Encode and then decode."""
         assert fx_indexmap.decode(fx_indexmap.encode("a")) == "a"
         assert fx_indexmap.decode(fx_indexmap.encode("b")) == "b"

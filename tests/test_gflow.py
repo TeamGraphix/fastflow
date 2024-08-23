@@ -4,10 +4,9 @@ from __future__ import annotations
 
 import networkx as nx
 import pytest
+from assets import CASES, FlowTestCase
 from fastflow import gflow
 from fastflow.common import Plane
-
-from tests.assets import CASES, FlowTestCase
 
 
 @pytest.mark.parametrize("c", CASES)
