@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  rustfmt:
+  lint_rs:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,18 +32,6 @@ jobs:
       - name: Run rustfmt
         run: |
           cargo +nightly fmt -- --check
-
-  clippy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: rustup update
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.8
 
       - name: Run clippy
         run: |
