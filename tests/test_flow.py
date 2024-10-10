@@ -1,9 +1,10 @@
 """Test flow."""
 
-import pytest
-from fastflow import flow
+from __future__ import annotations
 
-from tests.assets import CASES, FlowTestCase
+import pytest
+from assets import CASES, FlowTestCase
+from fastflow import flow
 
 
 @pytest.mark.parametrize("c", CASES)

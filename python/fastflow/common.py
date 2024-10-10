@@ -11,11 +11,12 @@ from fastflow._impl import gflow, pflow
 Plane = gflow.Plane
 PPlane = pflow.PPlane
 
-_V = TypeVar("_V", bound=Hashable)
+# Vertex type
+V = TypeVar("V", bound=Hashable)
 
 
 @dataclasses.dataclass(frozen=True)
-class FlowResult(Generic[_V]):
+class FlowResult(Generic[V]):
     """Causal flow [Danos and Kashefi, Phys. Rev. A 74, 052310] of an open graph.
 
     Attributes
@@ -27,12 +28,12 @@ class FlowResult(Generic[_V]):
         (u -> v iff `layer[u] > layer[v]`).
     """
 
-    f: dict[_V, _V]
-    layer: dict[_V, int]
+    f: dict[V, V]
+    layer: dict[V, int]
 
 
 @dataclasses.dataclass(frozen=True)
-class GFlowResult(Generic[_V]):
+class GFlowResult(Generic[V]):
     """Generalized flow [Browne et al., NJP 9,  250 (2007)] of an open graph.
 
     Attributes
@@ -44,5 +45,5 @@ class GFlowResult(Generic[_V]):
         (u -> v iff `layer[u] > layer[v]`).
     """
 
-    f: dict[_V, set[_V]]
-    layer: dict[_V, int]
+    f: dict[V, set[V]]
+    layer: dict[V, int]

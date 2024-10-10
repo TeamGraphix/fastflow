@@ -146,3 +146,70 @@ pub static CASE8: LazyLock<TestCase> = LazyLock::new(|| {
         oset: Nodes::from([3, 4]),
     }
 });
+
+#[cfg(test)]
+mod tests {
+    use rstest::rstest;
+    use rstest_reuse::{apply, template};
+
+    use super::*;
+
+    #[template]
+    #[rstest]
+    fn template_tests(
+        #[values(&*CASE0, &*CASE1, &*CASE2, &*CASE3, &*CASE4, &*CASE5, &*CASE6, &*CASE7, &*CASE8)]
+        input: &TestCase,
+    ) {
+    }
+
+    /// Checks if the graph is valid.
+    ///
+    /// # Returns
+    ///
+    /// Returns `Err` if any of the following conditions are met:
+    ///
+    /// - `g` is empty.
+    /// - `g` contains self-loops.
+    /// - `g` is not symmetric.
+    /// - `g` contains nodes other than `0..g.len()`.
+    /// - `iset`/`oset` contains inconsistent nodes.
+    fn check_graph(g: &Graph, iset: &Nodes, oset: &Nodes) -> anyhow::Result<()> {
+        let n = g.len();
+        if n == 0 {
+            anyhow::bail!("empty graph");
+        }
+        for (u, gu) in g.iter().enumerate() {
+            if gu.contains(&u) {
+                anyhow::bail!("self-loop detected: {u}");
+            }
+            gu.iter().try_for_each(|&v| {
+                if v >= n {
+                    anyhow::bail!("node index out of range: {v}");
+                }
+                if !g[v].contains(&u) {
+                    anyhow::bail!("g must be undirected: needs {v} -> {u}");
+                }
+                Ok(())
+            })?;
+        }
+        iset.iter().try_for_each(|&u| {
+            if !(0..n).contains(&u) {
+                anyhow::bail!("unknown node in iset: {u}");
+            }
+            Ok(())
+        })?;
+        oset.iter().try_for_each(|&u| {
+            if !(0..n).contains(&u) {
+                anyhow::bail!("unknown node in oset: {u}");
+            }
+            Ok(())
+        })?;
+        Ok(())
+    }
+
+    #[apply(template_tests)]
+    fn test_input(input: &TestCase) {
+        let TestCase { g, iset, oset } = input;
+        check_graph(g, iset, oset).unwrap();
+    }
+}

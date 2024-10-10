@@ -54,14 +54,16 @@ def find(
     if plane is None:
         plane = dict.fromkeys(vset - oset, Plane.XY)
     _common.check_planelike(vset, oset, plane)
+    ignore = plane.keys() & oset
+    if len(ignore) != 0:
+        msg = "Ignoring plane[v] where v in oset."
+        warnings.warn(msg, stacklevel=1)
+        plane = {k: v for k, v in plane.items() if k not in ignore}
     codec = IndexMap(vset)
     g_ = codec.encode_graph(g)
     iset_ = codec.encode_set(iset)
     oset_ = codec.encode_set(oset)
     plane_ = codec.encode_dictkey(plane)
-    if len(plane_) != len(plane):
-        msg = "Ignoring plane[v] where v in oset."
-        warnings.warn(msg, stacklevel=1)
     if ret_ := gflow.find(g_, iset_, oset_, plane_):
         f_, layer_ = ret_
         f = codec.decode_gflow(f_)

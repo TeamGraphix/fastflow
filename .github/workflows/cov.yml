@@ -24,7 +24,7 @@ jobs:
           pip install pipenv
           # Use development build
           pipenv install -e .[dev]
-          pipenv run pytest --cov=./python --cov-report=xml
+          pipenv run pytest --cov-report=xml
 
       - uses: codecov/codecov-action@v4
         with:

@@ -165,4 +165,4 @@ CASE8 = FlowTestCase(
     GFlowResult({0: {0, 2, 4}, 1: {1, 2}, 2: {4}}, {0: 1, 1: 1, 2: 1, 3: 0, 4: 0}),
 )
 
-CASES = [CASE0, CASE1, CASE2, CASE3, CASE4, CASE5, CASE6, CASE7, CASE8]
+CASES: tuple[FlowTestCase, ...] = (CASE0, CASE1, CASE2, CASE3, CASE4, CASE5, CASE6, CASE7, CASE8)
