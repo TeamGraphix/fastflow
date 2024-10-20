@@ -421,6 +421,39 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFl
     }
 }
 
+/// Validates Pauli flow.
+///
+/// # Errors
+///
+/// - If `pflow` is invalid.
+/// - If `pflow` is inconsistent with `g`.
+#[pyfunction]
+#[allow(clippy::needless_pass_by_value)]
+pub fn verify(
+    pflow: (PFlow, Layer),
+    g: Graph,
+    iset: Nodes,
+    oset: Nodes,
+    pplanes: PPlanes,
+) -> PyResult<()> {
+    let (f, layer) = pflow;
+    let n = g.len();
+    let vset = (0..n).collect::<Nodes>();
+    let f_flatiter = f
+        .iter()
+        .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
+    if let Err(e) = validate::check_domain(f_flatiter, &vset, &iset, &oset) {
+        return Err(utils::to_pyvalueerror(&e));
+    }
+    if let Err(e) = validate::check_initial(&layer, &oset, false) {
+        return Err(utils::to_pyvalueerror(&e));
+    }
+    if let Err(e) = check_definition(&f, &layer, &g, &pplanes) {
+        return Err(utils::to_pyvalueerror(&e));
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use test_log;

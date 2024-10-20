@@ -233,6 +233,39 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: Planes) -> Option<(GFlow
     }
 }
 
+/// Validates generalized flow.
+///
+/// # Errors
+///
+/// - If `gflow` is invalid.
+/// - If `gflow` is inconsistent with `g`.
+#[pyfunction]
+#[allow(clippy::needless_pass_by_value)]
+pub fn verify(
+    gflow: (GFlow, Layer),
+    g: Graph,
+    iset: Nodes,
+    oset: Nodes,
+    planes: Planes,
+) -> PyResult<()> {
+    let (f, layer) = gflow;
+    let n = g.len();
+    let vset = (0..n).collect::<Nodes>();
+    let f_flatiter = f
+        .iter()
+        .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
+    if let Err(e) = validate::check_domain(f_flatiter, &vset, &iset, &oset) {
+        return Err(utils::to_pyvalueerror(&e));
+    }
+    if let Err(e) = validate::check_initial(&layer, &oset, true) {
+        return Err(utils::to_pyvalueerror(&e));
+    }
+    if let Err(e) = check_definition(&f, &layer, &g, &planes) {
+        return Err(utils::to_pyvalueerror(&e));
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use test_log;

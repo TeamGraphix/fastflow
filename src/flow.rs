@@ -5,7 +5,10 @@ use pyo3::prelude::*;
 
 use crate::{
     common::{Graph, Layer, Nodes},
-    internal::{utils::InPlaceSetDiff, validate},
+    internal::{
+        utils::{self, InPlaceSetDiff},
+        validate,
+    },
 };
 
 type Flow = hashbrown::HashMap<usize, usize>;
@@ -114,6 +117,30 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         tracing::debug!("flow not found");
         None
     }
+}
+
+/// Validates flow.
+///
+/// # Errors
+///
+/// - If `flow` is invalid.
+/// - If `flow` is inconsistent with `g`.
+#[pyfunction]
+#[allow(clippy::needless_pass_by_value)]
+pub fn verify(flow: (Flow, Layer), g: Graph, iset: Nodes, oset: Nodes) -> PyResult<()> {
+    let (f, layer) = flow;
+    let n = g.len();
+    let vset = (0..n).collect::<Nodes>();
+    if let Err(e) = validate::check_domain(f.iter(), &vset, &iset, &oset) {
+        return Err(utils::to_pyvalueerror(&e));
+    }
+    if let Err(e) = validate::check_initial(&layer, &oset, true) {
+        return Err(utils::to_pyvalueerror(&e));
+    }
+    if let Err(e) = check_definition(&f, &layer, &g) {
+        return Err(utils::to_pyvalueerror(&e));
+    }
+    Ok(())
 }
 
 #[cfg(test)]
