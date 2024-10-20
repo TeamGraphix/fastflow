@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, Mapping
 
 from fastflow import _common
 from fastflow._common import IndexMap, V
-from fastflow._impl import gflow
+from fastflow._impl import gflow as gflow_bind
 from fastflow.common import GFlowResult, Plane
 
 if TYPE_CHECKING:
@@ -64,9 +64,51 @@ def find(
     iset_ = codec.encode_set(iset)
     oset_ = codec.encode_set(oset)
     plane_ = codec.encode_dictkey(plane)
-    if ret_ := gflow.find(g_, iset_, oset_, plane_):
+    if ret_ := gflow_bind.find(g_, iset_, oset_, plane_):
         f_, layer_ = ret_
         f = codec.decode_gflow(f_)
         layer = codec.decode_layer(layer_)
         return GFlowResult(f, layer)
     return None
+
+
+def verify(
+    gflow: GFlowResult[V],
+    g: nx.Graph[V],
+    iset: AbstractSet[V],
+    oset: AbstractSet[V],
+    plane: Mapping[V, Plane] | None = None,
+) -> None:
+    r"""Verify the maximally-delayed generalized flow.
+
+    Parameters
+    ----------
+    gflow : `GFlowResult[V]`
+        Generalized flow to be verified.
+    g : `nx.Graph[V]`
+        Undirected graph representing MBQC pattern.
+    iset : `AbstractSet[V]`
+        Input nodes.
+    oset : `AbstractSet[V]`
+        Output nodes.
+    plane : `Mapping[V, Plane] | None`, optional
+        Measurement planes of each vertex in V\O.
+        If `None`, defaults to all `Plane.XY`.
+
+    Raises
+    ------
+    ValueError
+        If verification fails.
+    """
+    _common.check_graph(g, iset, oset)
+    vset = g.nodes
+    if plane is None:
+        plane = dict.fromkeys(vset - oset, Plane.XY)
+    codec = IndexMap(vset)
+    g_ = codec.encode_graph(g)
+    iset_ = codec.encode_set(iset)
+    oset_ = codec.encode_set(oset)
+    plane_ = codec.encode_dictkey(plane)
+    f_ = codec.encode_gflow(gflow.f)
+    layer_ = codec.encode_layer(gflow.layer)
+    gflow_bind.verify((f_, layer_), g_, iset_, oset_, plane_)

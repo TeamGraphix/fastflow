@@ -135,6 +135,39 @@ class IndexMap(Generic[V]):
         """
         return {self.encode(k): v for k, v in mapping.items()}
 
+    def encode_flow(self, f: Mapping[V, V]) -> dict[int, int]:
+        """Encode flow.
+
+        Returns
+        -------
+        Transformed flow.
+        """
+        return {self.encode(i): self.encode(j) for i, j in f.items()}
+
+    def encode_gflow(self, f: Mapping[V, AbstractSet[V]]) -> dict[int, set[int]]:
+        """Encode gflow.
+
+        Returns
+        -------
+        Transformed gflow.
+        """
+        return {self.encode(i): self.encode_set(si) for i, si in f.items()}
+
+    def encode_layer(self, layer: Mapping[V, int]) -> list[int]:
+        """Encode layer.
+
+        Returns
+        -------
+        Transformed layer as list.
+        """
+        # Use -1 as sentinel
+        layer_ = [-1 for _ in range(len(self.__v2i))]
+        for v, li in layer.items():
+            layer_[self.encode(v)] = li
+        if any(li == -1 for li in layer_):
+            raise RuntimeError
+        return layer_
+
     def decode(self, i: int) -> V:
         """Decode the index.
 

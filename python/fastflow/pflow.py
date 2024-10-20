@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Mapping
 
 from fastflow import _common
 from fastflow._common import IndexMap, V
-from fastflow._impl import pflow
+from fastflow._impl import pflow as pflow_bind
 from fastflow.common import GFlowResult, PPlane
 
 if TYPE_CHECKING:
@@ -67,9 +67,51 @@ def find(
     iset_ = codec.encode_set(iset)
     oset_ = codec.encode_set(oset)
     pplane_ = codec.encode_dictkey(pplane)
-    if ret_ := pflow.find(g_, iset_, oset_, pplane_):
+    if ret_ := pflow_bind.find(g_, iset_, oset_, pplane_):
         f_, layer_ = ret_
         f = codec.decode_gflow(f_)
         layer = codec.decode_layer(layer_)
         return GFlowResult(f, layer)
     return None
+
+
+def verify(
+    gflow: GFlowResult[V],
+    g: nx.Graph[V],
+    iset: AbstractSet[V],
+    oset: AbstractSet[V],
+    pplane: Mapping[V, PPlane] | None = None,
+) -> None:
+    r"""Verify Pauli flow.
+
+    Parameters
+    ----------
+    gflow : `GFlowResult[V]`
+        Pauli flow to verify.
+    g : `nx.Graph[V]`
+        Undirected graph representing MBQC pattern.
+    iset : `AbstractSet[V]`
+        Input nodes.
+    oset : `AbstractSet[V]`
+        Output nodes.
+    pplane : `Mapping[V, PPlane] | None`, optional
+        Measurement planes or Pauli indices of each vertex in V\O.
+        If `None`, defaults to all `PPlane.XY`.
+
+    Raises
+    ------
+    ValueError
+        If verification fails.
+    """
+    _common.check_graph(g, iset, oset)
+    vset = g.nodes
+    if pplane is None:
+        pplane = dict.fromkeys(vset - oset, PPlane.XY)
+    codec = IndexMap(vset)
+    g_ = codec.encode_graph(g)
+    iset_ = codec.encode_set(iset)
+    oset_ = codec.encode_set(oset)
+    pplane_ = codec.encode_dictkey(pplane)
+    f_ = codec.encode_gflow(gflow.f)
+    layer_ = codec.encode_layer(gflow.layer)
+    pflow_bind.verify((f_, layer_), g_, iset_, oset_, pplane_)
