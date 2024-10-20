@@ -18,7 +18,7 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow = "1"
 fixedbitset = "0.5"
-hashbrown = "0.15"
+hashbrown = "0.14"                                                 # Cannot use 0.15 for compatibility with pyo3
 itertools = "0.13"
 pyo3 = { version = "0.22", features = ["abi3-py38", "hashbrown"] }
 tracing = "0.1"
