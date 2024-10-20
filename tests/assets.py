@@ -10,8 +10,6 @@ from fastflow.common import FlowResult, GFlowResult, Plane, PPlane
 
 @dataclasses.dataclass(frozen=True)
 class FlowTestCase:
-    """Test case for flow/gflow."""
-
     g: nx.Graph[int]
     iset: set[int]
     oset: set[int]

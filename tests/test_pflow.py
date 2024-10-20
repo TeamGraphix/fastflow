@@ -1,5 +1,3 @@
-"""Test Pauli flow."""
-
 from __future__ import annotations
 
 import networkx as nx
@@ -12,13 +10,11 @@ from fastflow.common import PPlane
 @pytest.mark.filterwarnings("ignore:No Pauli measurement found")
 @pytest.mark.parametrize("c", CASES)
 def test_pflow_graphix(c: FlowTestCase) -> None:
-    """Compare the results with the graphix package."""
     result = pflow.find(c.g, c.iset, c.oset, c.pplane)
     assert result == c.pflow
 
 
 def test_pflow_nopauli() -> None:
-    """Run without Pauli measurements."""
     g: nx.Graph[int] = nx.Graph([(0, 1)])
     iset = {0}
     oset = {1}
@@ -28,7 +24,6 @@ def test_pflow_nopauli() -> None:
 
 
 def test_pflow_redundant() -> None:
-    """Specify redundant pplanes."""
     g: nx.Graph[int] = nx.Graph([(0, 1)])
     iset = {0}
     oset = {1}

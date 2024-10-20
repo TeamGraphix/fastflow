@@ -114,6 +114,7 @@ convention = "numpy"
   "INP",
 ]
 "tests/*.py" = [
+  "D1",      # undocumented-XXX
   "INP",
   "PLR2004", # magic-value-comparison
   "S101",    # assert
