@@ -31,23 +31,23 @@ def find(
 
     Parameters
     ----------
-    g : `nx.Graph[V]`
+    g
         Undirected graph representing MBQC pattern.
         Cannot have self-loops.
-    iset : `AbstractSet[V]`
+    iset
         Input nodes.
         Must be a subset of `g.nodes`.
-    oset : `AbstractSet[V]`
+    oset
         Output nodes.
         Must be a subset of `g.nodes`.
-    plane : `Mapping[V, Plane] | None`, optional
+    plane
         Measurement planes of each vertex in V\O.
         If `None`, defaults to all `Plane.XY`.
 
     Returns
     -------
-    If a gflow exists, return a `GFlowResult[V]` object.
-    Otherwise, return `None`.
+    :
+        If a gflow exists, return a `GFlowResult[V]` object. Otherwise, return `None`.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes

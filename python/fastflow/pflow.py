@@ -26,23 +26,23 @@ def find(
 
     Parameters
     ----------
-    g : `nx.Graph[V]`
+    g
         Undirected graph representing MBQC pattern.
         Cannot have self-loops.
-    iset : `AbstractSet[V]`
+    iset
         Input nodes.
         Must be a subset of `g.nodes`.
-    oset : `AbstractSet[V]`
+    oset
         Output nodes.
         Must be a subset of `g.nodes`.
-    pplane : `Mapping[V, PPlane] | None`, optional
+    pplane
         Measurement planes or Pauli indices of each vertex in V\O.
         If `None`, defaults to all `PPlane.XY`.
 
     Returns
     -------
-    If a Pauli flow exists, return it as `GFlowResult[V]` object.
-    Otherwise, return `None`.
+    :
+        If a Pauli flow exists, return it as `GFlowResult[V]` object. Otherwise, return `None`.
 
     Notes
     -----
@@ -86,15 +86,15 @@ def verify(
 
     Parameters
     ----------
-    gflow : `GFlowResult[V]`
+    gflow
         Pauli flow to verify.
-    g : `nx.Graph[V]`
+    g
         Undirected graph representing MBQC pattern.
-    iset : `AbstractSet[V]`
+    iset
         Input nodes.
-    oset : `AbstractSet[V]`
+    oset
         Output nodes.
-    pplane : `Mapping[V, PPlane] | None`, optional
+    pplane
         Measurement planes or Pauli indices of each vertex in V\O.
         If `None`, defaults to all `PPlane.XY`.
 

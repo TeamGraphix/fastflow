@@ -25,20 +25,20 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResu
 
     Parameters
     ----------
-    g : `nx.Graph[V]`
+    g
         Undirected graph representing MBQC pattern.
         Cannot have self-loops.
-    iset : `AbstractSet[V]`
+    iset
         Input nodes.
         Must be a subset of `g.nodes`.
-    oset : `AbstractSet[V]`
+    oset
         Output nodes.
         Must be a subset of `g.nodes`.
 
     Returns
     -------
-    If a flow exists, return a `FlowResult[V]` object.
-    Otherwise, return `None`.
+    :
+        If a flow exists, return a `FlowResult[V]` object. Otherwise, return `None`.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes
@@ -59,13 +59,13 @@ def verify(flow: FlowResult[V], g: nx.Graph[V], iset: AbstractSet[V], oset: Abst
 
     Parameters
     ----------
-    flow : `FlowResult[V]`
+    flow
         Flow to verify.
-    g : `nx.Graph[V]`
+    g
         Undirected graph representing MBQC pattern.
-    iset : `AbstractSet[V]`
+    iset
         Input nodes.
-    oset : `AbstractSet[V]`
+    oset
         Output nodes.
 
     Raises

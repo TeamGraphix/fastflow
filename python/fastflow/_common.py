@@ -90,7 +90,8 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Index of `v`.
+        :
+            Index of `v`.
 
         Raises
         ------
@@ -108,7 +109,8 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Input graph with vertices encoded to indices.
+        :
+            Input graph with vertices encoded to indices.
         """
         n = len(g)
         g_: list[set[int]] = [set() for _ in range(n)]
@@ -122,7 +124,8 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Transformed set.
+        :
+            Transformed set.
         """
         return {self.encode(v) for v in vset}
 
@@ -140,7 +143,8 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Transformed flow.
+        :
+            Transformed flow.
         """
         return {self.encode(i): self.encode(j) for i, j in f.items()}
 
@@ -149,7 +153,8 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Transformed gflow.
+        :
+            Transformed gflow.
         """
         return {self.encode(i): self.encode_set(si) for i, si in f.items()}
 
@@ -158,7 +163,8 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Transformed layer as list.
+        :
+            Transformed layer as list.
         """
         # Use -1 as sentinel
         layer_ = [-1 for _ in range(len(self.__v2i))]
@@ -173,7 +179,8 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Value corresponding to the index.
+        :
+            Value corresponding to the index.
 
         Raises
         ------
@@ -191,7 +198,8 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Transformed set.
+        :
+            Transformed set.
         """
         return {self.decode(i) for i in iset}
 
@@ -200,7 +208,8 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Transformed flow.
+        :
+            Transformed flow.
         """
         return {self.decode(i): self.decode(j) for i, j in f_.items()}
 
@@ -209,7 +218,8 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Transformed gflow.
+        :
+            Transformed gflow.
         """
         return {self.decode(i): self.decode_set(si) for i, si in f_.items()}
 
@@ -218,6 +228,7 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Transformed layer as dict.
+        :
+            Transformed layer as dict.
         """
         return {self.decode(i): li for i, li in enumerate(layer_)}
