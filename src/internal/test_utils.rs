@@ -164,15 +164,7 @@ mod tests {
 
     /// Checks if the graph is valid.
     ///
-    /// # Returns
-    ///
-    /// Returns `Err` if any of the following conditions are met:
-    ///
-    /// - `g` is empty.
-    /// - `g` contains self-loops.
-    /// - `g` is not symmetric.
-    /// - `g` contains nodes other than `0..g.len()`.
-    /// - `iset`/`oset` contains inconsistent nodes.
+    /// In production code, this chech should be done in the Python layer.
     fn check_graph(g: &Graph, iset: &Nodes, oset: &Nodes) -> anyhow::Result<()> {
         let n = g.len();
         if n == 0 {
