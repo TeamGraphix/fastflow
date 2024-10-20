@@ -18,13 +18,13 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow = "1"
 fixedbitset = "0.5"
-hashbrown = "0.14"
+hashbrown = "0.15"
 itertools = "0.13"
 pyo3 = { version = "0.22", features = ["abi3-py38", "hashbrown"] }
 tracing = "0.1"
 
 [dev-dependencies]
 rand = "0.8"
-rstest = "0.22"
+rstest = "0.23"
 rstest_reuse = "0.7"
 test-log = { version = "0.2", features = ["trace"] }
