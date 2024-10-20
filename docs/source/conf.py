@@ -39,3 +39,5 @@ templates_path = ["_templates"]
 
 html_theme = "furo"
 # html_static_path = []
+
+default_role = "any"
