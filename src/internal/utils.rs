@@ -11,7 +11,7 @@ use pyo3::{exceptions::PyValueError, PyErr};
 
 use crate::common::{Graph, Nodes, OrderedNodes};
 
-/// Computes the odd neighbors of the vertices in `kset`.
+/// Computes the odd neighbors of the nodes in `kset`.
 ///
 /// # Note
 ///

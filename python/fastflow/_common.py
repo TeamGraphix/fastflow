@@ -1,21 +1,14 @@
-"""Private common functionalities for the fastflow package."""
+"""Private common functionalities."""
 
 from __future__ import annotations
 
-from collections.abc import Hashable, Iterable, Mapping
+from collections.abc import Iterable, Mapping
 from collections.abc import Set as AbstractSet
-from typing import Generic, TypeVar
+from typing import Generic
 
 import networkx as nx
 
-from fastflow.common import Plane, PPlane
-
-# Vertex type
-V = TypeVar("V", bound=Hashable)
-
-
-# Plane-like
-P = TypeVar("P", Plane, PPlane)
+from fastflow.common import P, V
 
 
 def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> None:
@@ -26,7 +19,7 @@ def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> N
     TypeError
         If input types are incorrect.
     ValueError
-        If the graph is empty, has self-loops, or iset/oset are not subsets of the vertices.
+        If the graph is empty, not simple, or `iset`/`oset` is not a subset of nodes.
     """
     if not isinstance(g, nx.Graph):
         msg = "g must be a networkx.Graph."
@@ -46,28 +39,37 @@ def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> N
         raise ValueError(msg)
     vset = set(g.nodes)
     if not (iset <= vset):
-        msg = "iset must be a subset of the vertices."
+        msg = "iset must be a subset of the nodes."
         raise ValueError(msg)
     if not (oset <= vset):
-        msg = "oset must be a subset of the vertices."
+        msg = "oset must be a subset of the nodes."
         raise ValueError(msg)
 
 
 def check_planelike(vset: AbstractSet[V], oset: AbstractSet[V], plike: Mapping[V, P]) -> None:
-    r"""Check if measurement config. is valid.
+    r"""Check if measurement description is valid.
+
+    Parameters
+    ----------
+    vset :
+        All nodes.
+    oset :
+        Output nodes.
+    plike :
+        Measurement plane or Pauli index for each node in :math:`V \setminus O`.
 
     Raises
     ------
     TypeError
         If input types are incorrect.
     ValueError
-        If plike is not a subset of the vertices, or measurement planes are not specified for all u in V\O.
+        If `plike` is not a subset of `vset`, or `plike` does not cover all :math:`V \setminus O`.
     """
     if not isinstance(plike, Mapping):
         msg = "Measurement planes must be passed as a mapping."
         raise TypeError(msg)
     if not (plike.keys() <= vset):
-        msg = "Cannot find corresponding vertices in the graph."
+        msg = "Cannot find corresponding nodes in the graph."
         raise ValueError(msg)
     if not (vset - oset <= plike.keys()):
         msg = "Measurement planes should be specified for all u in V\\O."
@@ -81,7 +83,14 @@ class IndexMap(Generic[V]):
     __i2v: dict[int, V]
 
     def __init__(self, vset: AbstractSet[V]) -> None:
-        """Initialize the map from `vset`."""
+        """Initialize the map from `vset`.
+
+        Parameters
+        ----------
+        vset :
+            Set of nodes.
+            Can be any hashable type.
+        """
         self.__v2i = {v: i for i, v in enumerate(vset)}
         self.__i2v = {i: v for v, i in self.__v2i.items()}
 
@@ -110,7 +119,7 @@ class IndexMap(Generic[V]):
         Returns
         -------
         :
-            Input graph with vertices encoded to indices.
+            `g` with transformed nodes.
         """
         n = len(g)
         g_: list[set[int]] = [set() for _ in range(n)]
@@ -120,13 +129,7 @@ class IndexMap(Generic[V]):
         return g_
 
     def encode_set(self, vset: AbstractSet[V]) -> set[int]:
-        """Encode set.
-
-        Returns
-        -------
-        :
-            Transformed set.
-        """
+        """Encode set."""
         return {self.encode(v) for v in vset}
 
     def encode_dictkey(self, mapping: Mapping[V, P]) -> dict[int, P]:
@@ -134,7 +137,8 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        Dict with transformed keys.
+        :
+            `mapping` with transformed keys.
         """
         return {self.encode(k): v for k, v in mapping.items()}
 
@@ -144,7 +148,7 @@ class IndexMap(Generic[V]):
         Returns
         -------
         :
-            Transformed flow.
+            `f` with both keys and values transformed.
         """
         return {self.encode(i): self.encode(j) for i, j in f.items()}
 
@@ -154,7 +158,7 @@ class IndexMap(Generic[V]):
         Returns
         -------
         :
-            Transformed gflow.
+            `f` with both keys and values transformed.
         """
         return {self.encode(i): self.encode_set(si) for i, si in f.items()}
 
@@ -164,7 +168,11 @@ class IndexMap(Generic[V]):
         Returns
         -------
         :
-            Transformed layer as list.
+            `layer` values transformed.
+
+        Notes
+        -----
+        `list` is used instead of `dict` here because no missing values are allowed here.
         """
         # Use -1 as sentinel
         layer_ = [-1 for _ in range(len(self.__v2i))]
@@ -194,13 +202,7 @@ class IndexMap(Generic[V]):
         return v
 
     def decode_set(self, iset: AbstractSet[int]) -> set[V]:
-        """Decode set.
-
-        Returns
-        -------
-        :
-            Transformed set.
-        """
+        """Decode set."""
         return {self.decode(i) for i in iset}
 
     def decode_flow(self, f_: Mapping[int, int]) -> dict[V, V]:
@@ -209,7 +211,7 @@ class IndexMap(Generic[V]):
         Returns
         -------
         :
-            Transformed flow.
+            `f_` with both keys and values transformed.
         """
         return {self.decode(i): self.decode(j) for i, j in f_.items()}
 
@@ -219,7 +221,7 @@ class IndexMap(Generic[V]):
         Returns
         -------
         :
-            Transformed gflow.
+            `f_` with both keys and values transformed.
         """
         return {self.decode(i): self.decode_set(si) for i, si in f_.items()}
 
@@ -229,6 +231,10 @@ class IndexMap(Generic[V]):
         Returns
         -------
         :
-            Transformed layer as dict.
+            `layer_` transformed.
+
+        Notes
+        -----
+        `list` (generalized as `Iterable`) is used instead of `dict` here because no missing values are allowed here.
         """
         return {self.decode(i): li for i, li in enumerate(layer_)}

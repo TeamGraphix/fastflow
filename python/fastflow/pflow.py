@@ -6,9 +6,9 @@ import warnings
 from typing import TYPE_CHECKING, Mapping
 
 from fastflow import _common
-from fastflow._common import IndexMap, V
+from fastflow._common import IndexMap
 from fastflow._impl import pflow as pflow_bind
-from fastflow.common import GFlowResult, PPlane
+from fastflow.common import GFlowResult, PPlane, V
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
@@ -22,32 +22,28 @@ def find(
     oset: AbstractSet[V],
     pplane: Mapping[V, PPlane] | None = None,
 ) -> GFlowResult[V] | None:
-    r"""Compute the maximally-delayed Pauli flow, if any.
+    r"""Compute maximally-delayed Pauli flow.
 
     Parameters
     ----------
     g
-        Undirected graph representing MBQC pattern.
-        Cannot have self-loops.
+        Simple graph representing MBQC pattern.
     iset
         Input nodes.
-        Must be a subset of `g.nodes`.
     oset
         Output nodes.
-        Must be a subset of `g.nodes`.
     pplane
-        Measurement planes or Pauli indices of each vertex in V\O.
-        If `None`, defaults to all `PPlane.XY`.
+        Measurement plane or Pauli index for each node in :math:`V \setminus O`.
+        Defaults to `PPlane.XY`.
 
     Returns
     -------
     :
-        If a Pauli flow exists, return it as `GFlowResult[V]` object. Otherwise, return `None`.
+        Return the Pauli flow if any, otherwise :py:obj:`None`.
 
     Notes
     -----
-    Do not pass `None` to `pplane`.
-    For that case, use `gflow.find` instead.
+    Use `gflow.find` whenever possible for better performance.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes
@@ -76,32 +72,32 @@ def find(
 
 
 def verify(
-    gflow: GFlowResult[V],
+    pflow: GFlowResult[V],
     g: nx.Graph[V],
     iset: AbstractSet[V],
     oset: AbstractSet[V],
     pplane: Mapping[V, PPlane] | None = None,
 ) -> None:
-    r"""Verify Pauli flow.
+    r"""Verify maximally-delayed Pauli flow.
 
     Parameters
     ----------
-    gflow
+    pflow
         Pauli flow to verify.
     g
-        Undirected graph representing MBQC pattern.
+        Simple graph representing MBQC pattern.
     iset
         Input nodes.
     oset
         Output nodes.
     pplane
-        Measurement planes or Pauli indices of each vertex in V\O.
-        If `None`, defaults to all `PPlane.XY`.
+        Measurement plane or Pauli index for each node in :math:`V \setminus O`.
+        Defaults to `PPlane.XY`.
 
     Raises
     ------
     ValueError
-        If verification fails.
+        If the graph is invalid or verification fails.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes
@@ -112,6 +108,6 @@ def verify(
     iset_ = codec.encode_set(iset)
     oset_ = codec.encode_set(oset)
     pplane_ = codec.encode_dictkey(pplane)
-    f_ = codec.encode_gflow(gflow.f)
-    layer_ = codec.encode_layer(gflow.layer)
+    f_ = codec.encode_gflow(pflow.f)
+    layer_ = codec.encode_layer(pflow.layer)
     pflow_bind.verify((f_, layer_), g_, iset_, oset_, pplane_)

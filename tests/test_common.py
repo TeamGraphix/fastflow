@@ -17,10 +17,10 @@ def test_check_graph_ng_g() -> None:
     with pytest.raises(ValueError, match="Self-loop detected."):
         _common.check_graph(nx.Graph([("a", "a"), ("a", "b")]), set(), set())
 
-    with pytest.raises(ValueError, match="iset must be a subset of the vertices."):
+    with pytest.raises(ValueError, match="iset must be a subset of the nodes."):
         _common.check_graph(nx.Graph([("a", "b")]), {"x"}, set())
 
-    with pytest.raises(ValueError, match="oset must be a subset of the vertices."):
+    with pytest.raises(ValueError, match="oset must be a subset of the nodes."):
         _common.check_graph(nx.Graph([("a", "b")]), set(), {"x"})
 
 
@@ -36,7 +36,7 @@ def test_check_planelike_ng() -> None:
     with pytest.raises(TypeError):
         _common.check_planelike(set(), set(), "hoge")  # type: ignore[arg-type]
 
-    with pytest.raises(ValueError, match="Cannot find corresponding vertices in the graph."):
+    with pytest.raises(ValueError, match="Cannot find corresponding nodes in the graph."):
         _common.check_planelike({"a"}, set(), {"x": Plane.XY})
 
     with pytest.raises(ValueError, match=r"Measurement planes should be specified for all u in V\\O."):

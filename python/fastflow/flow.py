@@ -10,9 +10,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from fastflow import _common
-from fastflow._common import IndexMap, V
+from fastflow._common import IndexMap
 from fastflow._impl import flow as flow_bind
-from fastflow.common import FlowResult
+from fastflow.common import FlowResult, V
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
@@ -21,24 +21,21 @@ if TYPE_CHECKING:
 
 
 def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResult[V] | None:
-    """Compute the maximally-delayed causal flow, if any.
+    """Compute maximally-delayed causal flow.
 
     Parameters
     ----------
     g
-        Undirected graph representing MBQC pattern.
-        Cannot have self-loops.
+        Simple graph representing MBQC pattern.
     iset
         Input nodes.
-        Must be a subset of `g.nodes`.
     oset
         Output nodes.
-        Must be a subset of `g.nodes`.
 
     Returns
     -------
     :
-        If a flow exists, return a `FlowResult[V]` object. Otherwise, return `None`.
+        Return the flow if any, otherwise :py:obj:`None`.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes
@@ -55,14 +52,14 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResu
 
 
 def verify(flow: FlowResult[V], g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> None:
-    """Verify flow.
+    """Verify maximally-delayed causal flow.
 
     Parameters
     ----------
     flow
         Flow to verify.
     g
-        Undirected graph representing MBQC pattern.
+        Simple graph representing MBQC pattern.
     iset
         Input nodes.
     oset
@@ -70,8 +67,8 @@ def verify(flow: FlowResult[V], g: nx.Graph[V], iset: AbstractSet[V], oset: Abst
 
     Raises
     ------
-    TypeError
-        If validation fails.
+    ValueError
+        If the graph is invalid or verification fails.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes

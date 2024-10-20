@@ -41,3 +41,4 @@ html_theme = "furo"
 # html_static_path = []
 
 default_role = "any"
+typehints_use_signature = True

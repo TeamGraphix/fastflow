@@ -11,9 +11,9 @@ import warnings
 from typing import TYPE_CHECKING, Mapping
 
 from fastflow import _common
-from fastflow._common import IndexMap, V
+from fastflow._common import IndexMap
 from fastflow._impl import gflow as gflow_bind
-from fastflow.common import GFlowResult, Plane
+from fastflow.common import GFlowResult, Plane, V
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
@@ -27,27 +27,24 @@ def find(
     oset: AbstractSet[V],
     plane: Mapping[V, Plane] | None = None,
 ) -> GFlowResult[V] | None:
-    r"""Compute the maximally-delayed generalized flow, if any.
+    r"""Compute maximally-delayed generalized flow.
 
     Parameters
     ----------
     g
-        Undirected graph representing MBQC pattern.
-        Cannot have self-loops.
+        Simple graph representing MBQC pattern.
     iset
         Input nodes.
-        Must be a subset of `g.nodes`.
     oset
         Output nodes.
-        Must be a subset of `g.nodes`.
     plane
-        Measurement planes of each vertex in V\O.
-        If `None`, defaults to all `Plane.XY`.
+        Measurement plane for each node in :math:`V \setminus O`.
+        Defaults to `Plane.XY`.
 
     Returns
     -------
     :
-        If a gflow exists, return a `GFlowResult[V]` object. Otherwise, return `None`.
+        Return the gflow if any, otherwise :py:obj:`None`.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes
@@ -79,26 +76,26 @@ def verify(
     oset: AbstractSet[V],
     plane: Mapping[V, Plane] | None = None,
 ) -> None:
-    r"""Verify the maximally-delayed generalized flow.
+    r"""Verify maximally-delayed generalized flow.
 
     Parameters
     ----------
-    gflow : `GFlowResult[V]`
-        Generalized flow to be verified.
-    g : `nx.Graph[V]`
-        Undirected graph representing MBQC pattern.
-    iset : `AbstractSet[V]`
+    gflow
+        Generalized flow to verify.
+    g
+        Simple graph representing MBQC pattern.
+    iset
         Input nodes.
-    oset : `AbstractSet[V]`
+    oset
         Output nodes.
-    plane : `Mapping[V, Plane] | None`, optional
-        Measurement planes of each vertex in V\O.
-        If `None`, defaults to all `Plane.XY`.
+    plane
+        Measurement plane for each node in :math:`V \setminus O`.
+        Defaults to `Plane.XY`.
 
     Raises
     ------
     ValueError
-        If verification fails.
+        If the graph is invalid or verification fails.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes
