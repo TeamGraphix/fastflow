@@ -1,8 +1,6 @@
 """Maximally-delayed gflow algorithm.
 
-For given undirected graph, input nodes, and output nodes, compute the generalized flow having \
-the minimum number of layers.
-See [Mhalla and Perdrix, Proc. of 35th ICALP, 857 (2008)] and [Backens et al., Quantum 5, 421 (2021)] for more details.
+This module provides functions to compute and verify maximally-delayed generalized flow.
 """
 
 from __future__ import annotations
@@ -45,6 +43,7 @@ def find(
     -------
     :
         Return the gflow if any, otherwise :py:obj:`None`.
+        If found, it is guaranteed to be maximally delayed, i.e., the number of distinct layers is minimized.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes

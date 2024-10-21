@@ -1,4 +1,7 @@
-"""Maximally-delayed Pauli flow algorithm."""
+"""Maximally-delayed Pauli flow algorithm.
+
+This module provides functions to compute and verify maximally-delayed Pauli flow.
+"""
 
 from __future__ import annotations
 
@@ -40,6 +43,7 @@ def find(
     -------
     :
         Return the Pauli flow if any, otherwise :py:obj:`None`.
+        If found, it is guaranteed to be maximally delayed, i.e., the number of distinct layers is minimized.
 
     Notes
     -----

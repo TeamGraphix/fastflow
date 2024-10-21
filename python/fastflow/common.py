@@ -22,15 +22,21 @@ P = TypeVar("P", Plane, PPlane)  #: Measurement plane or Pauli index.
 
 @dataclasses.dataclass(frozen=True)
 class FlowResult(Generic[V]):
-    """Causal flow of an open graph."""
+    r"""Causal flow of an open graph."""
 
-    f: dict[V, V]  #: Flow function.
-    layer: dict[V, int]  #: Layer of each node representing the partial order.
+    f: dict[V, V]
+    """Flow map as a dictionary, i.e., :math:`f(u)` is stored in :py:obj:`f[u]`."""
+    layer: dict[V, int]
+    r"""Layer of each node representing the partial order, i.e., :math:`layer(u) > layer(v)` implies :math:`u \prec v`.
+    """
 
 
 @dataclasses.dataclass(frozen=True)
 class GFlowResult(Generic[V]):
-    """Generalized flow of an open graph."""
+    r"""Generalized flow of an open graph."""
 
-    f: dict[V, set[V]]  #: Gflow function.
-    layer: dict[V, int]  #: Layer of each node representing the partial order.
+    f: dict[V, set[V]]
+    """Generalized flow map as a dictionary, i.e., :math:`f(u)` is stored in :py:obj:`f[u]`."""
+    layer: dict[V, int]
+    r"""Layer of each node representing the partial order, i.e., :math:`layer(u) > layer(v)` implies :math:`u \prec v`.
+    """

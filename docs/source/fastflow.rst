@@ -7,7 +7,6 @@ fastflow.common module
 .. automodule:: fastflow.common
    :members:
    :show-inheritance:
-   :exclude-members: V, P
 
 fastflow.flow module
 --------------------

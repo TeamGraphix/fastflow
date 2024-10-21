@@ -1,8 +1,6 @@
 """Maximally-delayed flow algorithm.
 
-For given undirected graph, input nodes, and output nodes, compute the causal flow having \
-the minimum number of layers.
-See [Mhalla and Perdrix, Proc. of 35th ICALP, 857 (2008)] for more details.
+This module provides functions to compute and verify maximally-delayed causal flow.
 """
 
 from __future__ import annotations
@@ -36,6 +34,7 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResu
     -------
     :
         Return the flow if any, otherwise :py:obj:`None`.
+        If found, it is guaranteed to be maximally delayed, i.e., the number of distinct layers is minimized.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes
