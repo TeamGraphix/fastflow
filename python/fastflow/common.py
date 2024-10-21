@@ -9,10 +9,8 @@ from typing import Generic, TypeVar
 from fastflow._impl import gflow, pflow
 
 Plane = gflow.Plane
-"""Enum-like class for measurement planes."""
 
 PPlane = pflow.PPlane
-"""Enum-like class for measurement planes or Pauli indices."""
 
 V = TypeVar("V", bound=Hashable)  #: Node type.
 

@@ -17,19 +17,13 @@ use crate::{
 
 #[pyclass(eq, hash, frozen)]
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
-/// Measurement plane or Pauli index.
+/// Enum-like class for measurement planes or Pauli measurements.
 pub enum PPlane {
-    /// Arbitrary measurement on the XY plane.
     XY,
-    /// Arbitrary measurement on the YZ plane.
     YZ,
-    /// Arbitrary measurement on the XZ plane.
     XZ,
-    /// Pauli X measurement.
     X,
-    /// Pauli Y measurement.
     Y,
-    /// Pauli Z measurement.
     Z,
 }
 
