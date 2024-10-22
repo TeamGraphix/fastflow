@@ -13,7 +13,7 @@ def test_pflow_graphix(c: FlowTestCase) -> None:
     result = pflow.find(c.g, c.iset, c.oset, c.pplane)
     assert result == c.pflow
     if result is not None:
-        pflow.verify(result, c.g, c.iset, c.oset)
+        pflow.verify(result, c.g, c.iset, c.oset, c.pplane)
 
 
 def test_pflow_nopauli() -> None:
