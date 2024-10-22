@@ -179,7 +179,7 @@ class IndexMap(Generic[V]):
         for v, li in layer.items():
             layer_[self.encode(v)] = li
         if any(li == -1 for li in layer_):
-            raise RuntimeError
+            raise RuntimeError  # pragma: no cover
         return layer_
 
     def decode(self, i: int) -> V:
