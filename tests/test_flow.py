@@ -9,3 +9,5 @@ from fastflow import flow
 def test_flow_graphix(c: FlowTestCase) -> None:
     result = flow.find(c.g, c.iset, c.oset)
     assert result == c.flow
+    if result is not None:
+        flow.verify(result, c.g, c.iset, c.oset)

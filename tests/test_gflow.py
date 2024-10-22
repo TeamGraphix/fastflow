@@ -11,6 +11,8 @@ from fastflow.common import Plane
 def test_gflow_graphix(c: FlowTestCase) -> None:
     result = gflow.find(c.g, c.iset, c.oset, c.plane)
     assert result == c.gflow
+    if result is not None:
+        gflow.verify(result, c.g, c.iset, c.oset)
 
 
 def test_gflow_redundant() -> None:
