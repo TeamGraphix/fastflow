@@ -460,9 +460,10 @@ mod tests {
         let TestCase { g, iset, oset } = test_utils::CASE0.clone();
         let pplanes = measurements! {};
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone(), pplanes.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(layer, vec![0, 0]);
+        verify((f, layer), g, iset, oset, pplanes).unwrap();
     }
 
     #[test_log::test]
@@ -475,13 +476,14 @@ mod tests {
             3: PPlane::XY
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone(), pplanes.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], Nodes::from([1]));
         assert_eq!(f[&1], Nodes::from([2]));
         assert_eq!(f[&2], Nodes::from([3]));
         assert_eq!(f[&3], Nodes::from([4]));
         assert_eq!(layer, vec![4, 3, 2, 1, 0]);
+        verify((f, layer), g, iset, oset, pplanes).unwrap();
     }
 
     #[test_log::test]
@@ -494,13 +496,14 @@ mod tests {
             3: PPlane::XY
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone(), pplanes.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], Nodes::from([2]));
         assert_eq!(f[&1], Nodes::from([3]));
         assert_eq!(f[&2], Nodes::from([4]));
         assert_eq!(f[&3], Nodes::from([5]));
         assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
+        verify((f, layer), g, iset, oset, pplanes).unwrap();
     }
 
     #[test_log::test]
@@ -512,12 +515,13 @@ mod tests {
             2: PPlane::XY
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone(), pplanes.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], Nodes::from([4, 5]));
         assert_eq!(f[&1], Nodes::from([3, 4, 5]));
         assert_eq!(f[&2], Nodes::from([3, 5]));
         assert_eq!(layer, vec![1, 1, 1, 0, 0, 0]);
+        verify((f, layer), g, iset, oset, pplanes).unwrap();
     }
 
     #[test_log::test]
@@ -530,13 +534,14 @@ mod tests {
             3: PPlane::YZ
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone(), pplanes.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], Nodes::from([2]));
         assert_eq!(f[&1], Nodes::from([5]));
         assert_eq!(f[&2], Nodes::from([2, 4]));
         assert_eq!(f[&3], Nodes::from([3]));
         assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
+        verify((f, layer), g, iset, oset, pplanes).unwrap();
     }
 
     #[test_log::test]
@@ -559,13 +564,14 @@ mod tests {
             3: PPlane::X
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone(), pplanes.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], Nodes::from([1]));
         assert_eq!(f[&1], Nodes::from([4]));
         assert_eq!(f[&2], Nodes::from([3]));
         assert_eq!(f[&3], Nodes::from([2, 4]));
         assert_eq!(layer, vec![1, 1, 0, 1, 0]);
+        verify((f, layer), g, iset, oset, pplanes).unwrap();
     }
 
     #[test_log::test]
@@ -578,7 +584,7 @@ mod tests {
             3: PPlane::Y
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone(), pplanes.clone()).unwrap();
         assert_eq!(f.len(), flen);
         // Graphix
         // assert_eq!(f[&0], Nodes::from([0, 1]));
@@ -587,6 +593,7 @@ mod tests {
         assert_eq!(f[&2], Nodes::from([2]));
         assert_eq!(f[&3], Nodes::from([4]));
         assert_eq!(layer, vec![1, 0, 0, 1, 0]);
+        verify((f, layer), g, iset, oset, pplanes).unwrap();
     }
 
     #[test_log::test]
@@ -598,7 +605,7 @@ mod tests {
             2: PPlane::Y
         };
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset, pplanes).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone(), pplanes.clone()).unwrap();
         assert_eq!(f.len(), flen);
         // Graphix
         // assert_eq!(f[&0], Nodes::from([0, 3, 4]));
@@ -606,5 +613,6 @@ mod tests {
         assert_eq!(f[&1], Nodes::from([1, 2]));
         assert_eq!(f[&2], Nodes::from([4]));
         assert_eq!(layer, vec![1, 1, 1, 0, 0]);
+        verify((f, layer), g, iset, oset, pplanes).unwrap();
     }
 }

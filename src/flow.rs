@@ -154,35 +154,38 @@ mod tests {
     fn test_find_case0() {
         let TestCase { g, iset, oset } = test_utils::CASE0.clone();
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(layer, vec![0, 0]);
+        verify((f, layer), g, iset, oset).unwrap();
     }
 
     #[test_log::test]
     fn test_find_case1() {
         let TestCase { g, iset, oset } = test_utils::CASE1.clone();
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], 1);
         assert_eq!(f[&1], 2);
         assert_eq!(f[&2], 3);
         assert_eq!(f[&3], 4);
         assert_eq!(layer, vec![4, 3, 2, 1, 0]);
+        verify((f, layer), g, iset, oset).unwrap();
     }
 
     #[test_log::test]
     fn test_find_case2() {
         let TestCase { g, iset, oset } = test_utils::CASE2.clone();
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], 2);
         assert_eq!(f[&1], 3);
         assert_eq!(f[&2], 4);
         assert_eq!(f[&3], 5);
         assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
+        verify((f, layer), g, iset, oset).unwrap();
     }
 
     #[test_log::test]
