@@ -21,6 +21,7 @@ fixedbitset = "0.5"
 hashbrown = "0.14"                                                 # Cannot use 0.15 for compatibility with pyo3
 itertools = "0.13"
 pyo3 = { version = "0.22", features = ["abi3-py38", "hashbrown"] }
+thiserror = "1"
 tracing = "0.1"
 
 [dev-dependencies]
