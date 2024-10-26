@@ -4,7 +4,12 @@
 //!
 //! - Internal module for testing.
 
-use crate::common::{Layer, Nodes};
+use crate::common::{
+    FlowValidationError::{
+        ExcessiveNonZeroLayer, ExcessiveZeroLayer, InvalidFlowCodomain, InvalidFlowDomain,
+    },
+    Layer, Nodes,
+};
 
 /// Checks if the layer-zero nodes are correctly chosen.
 ///
@@ -17,13 +22,11 @@ pub fn check_initial(layer: &Layer, oset: &Nodes, iff: bool) -> anyhow::Result<(
     for (u, &lu) in layer.iter().enumerate() {
         match (oset.contains(&u), lu == 0) {
             (true, false) => {
-                let err = anyhow::anyhow!("initial check failed")
-                    .context(format!("layer({u}) != 0 && {u} in O"));
+                let err = anyhow::Error::from(ExcessiveNonZeroLayer(u));
                 return Err(err);
             }
             (false, true) if iff => {
-                let err = anyhow::anyhow!("initial check failed")
-                    .context(format!("layer({u}) == 0 && {u} not in O"));
+                let err = anyhow::Error::from(ExcessiveZeroLayer(u));
                 return Err(err);
             }
             _ => {}
@@ -56,13 +59,12 @@ pub fn check_domain<'a, 'b>(
     for (&i, &fi) in f_flatiter {
         dom.insert(i);
         if i != fi && !icset.contains(&fi) {
-            let err = anyhow::anyhow!("domain check failed").context(format!("{fi} not in V\\I"));
+            let err = anyhow::Error::from(InvalidFlowCodomain(i));
             return Err(err);
         }
     }
-    if dom != ocset {
-        let err = anyhow::anyhow!("domain check failed")
-            .context(format!("invalid domain: {dom:?} != V\\O"));
+    if let Some(&i) = dom.symmetric_difference(&ocset).next() {
+        let err = anyhow::Error::from(InvalidFlowDomain(i));
         return Err(err);
     }
     Ok(())
@@ -83,11 +85,10 @@ mod tests {
     }
 
     #[test]
-    #[should_panic = "initial check failed"]
     fn test_check_initial_ng() {
         let layer = vec![0, 0, 0, 1, 1, 1];
         let oset = Nodes::from([0, 1, 2, 3]);
-        check_initial(&layer, &oset, false).unwrap();
+        assert!(check_initial(&layer, &oset, false).is_err());
     }
 
     #[test]
@@ -98,11 +99,10 @@ mod tests {
     }
 
     #[test]
-    #[should_panic = "initial check failed"]
     fn test_check_initial_iff_ng() {
         let layer = vec![0, 0, 0, 1, 1, 1];
         let oset = Nodes::from([0, 1]);
-        check_initial(&layer, &oset, true).unwrap();
+        assert!(check_initial(&layer, &oset, true).is_err());
     }
 
     #[test]
@@ -131,7 +131,6 @@ mod tests {
     }
 
     #[test]
-    #[should_panic = "domain check failed"]
     fn test_check_domain_ng_iset() {
         let f = hashbrown::HashMap::<usize, Nodes>::from([
             (0, Nodes::from([0, 1])),
@@ -143,11 +142,10 @@ mod tests {
         let f_flatiter = f
             .iter()
             .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
-        check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
+        assert!(check_domain(f_flatiter, &vset, &iset, &oset).is_err());
     }
 
     #[test]
-    #[should_panic = "domain check failed"]
     fn test_check_domain_ng_oset() {
         let f = hashbrown::HashMap::<usize, Nodes>::from([
             (0, Nodes::from([1])),
@@ -159,6 +157,6 @@ mod tests {
         let f_flatiter = f
             .iter()
             .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
-        check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
+        assert!(check_domain(f_flatiter, &vset, &iset, &oset).is_err());
     }
 }

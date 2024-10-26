@@ -4,10 +4,15 @@ use std::iter;
 
 use fixedbitset::FixedBitSet;
 use hashbrown;
-use pyo3::prelude::*;
+use pyo3::{exceptions::PyValueError, prelude::*};
 
 use crate::{
-    common::{Graph, Layer, Nodes, OrderedNodes},
+    common::{
+        FlowValidationError::{
+            InconsistentFlowOrder, InconsistentFlowPlane, InvalidMeasurementSpec,
+        },
+        Graph, Layer, Nodes, OrderedNodes,
+    },
     internal::{
         gf2_linalg::GF2Solver,
         utils::{self, InPlaceSetDiff, ScopedExclude, ScopedInclude},
@@ -32,17 +37,16 @@ type PFlow = hashbrown::HashMap<usize, Nodes>;
 
 /// Checks the definition of Pauli flow.
 fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> anyhow::Result<()> {
-    anyhow::ensure!(
-        f.len() == pplanes.len(),
-        "f and pplanes must have the same codomain"
-    );
+    if f.len() != pplanes.len() {
+        let err = anyhow::Error::from(InvalidMeasurementSpec);
+        return Err(err);
+    }
     for (&i, fi) in f {
         let pi = pplanes[&i];
         for &fij in fi {
             match (i != fij, layer[i] <= layer[fij]) {
                 (true, true) if !matches!(pplanes[&fij], PPlane::X | PPlane::Y) => {
-                    let err = anyhow::anyhow!("layer check failed")
-                        .context(format!("neither {i} == {fij} nor {i} -> {fij}: fi"));
+                    let err = anyhow::Error::from(InconsistentFlowOrder(i, fij));
                     return Err(err);
                 }
                 (false, false) => unreachable!("layer[i] == layer[i]"),
@@ -53,9 +57,7 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> a
         for &j in &odd_fi {
             match (i != j, layer[i] <= layer[j]) {
                 (true, true) if !matches!(pplanes[&j], PPlane::Y | PPlane::Z) => {
-                    let err = anyhow::anyhow!("layer check failed").context(format!(
-                        "neither {i} == {j} nor {i} -> {j}: odd_neighbors(g, fi)"
-                    ));
+                    let err = anyhow::Error::from(InconsistentFlowOrder(i, j));
                     return Err(err);
                 }
                 (false, false) => unreachable!("layer[i] == layer[i]"),
@@ -64,45 +66,34 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> a
         }
         for &j in fi.symmetric_difference(&odd_fi) {
             if pplanes.get(&j) == Some(&PPlane::Y) && i != j && layer[i] <= layer[j] {
-                let err = anyhow::anyhow!("Y correction check failed")
-                    .context(format!("{j} must be corrected by f({i}) xor Odd(f({i}))"));
+                let err = anyhow::Error::from(InconsistentFlowPlane(j));
                 return Err(err);
             }
         }
         let in_info = (fi.contains(&i), odd_fi.contains(&i));
         match pi {
             PPlane::XY if in_info != (false, true) => {
-                let err = anyhow::anyhow!("pplane check failed").context(format!(
-                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (false, true): XY"
-                ));
+                let err = anyhow::Error::from(InconsistentFlowPlane(i));
                 return Err(err);
             }
             PPlane::YZ if in_info != (true, false) => {
-                let err = anyhow::anyhow!("pplane check failed").context(format!(
-                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (true, false): YZ"
-                ));
+                let err = anyhow::Error::from(InconsistentFlowPlane(i));
                 return Err(err);
             }
             PPlane::XZ if in_info != (true, true) => {
-                let err = anyhow::anyhow!("pplane check failed").context(format!(
-                    "must satisfy ({i} in f({i}), {i} in Odd(f({i})) = (true, true): XZ"
-                ));
+                let err = anyhow::Error::from(InconsistentFlowPlane(i));
                 return Err(err);
             }
             PPlane::X if !in_info.1 => {
-                let err = anyhow::anyhow!("pplane check failed")
-                    .context(format!("{i} must be in Odd(f({i})): X"));
+                let err = anyhow::Error::from(InconsistentFlowPlane(i));
                 return Err(err);
             }
             PPlane::Y if !(in_info.0 ^ in_info.1) => {
-                let err = anyhow::anyhow!("pplane check failed").context(format!(
-                    "{i} must be in either f({i}) or Odd(f({i})), not both: Y"
-                ));
+                let err = anyhow::Error::from(InconsistentFlowPlane(i));
                 return Err(err);
             }
             PPlane::Z if !in_info.0 => {
-                let err = anyhow::anyhow!("pplane check failed")
-                    .context(format!("{i} must be in f({i}): Z"));
+                let err = anyhow::Error::from(InconsistentFlowPlane(i));
                 return Err(err);
             }
             _ => {}
@@ -437,13 +428,13 @@ pub fn verify(
         .iter()
         .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
     if let Err(e) = validate::check_domain(f_flatiter, &vset, &iset, &oset) {
-        return Err(utils::to_pyvalueerror(&e));
+        return Err(PyValueError::new_err(e.to_string()));
     }
     if let Err(e) = validate::check_initial(&layer, &oset, false) {
-        return Err(utils::to_pyvalueerror(&e));
+        return Err(PyValueError::new_err(e.to_string()));
     }
     if let Err(e) = check_definition(&f, &layer, &g, &pplanes) {
-        return Err(utils::to_pyvalueerror(&e));
+        return Err(PyValueError::new_err(e.to_string()));
     }
     Ok(())
 }

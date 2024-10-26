@@ -7,7 +7,6 @@ use std::{
 };
 
 use fixedbitset::FixedBitSet;
-use pyo3::{exceptions::PyValueError, PyErr};
 
 use crate::common::{Graph, Nodes, OrderedNodes};
 
@@ -109,10 +108,6 @@ impl Drop for ScopedInclude<'_> {
             self.target.remove(&u);
         }
     }
-}
-
-pub fn to_pyvalueerror(err: &anyhow::Error) -> PyErr {
-    PyValueError::new_err(err.to_string())
 }
 
 #[derive(Debug)]

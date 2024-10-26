@@ -1,14 +1,11 @@
 //! Maximally-delayed causal flow algorithm.
 
 use hashbrown;
-use pyo3::prelude::*;
+use pyo3::{exceptions::PyValueError, prelude::*};
 
 use crate::{
-    common::{Graph, Layer, Nodes},
-    internal::{
-        utils::{self, InPlaceSetDiff},
-        validate,
-    },
+    common::{FlowValidationError::InconsistentFlowOrder, Graph, Layer, Nodes},
+    internal::{utils::InPlaceSetDiff, validate},
 };
 
 type Flow = hashbrown::HashMap<usize, usize>;
@@ -21,19 +18,17 @@ type Flow = hashbrown::HashMap<usize, usize>;
 fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     for (&i, &fi) in f {
         if layer[i] <= layer[fi] {
-            let err = anyhow::anyhow!("layer check failed").context(format!("must be {i} -> {fi}"));
+            let err = anyhow::Error::from(InconsistentFlowOrder(i, fi));
             return Err(err);
         }
         for &j in &g[fi] {
             if i != j && layer[i] <= layer[j] {
-                let err = anyhow::anyhow!("layer check failed")
-                    .context(format!("neither {i} == {j} nor {i} -> {j}"));
+                let err = anyhow::Error::from(InconsistentFlowOrder(i, j));
                 return Err(err);
             }
         }
         if !(g[fi].contains(&i) && g[i].contains(&fi)) {
-            let err = anyhow::anyhow!("graph check failed")
-                .context(format!("{i} and {fi} not connected"));
+            let err = anyhow::Error::from(InconsistentFlowOrder(i, fi));
             return Err(err);
         }
     }
@@ -132,13 +127,13 @@ pub fn verify(flow: (Flow, Layer), g: Graph, iset: Nodes, oset: Nodes) -> PyResu
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();
     if let Err(e) = validate::check_domain(f.iter(), &vset, &iset, &oset) {
-        return Err(utils::to_pyvalueerror(&e));
+        return Err(PyValueError::new_err(e.to_string()));
     }
     if let Err(e) = validate::check_initial(&layer, &oset, true) {
-        return Err(utils::to_pyvalueerror(&e));
+        return Err(PyValueError::new_err(e.to_string()));
     }
     if let Err(e) = check_definition(&f, &layer, &g) {
-        return Err(utils::to_pyvalueerror(&e));
+        return Err(PyValueError::new_err(e.to_string()));
     }
     Ok(())
 }
