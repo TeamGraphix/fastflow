@@ -6,11 +6,9 @@ fastflow.common module
 
 .. automodule:: fastflow.common
    :members:
-   :show-inheritance:
-   :exclude-members: Plane, PPlane
+   :exclude-members: Plane, PPlane, V, P
 
    .. autoclass:: fastflow.common.Plane
-      :show-inheritance:
 
       .. py:attribute:: XY
 
@@ -25,7 +23,6 @@ fastflow.common module
          Arbitrary-angle measurement on the XZ plane.
 
    .. autoclass:: fastflow.common.PPlane
-      :show-inheritance:
 
       .. py:attribute:: XY
 
@@ -57,7 +54,6 @@ fastflow.flow module
 .. automodule:: fastflow.flow
    :members:
    :undoc-members:
-   :show-inheritance:
 
 fastflow.gflow module
 ---------------------
@@ -65,7 +61,6 @@ fastflow.gflow module
 .. automodule:: fastflow.gflow
    :members:
    :undoc-members:
-   :show-inheritance:
 
 fastflow.pflow module
 ---------------------
@@ -73,4 +68,3 @@ fastflow.pflow module
 .. automodule:: fastflow.pflow
    :members:
    :undoc-members:
-   :show-inheritance:

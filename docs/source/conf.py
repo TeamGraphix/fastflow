@@ -40,5 +40,9 @@ templates_path = ["_templates"]
 html_theme = "furo"
 # html_static_path = []
 
+autodoc_default_options = {
+    "member-order": "bysource",
+}
 default_role = "any"
 typehints_use_signature = True
+typehints_use_signature_return = True
