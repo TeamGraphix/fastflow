@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import pytest
-from assets import CASES, FlowTestCase
 from fastflow import flow
+
+from tests.assets import CASES, FlowTestCase
 
 
 @pytest.mark.parametrize("c", CASES)
