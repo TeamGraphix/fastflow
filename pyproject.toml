@@ -61,6 +61,7 @@ python-source = "python"
 [tool.mypy]
 python_version = "3.8"
 strict = true
+files = ["docs/source/conf.py", "python", "tests"]
 
 [tool.ruff]
 extend-include = ["*.ipynb"]
