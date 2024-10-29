@@ -117,6 +117,10 @@ convention = "numpy"
   "D1",  # undocumented-XXX
   "INP",
 ]
+"examples/**/*.py" = [
+  "INP",
+  "S101", # assert
+]
 "tests/*.py" = [
   "D1",      # undocumented-XXX
   "INP",
