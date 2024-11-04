@@ -25,9 +25,9 @@ release = "0.1.0"
 
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
-    "sphinx_autodoc_typehints",
 ]
 
 templates_path = ["_templates"]
@@ -40,9 +40,10 @@ templates_path = ["_templates"]
 html_theme = "furo"
 # html_static_path = []
 
-autodoc_default_options = {
-    "member-order": "bysource",
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
 }
+
 default_role = "any"
-typehints_use_signature = True
-typehints_use_signature_return = True
+autodoc_typehints = "description"
+autodoc_typehints_description_target = "documented"

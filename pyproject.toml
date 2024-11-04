@@ -37,12 +37,7 @@ dependencies = ["networkx"]
 
 [project.optional-dependencies]
 dev = ["mypy", "pyright", "pytest", "pytest-cov", "ruff", "types-networkx"]
-doc = [
-  "furo",
-  "sphinx",
-  # DO NOT REORDER
-  "sphinx-autodoc-typehints",
-]
+doc = ["furo", "sphinx"]
 
 [tool.maturin]
 exclude = [
