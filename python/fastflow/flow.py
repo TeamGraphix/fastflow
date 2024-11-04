@@ -76,4 +76,7 @@ def verify(flow: FlowResult[V], g: nx.Graph[V], iset: AbstractSet[V], oset: Abst
     oset_ = codec.encode_set(oset)
     f_ = codec.encode_flow(flow.f)
     layer_ = codec.encode_layer(flow.layer)
-    flow_bind.verify((f_, layer_), g_, iset_, oset_)
+    try:
+        flow_bind.verify((f_, layer_), g_, iset_, oset_)
+    except ValueError as e:
+        raise codec.decode_err(e) from None

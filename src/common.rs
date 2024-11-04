@@ -21,6 +21,7 @@ pub(crate) type OrderedNodes = BTreeSet<usize>;
 /// Error type for flow validation.
 #[derive(Debug, Error)]
 pub enum FlowValidationError {
+    // MEMO: Need to match fastflow._common.MSG_RE
     #[error("non-zero-layer node inside output nodes ({0})")]
     ExcessiveNonZeroLayer(usize),
     #[error("zero-layer node outside output nodes ({0})")]

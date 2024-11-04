@@ -107,4 +107,7 @@ def verify(
     plane_ = codec.encode_dictkey(plane)
     f_ = codec.encode_gflow(gflow.f)
     layer_ = codec.encode_layer(gflow.layer)
-    gflow_bind.verify((f_, layer_), g_, iset_, oset_, plane_)
+    try:
+        gflow_bind.verify((f_, layer_), g_, iset_, oset_, plane_)
+    except ValueError as e:
+        raise codec.decode_err(e) from None

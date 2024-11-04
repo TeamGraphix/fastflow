@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping
 from collections.abc import Set as AbstractSet
 from typing import Generic
@@ -9,6 +10,8 @@ from typing import Generic
 import networkx as nx
 
 from fastflow.common import P, V
+
+MSG_RE = re.compile(r"^([- a-z]*) \(((?:\d+, )*\d+)\)$")
 
 
 def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> None:
@@ -238,3 +241,22 @@ class IndexMap(Generic[V]):
         `list` (generalized as `Iterable`) is used instead of `dict` here because no missing values are allowed here.
         """
         return {self.decode(i): li for i, li in enumerate(layer_)}
+
+    def decode_errmsg(self, err: str) -> str:
+        """Decode error message."""
+        m = MSG_RE.match(err)
+        if m is None:
+            msg = f"Cannot parse message: {err}."
+            raise ValueError(msg)
+        body: str = m.group(1)
+        body = body.capitalize()
+
+        def _mapfunc(i: str) -> str:
+            return str(self.decode(int(i)))
+
+        info = [_mapfunc(i) for i in m.group(2).split(", ")]
+        return f"{body} (check {', '.join(info)})."
+
+    def decode_err(self, err: Exception) -> Exception:
+        """Decode error directly."""
+        return type(err)(self.decode_errmsg(str(err)))
