@@ -40,9 +40,11 @@ type GFlow = hashbrown::HashMap<usize, Nodes>;
 /// 4. i in g(i) and in Odd(g(i)) if plane(i) == YZ
 /// 5. i in g(i) and not in Odd(g(i)) if plane(i) == XZ
 fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> anyhow::Result<()> {
-    if f.len() != planes.len() {
-        let err = anyhow::Error::from(InvalidMeasurementSpec);
-        return Err(err);
+    for &i in itertools::chain(f.keys(), planes.keys()) {
+        if f.contains_key(&i) != planes.contains_key(&i) {
+            let err = anyhow::Error::from(InvalidMeasurementSpec(i));
+            return Err(err);
+        }
     }
     for (&i, fi) in f {
         let pi = planes[&i];

@@ -21,20 +21,20 @@ pub(crate) type OrderedNodes = BTreeSet<usize>;
 /// Error type for flow validation.
 #[derive(Debug, Error)]
 pub enum FlowValidationError {
-    #[error("Non-zero-layer node inside output nodes.")]
+    #[error("non-zero-layer node inside output nodes ({0})")]
     ExcessiveNonZeroLayer(usize),
-    #[error("Zero-layer node outside output nodes.")]
+    #[error("zero-layer node outside output nodes ({0})")]
     ExcessiveZeroLayer(usize),
-    #[error("Flow function has invalid codomain.")]
+    #[error("flow function has invalid codomain ({0})")]
     InvalidFlowCodomain(usize),
-    #[error("Flow function has invalid domain.")]
+    #[error("flow function has invalid domain ({0})")]
     InvalidFlowDomain(usize),
-    #[error("Measurement specification is excessive or insufficient.")]
-    InvalidMeasurementSpec,
-    #[error("Flow function and partial order are inconsistent.")]
+    #[error("measurement specification is excessive or insufficient ({0})")]
+    InvalidMeasurementSpec(usize),
+    #[error("flow function and partial order are inconsistent ({0}, {1})")]
     InconsistentFlowOrder(usize, usize),
-    #[error("Flow function and measurement specification are inconsistent.")]
+    #[error("flow function and measurement specification are inconsistent ({0})")]
     InconsistentFlowPlane(usize),
-    #[error("Flow function and measurement specification are inconsistent.")]
+    #[error("flow function and measurement specification are inconsistent ({0})")]
     InconsistentFlowPPlane(usize),
 }

@@ -37,9 +37,11 @@ type PFlow = hashbrown::HashMap<usize, Nodes>;
 
 /// Checks the definition of Pauli flow.
 fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> anyhow::Result<()> {
-    if f.len() != pplanes.len() {
-        let err = anyhow::Error::from(InvalidMeasurementSpec);
-        return Err(err);
+    for &i in itertools::chain(f.keys(), pplanes.keys()) {
+        if f.contains_key(&i) != pplanes.contains_key(&i) {
+            let err = anyhow::Error::from(InvalidMeasurementSpec(i));
+            return Err(err);
+        }
     }
     for (&i, fi) in f {
         let pi = pplanes[&i];
