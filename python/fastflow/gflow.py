@@ -41,9 +41,7 @@ def find(
 
     Returns
     -------
-    :
-        Return the gflow if any, otherwise :py:obj:`None`.
-        If found, it is guaranteed to be maximally delayed, i.e., the number of distinct layers is minimized.
+        Return the gflow if any, otherwise `None`. If found, it is guaranteed to be maximally delayed.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes
