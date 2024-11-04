@@ -41,6 +41,7 @@ html_theme = "furo"
 # html_static_path = []
 
 intersphinx_mapping = {
+    "networkx": ("https://networkx.org/documentation/stable", None),
     "python": ("https://docs.python.org/3", None),
 }
 

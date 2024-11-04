@@ -23,15 +23,16 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResu
 
     Parameters
     ----------
-    g
+    g : `networkx.Graph`
         Simple graph representing MBQC pattern.
-    iset
+    iset : `collections.abc.Set`
         Input nodes.
-    oset
+    oset : `collections.abc.Set`
         Output nodes.
 
     Returns
     -------
+    `FlowResult` or `None`
         Return the flow if any, otherwise `None`. If found, it is guaranteed to be maximally delayed.
     """
     _common.check_graph(g, iset, oset)
@@ -53,13 +54,13 @@ def verify(flow: FlowResult[V], g: nx.Graph[V], iset: AbstractSet[V], oset: Abst
 
     Parameters
     ----------
-    flow
+    flow : `FlowResult`
         Flow to verify.
-    g
+    g : `networkx.Graph`
         Simple graph representing MBQC pattern.
-    iset
+    iset : `collections.abc.Set`
         Input nodes.
-    oset
+    oset : `collections.abc.Set`
         Output nodes.
 
     Raises

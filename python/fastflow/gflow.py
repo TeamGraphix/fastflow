@@ -6,7 +6,7 @@ This module provides functions to compute and verify maximally-delayed generaliz
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Mapping
+from typing import TYPE_CHECKING
 
 from fastflow import _common
 from fastflow._common import IndexMap
@@ -14,6 +14,7 @@ from fastflow._impl import gflow as gflow_bind
 from fastflow.common import GFlowResult, Plane, V
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from collections.abc import Set as AbstractSet
 
     import networkx as nx
@@ -29,18 +30,19 @@ def find(
 
     Parameters
     ----------
-    g
+    g : `networkx.Graph`
         Simple graph representing MBQC pattern.
-    iset
+    iset : `collections.abc.Set`
         Input nodes.
-    oset
+    oset : `collections.abc.Set`
         Output nodes.
-    plane
+    plane : `collections.abc.Mapping`
         Measurement plane for each node in :math:`V \setminus O`.
         Defaults to `Plane.XY`.
 
     Returns
     -------
+    `GFlowResult` or `None`
         Return the gflow if any, otherwise `None`. If found, it is guaranteed to be maximally delayed.
     """
     _common.check_graph(g, iset, oset)
@@ -77,15 +79,15 @@ def verify(
 
     Parameters
     ----------
-    gflow
+    gflow : `GFlowResult`
         Generalized flow to verify.
-    g
+    g : `networkx.Graph`
         Simple graph representing MBQC pattern.
-    iset
+    iset : `collections.abc.Set`
         Input nodes.
-    oset
+    oset : `collections.abc.Set`
         Output nodes.
-    plane
+    plane : `collections.abc.Mapping`
         Measurement plane for each node in :math:`V \setminus O`.
         Defaults to `Plane.XY`.
 

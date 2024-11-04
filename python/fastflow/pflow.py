@@ -6,7 +6,7 @@ This module provides functions to compute and verify maximally-delayed Pauli flo
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, Mapping
+from typing import TYPE_CHECKING
 
 from fastflow import _common
 from fastflow._common import IndexMap
@@ -14,6 +14,7 @@ from fastflow._impl import pflow as pflow_bind
 from fastflow.common import GFlowResult, PPlane, V
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
     from collections.abc import Set as AbstractSet
 
     import networkx as nx
@@ -29,18 +30,19 @@ def find(
 
     Parameters
     ----------
-    g
+    g : `networkx.Graph`
         Simple graph representing MBQC pattern.
-    iset
+    iset : `collections.abc.Set`
         Input nodes.
-    oset
+    oset : `collections.abc.Set`
         Output nodes.
-    pplane
+    pplane : `collections.abc.Mapping`
         Measurement plane or Pauli index for each node in :math:`V \setminus O`.
         Defaults to `PPlane.XY`.
 
     Returns
     -------
+    `GFlowResult` or `None`
         Return the Pauli flow if any, otherwise `None`. If found, it is guaranteed to be maximally delayed.
 
     Notes
@@ -84,15 +86,15 @@ def verify(
 
     Parameters
     ----------
-    pflow
+    pflow : `GFlowResult`
         Pauli flow to verify.
-    g
+    g : `networkx.Graph`
         Simple graph representing MBQC pattern.
-    iset
+    iset : `collections.abc.Set`
         Input nodes.
-    oset
+    oset : `collections.abc.Set`
         Output nodes.
-    pplane
+    pplane : `collections.abc.Mapping`
         Measurement plane or Pauli index for each node in :math:`V \setminus O`.
         Defaults to `PPlane.XY`.
 

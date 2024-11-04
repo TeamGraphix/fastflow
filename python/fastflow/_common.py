@@ -51,11 +51,11 @@ def check_planelike(vset: AbstractSet[V], oset: AbstractSet[V], plike: Mapping[V
 
     Parameters
     ----------
-    vset :
+    vset
         All nodes.
-    oset :
+    oset
         Output nodes.
-    plike :
+    plike
         Measurement plane or Pauli index for each node in :math:`V \setminus O`.
 
     Raises
@@ -87,7 +87,7 @@ class IndexMap(Generic[V]):
 
         Parameters
         ----------
-        vset :
+        vset
             Set of nodes.
             Can be any hashable type.
         """
