@@ -49,8 +49,7 @@ def fx_indexmap() -> IndexMap[str]:
 
 
 class TestIndexMap:
-    @staticmethod
-    def test_encode(fx_indexmap: IndexMap[str]) -> None:
+    def test_encode(self, fx_indexmap: IndexMap[str]) -> None:
         assert {
             fx_indexmap.encode("a"),
             fx_indexmap.encode("b"),
@@ -60,8 +59,7 @@ class TestIndexMap:
         with pytest.raises(ValueError, match="x not found."):
             fx_indexmap.encode("x")
 
-    @staticmethod
-    def test_decode(fx_indexmap: IndexMap[str]) -> None:
+    def test_decode(self, fx_indexmap: IndexMap[str]) -> None:
         assert {
             fx_indexmap.decode(0),
             fx_indexmap.decode(1),
@@ -71,8 +69,7 @@ class TestIndexMap:
         with pytest.raises(ValueError, match="3 not found."):
             fx_indexmap.decode(3)
 
-    @staticmethod
-    def test_encdec(fx_indexmap: IndexMap[str]) -> None:
+    def test_encdec(self, fx_indexmap: IndexMap[str]) -> None:
         assert fx_indexmap.decode(fx_indexmap.encode("a")) == "a"
         assert fx_indexmap.decode(fx_indexmap.encode("b")) == "b"
         assert fx_indexmap.decode(fx_indexmap.encode("c")) == "c"
