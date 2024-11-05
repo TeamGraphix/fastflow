@@ -68,3 +68,8 @@ fastflow.pflow module
 .. automodule:: fastflow.pflow
    :members:
    :undoc-members:
+
+References
+----------
+
+.. footbibliography::

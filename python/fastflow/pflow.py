@@ -1,6 +1,7 @@
 """Maximally-delayed Pauli flow algorithm.
 
 This module provides functions to compute and verify maximally-delayed Pauli flow.
+See :footcite:t:`Simons2021` for details.
 """
 
 from __future__ import annotations

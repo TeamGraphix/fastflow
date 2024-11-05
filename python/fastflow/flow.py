@@ -1,6 +1,7 @@
 """Maximally-delayed flow algorithm.
 
 This module provides functions to compute and verify maximally-delayed causal flow.
+See :footcite:t:`Mhalla2008` for details.
 """
 
 from __future__ import annotations

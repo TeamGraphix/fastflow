@@ -1,6 +1,7 @@
 """Maximally-delayed gflow algorithm.
 
 This module provides functions to compute and verify maximally-delayed generalized flow.
+See :footcite:t:`Mhalla2008` and :footcite:t:`Backens2021` for details.
 """
 
 from __future__ import annotations

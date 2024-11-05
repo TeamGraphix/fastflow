@@ -28,6 +28,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
+    "sphinxcontrib.bibtex",
 ]
 
 templates_path = ["_templates"]
@@ -46,5 +47,7 @@ intersphinx_mapping = {
 }
 
 default_role = "any"
+
 autodoc_typehints = "description"
 autodoc_typehints_description_target = "documented"
+bibtex_bibfiles = ["ref.bib"]
