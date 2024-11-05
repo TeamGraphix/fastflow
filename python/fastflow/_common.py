@@ -54,11 +54,11 @@ def check_planelike(vset: AbstractSet[V], oset: AbstractSet[V], plike: Mapping[V
 
     Parameters
     ----------
-    vset
+    vset : `collections.abc.Set`
         All nodes.
-    oset
+    oset : `collections.abc.Set`
         Output nodes.
-    plike
+    plike : `collections.abc.Mapping`
         Measurement plane or Pauli index for each node in :math:`V \setminus O`.
 
     Raises
@@ -90,7 +90,7 @@ class IndexMap(Generic[V]):
 
         Parameters
         ----------
-        vset
+        vset : `collections.abc.Set`
             Set of nodes.
             Can be any hashable type.
         """
@@ -102,7 +102,7 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        :
+        `int`
             Index of `v`.
 
         Raises
@@ -121,8 +121,7 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        :
-            `g` with transformed nodes.
+        `g` with transformed nodes.
         """
         n = len(g)
         g_: list[set[int]] = [set() for _ in range(n)]
@@ -140,8 +139,7 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        :
-            `mapping` with transformed keys.
+        `mapping` with transformed keys.
         """
         return {self.encode(k): v for k, v in mapping.items()}
 
@@ -150,8 +148,7 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        :
-            `f` with both keys and values transformed.
+        `f` with both keys and values transformed.
         """
         return {self.encode(i): self.encode(j) for i, j in f.items()}
 
@@ -160,8 +157,7 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        :
-            `f` with both keys and values transformed.
+        `f` with both keys and values transformed.
         """
         return {self.encode(i): self.encode_set(si) for i, si in f.items()}
 
@@ -170,8 +166,7 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        :
-            `layer` values transformed.
+        `layer` values transformed.
 
         Notes
         -----
@@ -190,8 +185,7 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        :
-            Value corresponding to the index.
+        Value corresponding to the index.
 
         Raises
         ------
@@ -213,8 +207,7 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        :
-            `f_` with both keys and values transformed.
+        `f_` with both keys and values transformed.
         """
         return {self.decode(i): self.decode(j) for i, j in f_.items()}
 
@@ -223,8 +216,7 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        :
-            `f_` with both keys and values transformed.
+        `f_` with both keys and values transformed.
         """
         return {self.decode(i): self.decode_set(si) for i, si in f_.items()}
 
@@ -233,8 +225,7 @@ class IndexMap(Generic[V]):
 
         Returns
         -------
-        :
-            `layer_` transformed.
+        `layer_` transformed.
 
         Notes
         -----
