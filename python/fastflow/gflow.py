@@ -26,7 +26,9 @@ def find(
     oset: AbstractSet[V],
     plane: Mapping[V, Plane] | None = None,
 ) -> GFlowResult[V] | None:
-    r"""Compute maximally-delayed generalized flow.
+    r"""Compute generalized flow.
+
+    If it returns a gflow, it is guaranteed to be maximally-delayed, i.e., the number of layers is minimized.
 
     Parameters
     ----------
@@ -43,7 +45,7 @@ def find(
     Returns
     -------
     `GFlowResult` or `None`
-        Return the gflow if any, otherwise `None`. If found, it is guaranteed to be maximally delayed.
+        Return the gflow if any, otherwise `None`.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes

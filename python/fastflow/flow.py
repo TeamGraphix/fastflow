@@ -19,7 +19,9 @@ if TYPE_CHECKING:
 
 
 def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResult[V] | None:
-    """Compute maximally-delayed causal flow.
+    """Compute causal flow.
+
+    If it returns a flow, it is guaranteed to be maximally-delayed, i.e., the number of layers is minimized.
 
     Parameters
     ----------
@@ -33,7 +35,7 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResu
     Returns
     -------
     `FlowResult` or `None`
-        Return the flow if any, otherwise `None`. If found, it is guaranteed to be maximally delayed.
+        Return the flow if any, otherwise `None`.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes

@@ -26,7 +26,9 @@ def find(
     oset: AbstractSet[V],
     pplane: Mapping[V, PPlane] | None = None,
 ) -> GFlowResult[V] | None:
-    r"""Compute maximally-delayed Pauli flow.
+    r"""Compute Pauli flow.
+
+    If it returns a Pauli flow, it is guaranteed to be maximally-delayed, i.e., the number of layers is minimized.
 
     Parameters
     ----------
@@ -43,7 +45,7 @@ def find(
     Returns
     -------
     `GFlowResult` or `None`
-        Return the Pauli flow if any, otherwise `None`. If found, it is guaranteed to be maximally delayed.
+        Return the Pauli flow if any, otherwise `None`.
 
     Notes
     -----
