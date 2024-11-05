@@ -37,7 +37,7 @@ dependencies = ["networkx"]
 
 [project.optional-dependencies]
 dev = ["mypy", "pyright", "pytest", "pytest-cov", "ruff", "types-networkx"]
-doc = ["furo", "sphinx"]
+doc = ["furo", "sphinxcontrib-bibtex", "sphinx"]
 
 [tool.maturin]
 exclude = [
