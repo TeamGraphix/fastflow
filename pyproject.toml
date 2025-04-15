@@ -97,8 +97,7 @@ ignore = [
   "FIX",
 
   # Manually-disabled (rules)
-  "ANN10", # missing-type-self/cls (deprecated)
-  "D105",  # undocumented-magic-method
+  "D105", # undocumented-magic-method
 ]
 
 [tool.ruff.lint.isort]
