@@ -23,16 +23,16 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: Apache Software License",
   "Operating System :: OS Independent",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Rust",
   "Topic :: Scientific/Engineering :: Physics",
   "Typing :: Typed",
 ]
-requires-python = ">=3.8,<3.14"
+requires-python = ">=3.9,<3.14"
 dependencies = ["networkx"]
 
 [project.optional-dependencies]
@@ -54,7 +54,7 @@ module-name = "fastflow._impl"
 python-source = "python"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 strict = true
 files = ["docs/source/conf.py", "python", "tests"]
 
