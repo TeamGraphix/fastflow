@@ -293,7 +293,7 @@ impl Debug for GF2Solver<'_> {
 
 #[cfg(test)]
 mod tests {
-    use rand::prelude::*;
+    use rand::{self, Rng};
     use rstest::rstest;
     use rstest_reuse::{apply, template};
 
@@ -363,12 +363,12 @@ mod tests {
 
     fn rand_co(rows: usize, cols: usize, p: f64) -> Vec<FixedBitSet> {
         assert!((0.0..=1.0).contains(&p));
-        let mut rng = thread_rng();
+        let mut rng = rand::rng();
         let mut co = Vec::with_capacity(rows);
         for _ in 0..rows {
             let mut row = FixedBitSet::with_capacity(cols);
             for c in 0..cols {
-                if rng.gen::<f64>() < p {
+                if rng.random::<f64>() < p {
                     row.insert(c);
                 }
             }
@@ -379,10 +379,10 @@ mod tests {
 
     fn rand_rhs(rows: usize, p: f64) -> FixedBitSet {
         assert!((0.0..=1.0).contains(&p));
-        let mut rng = thread_rng();
+        let mut rng = rand::rng();
         let mut rhs = FixedBitSet::with_capacity(rows);
         for r in 0..rows {
-            if rng.gen::<f64>() < p {
+            if rng.random::<f64>() < p {
                 rhs.insert(r);
             }
         }
@@ -504,11 +504,11 @@ mod tests {
 
     #[apply(template_tests)]
     fn test_eliminate_lower_random(rows: usize, cols: usize, neqs: usize) {
-        let mut rng = thread_rng();
+        let mut rng = rand::rng();
         for _ in 0..REP {
             // Random p
-            let p1 = rng.gen::<f64>();
-            let p2 = rng.gen::<f64>();
+            let p1 = rng.random::<f64>();
+            let p2 = rng.random::<f64>();
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
@@ -535,11 +535,11 @@ mod tests {
 
     #[apply(template_tests)]
     fn test_eliminate_upper_random(rows: usize, cols: usize, neqs: usize) {
-        let mut rng = thread_rng();
+        let mut rng = rand::rng();
         for _ in 0..REP {
             // Random p
-            let p1 = rng.gen::<f64>();
-            let p2 = rng.gen::<f64>();
+            let p1 = rng.random::<f64>();
+            let p2 = rng.random::<f64>();
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
@@ -566,11 +566,11 @@ mod tests {
 
     #[apply(template_tests)]
     fn test_solve_random(rows: usize, cols: usize, neqs: usize) {
-        let mut rng = thread_rng();
+        let mut rng = rand::rng();
         for _ in 0..REP {
             // Random p
-            let p1 = rng.gen::<f64>();
-            let p2 = rng.gen::<f64>();
+            let p1 = rng.random::<f64>();
+            let p2 = rng.random::<f64>();
             let co = rand_co(rows, cols, p1);
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));

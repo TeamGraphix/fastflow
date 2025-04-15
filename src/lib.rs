@@ -23,18 +23,18 @@ use pyo3::prelude::*;
 #[allow(clippy::similar_names)]
 fn entrypoint(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // fastflow._impl.flow
-    let mod_flow = PyModule::new_bound(m.py(), "flow")?;
+    let mod_flow = PyModule::new(m.py(), "flow")?;
     mod_flow.add_function(wrap_pyfunction!(flow::find, &mod_flow)?)?;
     mod_flow.add_function(wrap_pyfunction!(flow::verify, &mod_flow)?)?;
     m.add_submodule(&mod_flow)?;
     // fastflow._impl.gflow
-    let mod_gflow = PyModule::new_bound(m.py(), "gflow")?;
+    let mod_gflow = PyModule::new(m.py(), "gflow")?;
     mod_gflow.add_class::<Plane>()?;
     mod_gflow.add_function(wrap_pyfunction!(gflow::find, &mod_gflow)?)?;
     mod_gflow.add_function(wrap_pyfunction!(gflow::verify, &mod_gflow)?)?;
     m.add_submodule(&mod_gflow)?;
     // fastflow._impl.pflow
-    let mod_pflow = PyModule::new_bound(m.py(), "pflow")?;
+    let mod_pflow = PyModule::new(m.py(), "pflow")?;
     mod_pflow.add_class::<PPlane>()?;
     mod_pflow.add_function(wrap_pyfunction!(pflow::find, &mod_pflow)?)?;
     mod_pflow.add_function(wrap_pyfunction!(pflow::verify, &mod_pflow)?)?;
