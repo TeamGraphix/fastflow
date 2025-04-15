@@ -121,16 +121,11 @@ impl<'a> GF2Solver<'a> {
                 if !self.work[r][i] {
                     continue;
                 }
-                // MEMO: i < r
-                // Need to borrow twice at a time
-                let (ss, s2) = self.work.split_at_mut(r);
-                let (_, s1) = ss.split_at(i);
-                let src = &s1[0];
-                let dst = &mut s2[0];
+                let [src, dst] = self.work.get_disjoint_mut([i, r]).expect("i < r");
                 // MEMO: Rooms for optimization
                 //  Redundant operations on the area already cleared
                 debug_assert_eq!(src.count_ones(..i), 0);
-                *dst ^= src;
+                dst.symmetric_difference_with(src);
             }
         }
         self.rank = Some(rmax);
@@ -165,13 +160,9 @@ impl<'a> GF2Solver<'a> {
                 if !self.work[r][i] {
                     continue;
                 }
-                // MEMO: r < i
-                let (ss, s2) = self.work.split_at_mut(i);
-                let (_, s1) = ss.split_at_mut(r);
-                let src = &s2[0];
-                let dst = &mut s1[0];
+                let [src, dst] = self.work.get_disjoint_mut([i, r]).expect("r < i");
                 debug_assert_eq!(src.count_ones(..i), 0);
-                *dst ^= src;
+                dst.symmetric_difference_with(src);
             }
         }
     }
