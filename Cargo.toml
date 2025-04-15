@@ -18,14 +18,14 @@ crate-type = ["cdylib"]
 [dependencies]
 anyhow = "1"
 fixedbitset = "0.5"
-hashbrown = "0.14"                                                 # Cannot use 0.15 for compatibility with pyo3
-itertools = "0.13"
-pyo3 = { version = "0.22", features = ["abi3-py39", "hashbrown"] }
-thiserror = "1"
+hashbrown = "0.15"
+itertools = "0.14"
+pyo3 = { version = "0.24", features = ["abi3-py39", "hashbrown"] }
+thiserror = "2"
 tracing = "0.1"
 
 [dev-dependencies]
-rand = "0.8"
-rstest = "0.23"
+rand = "0.9"
+rstest = "0.25"
 rstest_reuse = "0.7"
 test-log = { version = "0.2", features = ["trace"] }
