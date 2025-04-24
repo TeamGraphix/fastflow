@@ -21,5 +21,5 @@ def test_gflow_redundant() -> None:
     iset = {0}
     oset = {1}
     planes = {0: Plane.XY, 1: Plane.XY}
-    with pytest.warns(UserWarning, match=r".*Ignoring plane\[v\] where v in oset\..*"):
+    with pytest.raises(ValueError, match=r".*Excessive measurement planes specified.*"):
         gflow.find(g, iset, oset, planes)

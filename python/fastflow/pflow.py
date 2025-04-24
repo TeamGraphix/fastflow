@@ -60,11 +60,6 @@ def find(
     if all(pp not in {PPlane.X, PPlane.Y, PPlane.Z} for pp in pplane.values()):
         msg = "No Pauli measurement found. Use gflow.find instead."
         warnings.warn(msg, stacklevel=1)
-    ignore = pplane.keys() & oset
-    if len(ignore) != 0:
-        msg = "Ignoring pplane[v] where v in oset."
-        warnings.warn(msg, stacklevel=1)
-        pplane = {k: v for k, v in pplane.items() if k not in ignore}
     codec = IndexMap(vset)
     g_ = codec.encode_graph(g)
     iset_ = codec.encode_set(iset)

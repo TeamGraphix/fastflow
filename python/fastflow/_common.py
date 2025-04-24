@@ -73,8 +73,12 @@ def check_planelike(vset: AbstractSet[V], oset: AbstractSet[V], plike: Mapping[V
     if not (plike.keys() <= vset):
         msg = "Cannot find corresponding nodes in the graph."
         raise ValueError(msg)
-    if not (vset - oset <= plike.keys()):
+    ocset = vset - oset
+    if not (ocset <= plike.keys()):
         msg = "Measurement planes should be specified for all u in V\\O."
+        raise ValueError(msg)
+    if not (plike.keys() <= ocset):
+        msg = "Excessive measurement planes specified."
         raise ValueError(msg)
 
 
