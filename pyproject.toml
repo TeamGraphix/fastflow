@@ -47,7 +47,6 @@ exclude = [
   "tests/**",
   ".github/**",
   ".gitignore",
-  ".nojekyll",
 ]
 features = ["pyo3/extension-module"]
 module-name = "fastflow._impl"
