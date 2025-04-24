@@ -11,6 +11,7 @@ pub mod flow;
 pub mod gflow;
 pub mod pflow;
 
+use common::FlowValidationError;
 use gflow::Plane;
 use pflow::PPlane;
 use pyo3::prelude::*;
@@ -22,7 +23,8 @@ use pyo3::prelude::*;
 #[pyo3(name = "_impl")]
 #[allow(clippy::similar_names)]
 fn entrypoint(m: &Bound<'_, PyModule>) -> PyResult<()> {
-    m.add_class::<common::FlowValidationError>()?;
+    // Remapped to fastflow._impl.FlowValidationMessage
+    m.add_class::<FlowValidationError>()?;
     // fastflow._impl.flow
     let mod_flow = PyModule::new(m.py(), "flow")?;
     mod_flow.add_function(wrap_pyfunction!(flow::find, &mod_flow)?)?;

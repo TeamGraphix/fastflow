@@ -22,7 +22,9 @@ pub type Layer = Vec<usize>;
 pub(crate) type OrderedNodes = BTreeSet<usize>;
 
 /// Error type for flow validation.
-#[pyclass]
+///
+/// Python name does not contain `Error` as it is not a subclass of `Exception`.
+#[pyclass(name = "FlowValidationMessage")]
 #[derive(Debug, Error)]
 pub enum FlowValidationError {
     #[error("layer-{layer} node {node} inside output nodes")]
