@@ -36,8 +36,7 @@ def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> N
     if len(g) == 0:
         msg = "Graph is empty."
         raise ValueError(msg)
-    # BUG: Incorrect annotation
-    if nx.number_of_selfloops(g) > 0:  # type: ignore[arg-type]
+    if any(True for _ in nx.selfloop_edges(g)):
         msg = "Self-loop detected."
         raise ValueError(msg)
     vset = set(g.nodes)
