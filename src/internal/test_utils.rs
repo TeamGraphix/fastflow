@@ -164,7 +164,7 @@ mod tests {
 
     /// Checks if the graph is valid.
     ///
-    /// In production code, this chech should be done in the Python layer.
+    /// In production code, this check should be done in the Python layer.
     fn check_graph(g: &Graph, iset: &Nodes, oset: &Nodes) -> anyhow::Result<()> {
         let n = g.len();
         if n == 0 {
