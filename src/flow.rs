@@ -4,7 +4,10 @@ use hashbrown;
 use pyo3::{exceptions::PyValueError, prelude::*};
 
 use crate::{
-    common::{FlowValidationError::InconsistentFlowOrder, Graph, Layer, Nodes},
+    common::{
+        FlowValidationError::{self, InconsistentFlowOrder},
+        Graph, Layer, Nodes,
+    },
     internal::{utils::InPlaceSetDiff, validate},
 };
 
@@ -15,7 +18,7 @@ type Flow = hashbrown::HashMap<usize, usize>;
 /// 1. i -> f(i)
 /// 2. j in neighbors(f(i)) => i == j or i -> j
 /// 3. i in neighbors(f(i))
-fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
+fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> Result<(), FlowValidationError> {
     for (&i, &fi) in f {
         if layer[i] <= layer[fi] {
             Err(InconsistentFlowOrder(i, fi))?;

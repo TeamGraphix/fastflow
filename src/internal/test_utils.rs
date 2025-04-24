@@ -165,43 +165,27 @@ mod tests {
     /// Checks if the graph is valid.
     ///
     /// In production code, this check should be done in the Python layer.
-    fn check_graph(g: &Graph, iset: &Nodes, oset: &Nodes) -> anyhow::Result<()> {
+    fn check_graph(g: &Graph, iset: &Nodes, oset: &Nodes) {
         let n = g.len();
-        if n == 0 {
-            anyhow::bail!("empty graph");
-        }
+        assert_ne!(n, 0, "empty graph");
         for (u, gu) in g.iter().enumerate() {
-            if gu.contains(&u) {
-                anyhow::bail!("self-loop detected: {u}");
-            }
-            gu.iter().try_for_each(|&v| {
-                if v >= n {
-                    anyhow::bail!("node index out of range: {v}");
-                }
-                if !g[v].contains(&u) {
-                    anyhow::bail!("g must be undirected: needs {v} -> {u}");
-                }
-                Ok(())
-            })?;
+            assert!(!gu.contains(&u), "self-loop detected: {u}");
+            gu.iter().for_each(|&v| {
+                assert!(v < n, "node index out of range: {v}");
+                assert!(g[v].contains(&u), "g must be undirected: {u} -> {v}");
+            });
         }
-        iset.iter().try_for_each(|&u| {
-            if !(0..n).contains(&u) {
-                anyhow::bail!("unknown node in iset: {u}");
-            }
-            Ok(())
-        })?;
-        oset.iter().try_for_each(|&u| {
-            if !(0..n).contains(&u) {
-                anyhow::bail!("unknown node in oset: {u}");
-            }
-            Ok(())
-        })?;
-        Ok(())
+        iset.iter().for_each(|&u| {
+            assert!((0..n).contains(&u), "unknown node in iset: {u}");
+        });
+        oset.iter().for_each(|&u| {
+            assert!((0..n).contains(&u), "unknown node in oset: {u}");
+        });
     }
 
     #[apply(template_tests)]
     fn test_input(input: &TestCase) {
         let TestCase { g, iset, oset } = input;
-        check_graph(g, iset, oset).unwrap();
+        check_graph(g, iset, oset);
     }
 }

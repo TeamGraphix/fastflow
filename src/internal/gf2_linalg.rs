@@ -29,16 +29,15 @@ pub struct GF2Solver<'a> {
 
 impl<'a> GF2Solver<'a> {
     /// Checks the arguments of `attach`.
-    fn attach_check(work: &GF2Matrix, neqs: usize) -> anyhow::Result<()> {
-        anyhow::ensure!(neqs > 0, "neqs is zero");
+    fn attach_check(work: &GF2Matrix, neqs: usize) {
+        assert!(neqs > 0, "neqs is zero");
         let rows = work.len();
-        anyhow::ensure!(rows > 0, "work is empty");
+        assert!(rows > 0, "work is empty");
         let Ok(width) = work.iter().map(FixedBitSet::len).all_equal_value() else {
-            anyhow::bail!("work is jagged");
+            panic!("work is jagged");
         };
-        anyhow::ensure!(width > 0, "zero-length columns");
-        anyhow::ensure!(width > neqs, "neqs too large");
-        Ok(())
+        assert!(width > 0, "zero-length columns");
+        assert!(width > neqs, "neqs too large");
     }
 
     /// Attaches to the existing working storage.
@@ -58,9 +57,7 @@ impl<'a> GF2Solver<'a> {
     /// - If `work[...]` is empty (no columns).
     /// - If `neqs` is so large that there is no room for the coefficient matrix.
     pub fn attach(work: &'a mut GF2Matrix, neqs: usize) -> Self {
-        if let Err(e) = Self::attach_check(work, neqs) {
-            panic!("invalid argument detected: {e}");
-        }
+        Self::attach_check(work, neqs);
         let rows = work.len();
         let width = work[0].len();
         let cols = width - neqs;

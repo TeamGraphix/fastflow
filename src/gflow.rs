@@ -9,7 +9,7 @@ use pyo3::{exceptions::PyValueError, prelude::*};
 use crate::{
     common::{
         FlowValidationError::{
-            InconsistentFlowOrder, InconsistentFlowPlane, InvalidMeasurementSpec,
+            self, InconsistentFlowOrder, InconsistentFlowPlane, InvalidMeasurementSpec,
         },
         Graph, Layer, Nodes, OrderedNodes,
     },
@@ -39,7 +39,12 @@ type GFlow = hashbrown::HashMap<usize, Nodes>;
 /// 3. i not in g(i) and in Odd(g(i)) if plane(i) == XY
 /// 4. i in g(i) and in Odd(g(i)) if plane(i) == YZ
 /// 5. i in g(i) and not in Odd(g(i)) if plane(i) == XZ
-fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> anyhow::Result<()> {
+fn check_definition(
+    f: &GFlow,
+    layer: &Layer,
+    g: &Graph,
+    planes: &Planes,
+) -> Result<(), FlowValidationError> {
     for &i in itertools::chain(f.keys(), planes.keys()) {
         if f.contains_key(&i) != planes.contains_key(&i) {
             Err(InvalidMeasurementSpec(i))?;

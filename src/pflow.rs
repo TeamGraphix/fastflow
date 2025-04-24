@@ -9,7 +9,7 @@ use pyo3::{exceptions::PyValueError, prelude::*};
 use crate::{
     common::{
         FlowValidationError::{
-            InconsistentFlowOrder, InconsistentFlowPlane, InvalidMeasurementSpec,
+            self, InconsistentFlowOrder, InconsistentFlowPlane, InvalidMeasurementSpec,
         },
         Graph, Layer, Nodes, OrderedNodes,
     },
@@ -36,7 +36,12 @@ type PPlanes = hashbrown::HashMap<usize, PPlane>;
 type PFlow = hashbrown::HashMap<usize, Nodes>;
 
 /// Checks the definition of Pauli flow.
-fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> anyhow::Result<()> {
+fn check_definition(
+    f: &PFlow,
+    layer: &Layer,
+    g: &Graph,
+    pplanes: &PPlanes,
+) -> Result<(), FlowValidationError> {
     for &i in itertools::chain(f.keys(), pplanes.keys()) {
         if f.contains_key(&i) != pplanes.contains_key(&i) {
             Err(InvalidMeasurementSpec(i))?;
