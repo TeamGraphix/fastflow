@@ -429,7 +429,8 @@ pub fn verify(
     let f_flatiter = f
         .iter()
         .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
-    validate::check_domain(f_flatiter, &vset, &iset, &oset).map_err(PyValueError::new_err)?;
+    validate::check_domain(f_flatiter, &vset, &iset, &oset)
+        .map_err(|e| PyValueError::new_err(e.to_string()))?;
     if let Err(e) = validate::check_initial(&layer, &oset, false) {
         return Err(PyValueError::new_err(e.to_string()));
     }
