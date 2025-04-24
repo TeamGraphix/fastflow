@@ -39,8 +39,7 @@ type PFlow = hashbrown::HashMap<usize, Nodes>;
 fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> anyhow::Result<()> {
     for &i in itertools::chain(f.keys(), pplanes.keys()) {
         if f.contains_key(&i) != pplanes.contains_key(&i) {
-            let err = anyhow::Error::from(InvalidMeasurementSpec(i));
-            return Err(err);
+            Err(InvalidMeasurementSpec(i))?;
         }
     }
     for (&i, fi) in f {
@@ -48,8 +47,7 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> a
         for &fij in fi {
             match (i != fij, layer[i] <= layer[fij]) {
                 (true, true) if !matches!(pplanes[&fij], PPlane::X | PPlane::Y) => {
-                    let err = anyhow::Error::from(InconsistentFlowOrder(i, fij));
-                    return Err(err);
+                    Err(InconsistentFlowOrder(i, fij))?;
                 }
                 (false, false) => unreachable!("layer[i] == layer[i]"),
                 _ => {}
@@ -59,8 +57,7 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> a
         for &j in &odd_fi {
             match (i != j, layer[i] <= layer[j]) {
                 (true, true) if !matches!(pplanes[&j], PPlane::Y | PPlane::Z) => {
-                    let err = anyhow::Error::from(InconsistentFlowOrder(i, j));
-                    return Err(err);
+                    Err(InconsistentFlowOrder(i, j))?;
                 }
                 (false, false) => unreachable!("layer[i] == layer[i]"),
                 _ => {}
@@ -68,35 +65,28 @@ fn check_definition(f: &PFlow, layer: &Layer, g: &Graph, pplanes: &PPlanes) -> a
         }
         for &j in fi.symmetric_difference(&odd_fi) {
             if pplanes.get(&j) == Some(&PPlane::Y) && i != j && layer[i] <= layer[j] {
-                let err = anyhow::Error::from(InconsistentFlowPlane(j));
-                return Err(err);
+                Err(InconsistentFlowPlane(j))?;
             }
         }
         let in_info = (fi.contains(&i), odd_fi.contains(&i));
         match pi {
             PPlane::XY if in_info != (false, true) => {
-                let err = anyhow::Error::from(InconsistentFlowPlane(i));
-                return Err(err);
+                Err(InconsistentFlowPlane(i))?;
             }
             PPlane::YZ if in_info != (true, false) => {
-                let err = anyhow::Error::from(InconsistentFlowPlane(i));
-                return Err(err);
+                Err(InconsistentFlowPlane(i))?;
             }
             PPlane::XZ if in_info != (true, true) => {
-                let err = anyhow::Error::from(InconsistentFlowPlane(i));
-                return Err(err);
+                Err(InconsistentFlowPlane(i))?;
             }
             PPlane::X if !in_info.1 => {
-                let err = anyhow::Error::from(InconsistentFlowPlane(i));
-                return Err(err);
+                Err(InconsistentFlowPlane(i))?;
             }
             PPlane::Y if !(in_info.0 ^ in_info.1) => {
-                let err = anyhow::Error::from(InconsistentFlowPlane(i));
-                return Err(err);
+                Err(InconsistentFlowPlane(i))?;
             }
             PPlane::Z if !in_info.0 => {
-                let err = anyhow::Error::from(InconsistentFlowPlane(i));
-                return Err(err);
+                Err(InconsistentFlowPlane(i))?;
             }
             _ => {}
         }

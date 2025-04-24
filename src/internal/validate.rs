@@ -22,12 +22,10 @@ pub fn check_initial(layer: &Layer, oset: &Nodes, iff: bool) -> anyhow::Result<(
     for (u, &lu) in layer.iter().enumerate() {
         match (oset.contains(&u), lu == 0) {
             (true, false) => {
-                let err = anyhow::Error::from(ExcessiveNonZeroLayer(u));
-                return Err(err);
+                Err(ExcessiveNonZeroLayer(u))?;
             }
             (false, true) if iff => {
-                let err = anyhow::Error::from(ExcessiveZeroLayer(u));
-                return Err(err);
+                Err(ExcessiveZeroLayer(u))?;
             }
             _ => {}
         }
@@ -59,13 +57,11 @@ pub fn check_domain<'a, 'b>(
     for (&i, &fi) in f_flatiter {
         dom.insert(i);
         if i != fi && !icset.contains(&fi) {
-            let err = anyhow::Error::from(InvalidFlowCodomain(i));
-            return Err(err);
+            Err(InvalidFlowCodomain(i))?;
         }
     }
     if let Some(&i) = dom.symmetric_difference(&ocset).next() {
-        let err = anyhow::Error::from(InvalidFlowDomain(i));
-        return Err(err);
+        Err(InvalidFlowDomain(i))?;
     }
     Ok(())
 }
