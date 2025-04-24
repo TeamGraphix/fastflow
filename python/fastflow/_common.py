@@ -86,7 +86,7 @@ class IndexMap(Generic[V]):
     """Map between `V` and 0-based indices."""
 
     __v2i: dict[V, int]
-    __i2v: dict[int, V]
+    __i2v: list[V]
 
     def __init__(self, vset: AbstractSet[V]) -> None:
         """Initialize the map from `vset`.
@@ -97,8 +97,8 @@ class IndexMap(Generic[V]):
             Set of nodes.
             Can be any hashable type.
         """
-    self.__i2v = list(vset)
-    self.__v2i = {v: i for i, v in enumerate(self.__i2v)}
+        self.__i2v = list(vset)
+        self.__v2i = {v: i for i, v in enumerate(self.__i2v)}
 
     def encode(self, v: V) -> int:
         """Encode `v` to the index.
