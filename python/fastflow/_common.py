@@ -126,12 +126,7 @@ class IndexMap(Generic[V]):
         -------
         `g` with transformed nodes.
         """
-        n = len(g)
-        g_: list[set[int]] = [set() for _ in range(n)]
-        for u, i in self.__v2i.items():
-            for v in g[u]:
-                g_[i].add(self.encode(v))
-        return g_
+        return [self.encode_set(g[v].keys()) for v in self.__i2v]
 
     def encode_set(self, vset: AbstractSet[V]) -> set[int]:
         """Encode set."""
@@ -195,10 +190,11 @@ class IndexMap(Generic[V]):
         ValueError
             If `i` is out of range.
         """
-        v = self.__i2v.get(i)
-        if v is None:
+        try:
+            v = self.__i2v[i]
+        except IndexError:
             msg = f"{i} not found."
-            raise ValueError(msg)
+            raise ValueError(msg) from None
         return v
 
     def decode_set(self, iset: AbstractSet[int]) -> set[V]:
