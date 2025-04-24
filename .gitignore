@@ -29,7 +29,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+./build/
 develop-eggs/
 dist/
 downloads/
@@ -184,3 +184,5 @@ cython_debug/
 
 # User-specific files
 cobertura.xml
+docs/build
+!docs/build/.nojekyll
