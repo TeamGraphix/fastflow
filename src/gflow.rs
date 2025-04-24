@@ -42,38 +42,32 @@ type GFlow = hashbrown::HashMap<usize, Nodes>;
 fn check_definition(f: &GFlow, layer: &Layer, g: &Graph, planes: &Planes) -> anyhow::Result<()> {
     for &i in itertools::chain(f.keys(), planes.keys()) {
         if f.contains_key(&i) != planes.contains_key(&i) {
-            let err = anyhow::Error::from(InvalidMeasurementSpec(i));
-            return Err(err);
+            Err(InvalidMeasurementSpec(i))?;
         }
     }
     for (&i, fi) in f {
         let pi = planes[&i];
         for &fij in fi {
             if i != fij && layer[i] <= layer[fij] {
-                let err = anyhow::Error::from(InconsistentFlowOrder(i, fij));
-                return Err(err);
+                Err(InconsistentFlowOrder(i, fij))?;
             }
         }
         let odd_fi = utils::odd_neighbors(g, fi);
         for &j in &odd_fi {
             if i != j && layer[i] <= layer[j] {
-                let err = anyhow::Error::from(InconsistentFlowOrder(i, j));
-                return Err(err);
+                Err(InconsistentFlowOrder(i, j))?;
             }
         }
         let in_info = (fi.contains(&i), odd_fi.contains(&i));
         match pi {
             Plane::XY if in_info != (false, true) => {
-                let err = anyhow::Error::from(InconsistentFlowPlane(i));
-                return Err(err);
+                Err(InconsistentFlowPlane(i))?;
             }
             Plane::YZ if in_info != (true, false) => {
-                let err = anyhow::Error::from(InconsistentFlowPlane(i));
-                return Err(err);
+                Err(InconsistentFlowPlane(i))?;
             }
             Plane::XZ if in_info != (true, true) => {
-                let err = anyhow::Error::from(InconsistentFlowPlane(i));
-                return Err(err);
+                Err(InconsistentFlowPlane(i))?;
             }
             _ => {}
         }

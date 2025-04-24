@@ -18,18 +18,15 @@ type Flow = hashbrown::HashMap<usize, usize>;
 fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
     for (&i, &fi) in f {
         if layer[i] <= layer[fi] {
-            let err = anyhow::Error::from(InconsistentFlowOrder(i, fi));
-            return Err(err);
+            Err(InconsistentFlowOrder(i, fi))?;
         }
         for &j in &g[fi] {
             if i != j && layer[i] <= layer[j] {
-                let err = anyhow::Error::from(InconsistentFlowOrder(i, j));
-                return Err(err);
+                Err(InconsistentFlowOrder(i, j))?;
             }
         }
         if !(g[fi].contains(&i) && g[i].contains(&fi)) {
-            let err = anyhow::Error::from(InconsistentFlowOrder(i, fi));
-            return Err(err);
+            Err(InconsistentFlowOrder(i, fi))?;
         }
     }
     Ok(())
