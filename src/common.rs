@@ -27,6 +27,7 @@ pub(crate) type OrderedNodes = BTreeSet<usize>;
 #[pyclass(name = "FlowValidationMessage")]
 #[derive(Debug, Error)]
 pub enum FlowValidationError {
+    // Keep in sync with Python-side error messages
     #[error("layer-{layer} node {node} inside output nodes")]
     ExcessiveNonZeroLayer { node: usize, layer: usize },
     #[error("zero-layer node {node} outside output nodes")]

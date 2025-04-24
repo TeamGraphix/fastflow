@@ -2,16 +2,14 @@
 
 from __future__ import annotations
 
-import re
 from collections.abc import Iterable, Mapping
 from collections.abc import Set as AbstractSet
 from typing import Generic
 
 import networkx as nx
 
+from fastflow._impl import FlowValidationMessage
 from fastflow.common import P, V
-
-MSG_RE = re.compile(r"^([- a-z]*) \(((?:\d+, )*\d+)\)$")
 
 
 def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> None:
@@ -232,21 +230,36 @@ class IndexMap(Generic[V]):
         """
         return {self.decode(i): li for i, li in enumerate(layer_)}
 
-    def decode_errmsg(self, err: str) -> str:
-        """Decode error message."""
-        m = MSG_RE.match(err)
-        if m is None:
-            msg = f"Cannot parse message: {err}."
-            raise ValueError(msg)
-        body: str = m.group(1)
-        body = body.capitalize()
-
-        def _mapfunc(i: str) -> str:
-            return str(self.decode(int(i)))
-
-        info = [_mapfunc(i) for i in m.group(2).split(", ")]
-        return f"{body} (check {', '.join(info)})."
-
-    def decode_err(self, err: Exception) -> Exception:
-        """Decode error directly."""
-        return type(err)(self.decode_errmsg(str(err)))
+    def decode_err(self, err: ValueError) -> ValueError:
+        """Decode the error message stored in the first ctor argument of ValueError."""
+        raw = err.args[0]
+        # Keep in sync with Rust-side error messages
+        if isinstance(raw, FlowValidationMessage.ExcessiveNonZeroLayer):
+            node = self.decode(raw.node)
+            layer = self.decode(raw.layer)
+            msg = f"Layer-{layer} node {node} inside output nodes."
+        if isinstance(raw, FlowValidationMessage.ExcessiveZeroLayer):
+            node = self.decode(raw.node)
+            msg = f"Zero-layer node {node} outside output nodes."
+        elif isinstance(raw, FlowValidationMessage.InvalidFlowCodomain):
+            node = self.decode(raw.node)
+            msg = f"f({node}) has invalid codomain."
+        elif isinstance(raw, FlowValidationMessage.InvalidFlowDomain):
+            node = self.decode(raw.node)
+            msg = f"f({node}) has invalid domain."
+        elif isinstance(raw, FlowValidationMessage.InvalidMeasurementSpec):
+            node = self.decode(raw.node)
+            msg = f"Node {node} has invalid measurement specification."
+        elif isinstance(raw, FlowValidationMessage.InconsistentFlowOrder):
+            node1 = self.decode(raw.edge[0])
+            node2 = self.decode(raw.edge[1])
+            msg = f"Flow-order inconsistency on edge ({node1}, {node2})."
+        elif isinstance(raw, FlowValidationMessage.InconsistentFlowPlane):
+            node = self.decode(raw.node)
+            msg = f"Broken {raw.plane} measurement on node {node}."
+        elif isinstance(raw, FlowValidationMessage.InconsistentFlowPPlane):
+            node = self.decode(raw.node)
+            msg = f"Broken {raw.pplane} measurement on node {node}."
+        else:
+            raise TypeError  # pragma: no cover
+        return ValueError(msg)

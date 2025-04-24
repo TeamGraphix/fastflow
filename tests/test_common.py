@@ -73,23 +73,3 @@ class TestIndexMap:
         assert fx_indexmap.decode(fx_indexmap.encode("a")) == "a"
         assert fx_indexmap.decode(fx_indexmap.encode("b")) == "b"
         assert fx_indexmap.decode(fx_indexmap.encode("c")) == "c"
-
-    def test_errmsg(self, fx_indexmap: IndexMap[str]) -> None:
-        c0 = fx_indexmap.decode(0)
-        c1 = fx_indexmap.decode(1)
-        c2 = fx_indexmap.decode(2)
-        assert fx_indexmap.decode_errmsg("hoge-fuga piyo (0)") == f"Hoge-fuga piyo (check {c0})."
-        assert fx_indexmap.decode_errmsg("hoge-fuga piyo (1)") == f"Hoge-fuga piyo (check {c1})."
-        assert fx_indexmap.decode_errmsg("hoge-fuga piyo (2)") == f"Hoge-fuga piyo (check {c2})."
-        assert fx_indexmap.decode_errmsg("hoge (0, 1)") == f"Hoge (check {c0}, {c1})."
-        assert fx_indexmap.decode_errmsg("hoge (0, 1, 2)") == f"Hoge (check {c0}, {c1}, {c2})."
-        with pytest.raises(ValueError, match=r"3 not found."):
-            fx_indexmap.decode_errmsg("hoge (3)")
-        with pytest.raises(ValueError, match=r"Cannot parse message:"):
-            fx_indexmap.decode_errmsg("piyo")
-        with pytest.raises(ValueError, match=r"Cannot parse message:"):
-            fx_indexmap.decode_errmsg("Hoge (0)")
-        with pytest.raises(ValueError, match=r"Cannot parse message:"):
-            fx_indexmap.decode_errmsg("hoge. (0)")
-        with pytest.raises(ValueError, match=r"Cannot parse message:"):
-            fx_indexmap.decode_errmsg("hoge (0).")
