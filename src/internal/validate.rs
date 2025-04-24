@@ -6,7 +6,7 @@
 
 use crate::common::{
     FlowValidationError::{
-        ExcessiveNonZeroLayer, ExcessiveZeroLayer, InvalidFlowCodomain, InvalidFlowDomain,
+        self, ExcessiveNonZeroLayer, ExcessiveZeroLayer, InvalidFlowCodomain, InvalidFlowDomain,
     },
     Layer, Nodes,
 };
@@ -18,7 +18,7 @@ use crate::common::{
 /// - `layer`: The layer.
 /// - `oset`: The set of output nodes.
 /// - `iff`: If `true`, `layer[u] == 0` "iff" `u` is in `oset`. Otherwise "if".
-pub fn check_initial(layer: &Layer, oset: &Nodes, iff: bool) -> anyhow::Result<()> {
+pub fn check_initial(layer: &Layer, oset: &Nodes, iff: bool) -> Result<(), FlowValidationError> {
     for (u, &lu) in layer.iter().enumerate() {
         match (oset.contains(&u), lu == 0) {
             (true, false) => {
@@ -50,7 +50,7 @@ pub fn check_domain<'a, 'b>(
     vset: &Nodes,
     iset: &Nodes,
     oset: &Nodes,
-) -> anyhow::Result<()> {
+) -> Result<(), FlowValidationError> {
     let icset = vset - iset;
     let ocset = vset - oset;
     let mut dom = Nodes::new();
