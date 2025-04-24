@@ -97,8 +97,8 @@ class IndexMap(Generic[V]):
             Set of nodes.
             Can be any hashable type.
         """
-        self.__v2i = {v: i for i, v in enumerate(vset)}
-        self.__i2v = {i: v for v, i in self.__v2i.items()}
+    self.__i2v = list(vset)
+    self.__v2i = {v: i for i, v in enumerate(self.__i2v)}
 
     def encode(self, v: V) -> int:
         """Encode `v` to the index.
