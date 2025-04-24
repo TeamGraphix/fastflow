@@ -22,6 +22,7 @@ use pyo3::prelude::*;
 #[pyo3(name = "_impl")]
 #[allow(clippy::similar_names)]
 fn entrypoint(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_class::<common::FlowValidationError>()?;
     // fastflow._impl.flow
     let mod_flow = PyModule::new(m.py(), "flow")?;
     mod_flow.add_function(wrap_pyfunction!(flow::find, &mod_flow)?)?;

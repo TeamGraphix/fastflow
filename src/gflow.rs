@@ -4,7 +4,7 @@ use std::iter;
 
 use fixedbitset::FixedBitSet;
 use hashbrown;
-use pyo3::{exceptions::PyValueError, prelude::*};
+use pyo3::prelude::*;
 
 use crate::{
     common::{
@@ -47,32 +47,41 @@ fn check_definition(
 ) -> Result<(), FlowValidationError> {
     for &i in itertools::chain(f.keys(), planes.keys()) {
         if f.contains_key(&i) != planes.contains_key(&i) {
-            Err(InvalidMeasurementSpec(i))?;
+            Err(InvalidMeasurementSpec { node: i })?;
         }
     }
     for (&i, fi) in f {
         let pi = planes[&i];
         for &fij in fi {
             if i != fij && layer[i] <= layer[fij] {
-                Err(InconsistentFlowOrder(i, fij))?;
+                Err(InconsistentFlowOrder { edge: (i, fij) })?;
             }
         }
         let odd_fi = utils::odd_neighbors(g, fi);
         for &j in &odd_fi {
             if i != j && layer[i] <= layer[j] {
-                Err(InconsistentFlowOrder(i, j))?;
+                Err(InconsistentFlowOrder { edge: (i, j) })?;
             }
         }
         let in_info = (fi.contains(&i), odd_fi.contains(&i));
         match pi {
             Plane::XY if in_info != (false, true) => {
-                Err(InconsistentFlowPlane(i))?;
+                Err(InconsistentFlowPlane {
+                    node: i,
+                    plane: Plane::XY,
+                })?;
             }
             Plane::YZ if in_info != (true, false) => {
-                Err(InconsistentFlowPlane(i))?;
+                Err(InconsistentFlowPlane {
+                    node: i,
+                    plane: Plane::YZ,
+                })?;
             }
             Plane::XZ if in_info != (true, true) => {
-                Err(InconsistentFlowPlane(i))?;
+                Err(InconsistentFlowPlane {
+                    node: i,
+                    plane: Plane::XZ,
+                })?;
             }
             _ => {}
         }
@@ -248,15 +257,9 @@ pub fn verify(
     let f_flatiter = f
         .iter()
         .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
-    if let Err(e) = validate::check_domain(f_flatiter, &vset, &iset, &oset) {
-        return Err(PyValueError::new_err(e.to_string()));
-    }
-    if let Err(e) = validate::check_initial(&layer, &oset, true) {
-        return Err(PyValueError::new_err(e.to_string()));
-    }
-    if let Err(e) = check_definition(&f, &layer, &g, &planes) {
-        return Err(PyValueError::new_err(e.to_string()));
-    }
+    validate::check_domain(f_flatiter, &vset, &iset, &oset)?;
+    validate::check_initial(&layer, &oset, true)?;
+    check_definition(&f, &layer, &g, &planes)?;
     Ok(())
 }
 

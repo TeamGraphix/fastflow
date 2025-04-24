@@ -2,7 +2,10 @@
 
 use std::collections::BTreeSet;
 
+use pyo3::{exceptions::PyValueError, prelude::*};
 use thiserror::Error;
+
+use crate::{gflow::Plane, pflow::PPlane};
 
 /// Set of nodes indexed by 0-based integers.
 pub type Nodes = hashbrown::HashSet<usize>;
@@ -19,23 +22,29 @@ pub type Layer = Vec<usize>;
 pub(crate) type OrderedNodes = BTreeSet<usize>;
 
 /// Error type for flow validation.
+#[pyclass]
 #[derive(Debug, Error)]
 pub enum FlowValidationError {
-    // MEMO: Need to match fastflow._common.MSG_RE
-    #[error("non-zero-layer node inside output nodes ({0})")]
-    ExcessiveNonZeroLayer(usize),
-    #[error("zero-layer node outside output nodes ({0})")]
-    ExcessiveZeroLayer(usize),
-    #[error("flow function has invalid codomain ({0})")]
-    InvalidFlowCodomain(usize),
-    #[error("flow function has invalid domain ({0})")]
-    InvalidFlowDomain(usize),
-    #[error("measurement specification is excessive or insufficient ({0})")]
-    InvalidMeasurementSpec(usize),
-    #[error("flow function and partial order are inconsistent ({0}, {1})")]
-    InconsistentFlowOrder(usize, usize),
-    #[error("flow function and measurement specification are inconsistent ({0})")]
-    InconsistentFlowPlane(usize),
-    #[error("flow function and measurement specification are inconsistent ({0})")]
-    InconsistentFlowPPlane(usize),
+    #[error("layer-{layer} node {node} inside output nodes")]
+    ExcessiveNonZeroLayer { node: usize, layer: usize },
+    #[error("zero-layer node {node} outside output nodes")]
+    ExcessiveZeroLayer { node: usize },
+    #[error("f({node}) has invalid codomain")]
+    InvalidFlowCodomain { node: usize },
+    #[error("f({node}) has invalid domain")]
+    InvalidFlowDomain { node: usize },
+    #[error("node {node} has invalid measurement specification")]
+    InvalidMeasurementSpec { node: usize },
+    #[error("flow-order inconsistency on edge ({}, {})",.edge.0, .edge.1)]
+    InconsistentFlowOrder { edge: (usize, usize) },
+    #[error("broken {plane:?} measurement on node {node}")]
+    InconsistentFlowPlane { node: usize, plane: Plane },
+    #[error("broken {pplane:?} measurement on node {node}")]
+    InconsistentFlowPPlane { node: usize, pplane: PPlane },
+}
+
+impl From<FlowValidationError> for PyErr {
+    fn from(e: FlowValidationError) -> Self {
+        PyValueError::new_err(e)
+    }
 }

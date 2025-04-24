@@ -1,7 +1,7 @@
 //! Maximally-delayed causal flow algorithm.
 
 use hashbrown;
-use pyo3::{exceptions::PyValueError, prelude::*};
+use pyo3::prelude::*;
 
 use crate::{
     common::{
@@ -21,15 +21,15 @@ type Flow = hashbrown::HashMap<usize, usize>;
 fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> Result<(), FlowValidationError> {
     for (&i, &fi) in f {
         if layer[i] <= layer[fi] {
-            Err(InconsistentFlowOrder(i, fi))?;
+            Err(InconsistentFlowOrder { edge: (i, fi) })?;
         }
         for &j in &g[fi] {
             if i != j && layer[i] <= layer[j] {
-                Err(InconsistentFlowOrder(i, j))?;
+                Err(InconsistentFlowOrder { edge: (i, j) })?;
             }
         }
         if !(g[fi].contains(&i) && g[i].contains(&fi)) {
-            Err(InconsistentFlowOrder(i, fi))?;
+            Err(InconsistentFlowOrder { edge: (i, fi) })?;
         }
     }
     Ok(())
@@ -126,15 +126,9 @@ pub fn verify(flow: (Flow, Layer), g: Graph, iset: Nodes, oset: Nodes) -> PyResu
     let (f, layer) = flow;
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();
-    if let Err(e) = validate::check_domain(f.iter(), &vset, &iset, &oset) {
-        return Err(PyValueError::new_err(e.to_string()));
-    }
-    if let Err(e) = validate::check_initial(&layer, &oset, true) {
-        return Err(PyValueError::new_err(e.to_string()));
-    }
-    if let Err(e) = check_definition(&f, &layer, &g) {
-        return Err(PyValueError::new_err(e.to_string()));
-    }
+    validate::check_domain(f.iter(), &vset, &iset, &oset)?;
+    validate::check_initial(&layer, &oset, true)?;
+    check_definition(&f, &layer, &g)?;
     Ok(())
 }
 

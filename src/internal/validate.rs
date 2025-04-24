@@ -22,10 +22,10 @@ pub fn check_initial(layer: &Layer, oset: &Nodes, iff: bool) -> Result<(), FlowV
     for (u, &lu) in layer.iter().enumerate() {
         match (oset.contains(&u), lu == 0) {
             (true, false) => {
-                Err(ExcessiveNonZeroLayer(u))?;
+                Err(ExcessiveNonZeroLayer { node: u, layer: lu })?;
             }
             (false, true) if iff => {
-                Err(ExcessiveZeroLayer(u))?;
+                Err(ExcessiveZeroLayer { node: u })?;
             }
             _ => {}
         }
@@ -57,11 +57,11 @@ pub fn check_domain<'a, 'b>(
     for (&i, &fi) in f_flatiter {
         dom.insert(i);
         if i != fi && !icset.contains(&fi) {
-            Err(InvalidFlowCodomain(i))?;
+            Err(InvalidFlowCodomain { node: i })?;
         }
     }
     if let Some(&i) = dom.symmetric_difference(&ocset).next() {
-        Err(InvalidFlowDomain(i))?;
+        Err(InvalidFlowDomain { node: i })?;
     }
     Ok(())
 }

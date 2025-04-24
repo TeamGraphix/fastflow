@@ -4,12 +4,12 @@ use std::iter;
 
 use fixedbitset::FixedBitSet;
 use hashbrown;
-use pyo3::{exceptions::PyValueError, prelude::*};
+use pyo3::prelude::*;
 
 use crate::{
     common::{
         FlowValidationError::{
-            self, InconsistentFlowOrder, InconsistentFlowPlane, InvalidMeasurementSpec,
+            self, InconsistentFlowOrder, InconsistentFlowPPlane, InvalidMeasurementSpec,
         },
         Graph, Layer, Nodes, OrderedNodes,
     },
@@ -44,7 +44,7 @@ fn check_definition(
 ) -> Result<(), FlowValidationError> {
     for &i in itertools::chain(f.keys(), pplanes.keys()) {
         if f.contains_key(&i) != pplanes.contains_key(&i) {
-            Err(InvalidMeasurementSpec(i))?;
+            Err(InvalidMeasurementSpec { node: i })?;
         }
     }
     for (&i, fi) in f {
@@ -52,7 +52,7 @@ fn check_definition(
         for &fij in fi {
             match (i != fij, layer[i] <= layer[fij]) {
                 (true, true) if !matches!(pplanes[&fij], PPlane::X | PPlane::Y) => {
-                    Err(InconsistentFlowOrder(i, fij))?;
+                    Err(InconsistentFlowOrder { edge: (i, fij) })?;
                 }
                 (false, false) => unreachable!("layer[i] == layer[i]"),
                 _ => {}
@@ -62,7 +62,7 @@ fn check_definition(
         for &j in &odd_fi {
             match (i != j, layer[i] <= layer[j]) {
                 (true, true) if !matches!(pplanes[&j], PPlane::Y | PPlane::Z) => {
-                    Err(InconsistentFlowOrder(i, j))?;
+                    Err(InconsistentFlowOrder { edge: (i, j) })?;
                 }
                 (false, false) => unreachable!("layer[i] == layer[i]"),
                 _ => {}
@@ -70,28 +70,49 @@ fn check_definition(
         }
         for &j in fi.symmetric_difference(&odd_fi) {
             if pplanes.get(&j) == Some(&PPlane::Y) && i != j && layer[i] <= layer[j] {
-                Err(InconsistentFlowPlane(j))?;
+                Err(InconsistentFlowPPlane {
+                    node: i,
+                    pplane: PPlane::Y,
+                })?;
             }
         }
         let in_info = (fi.contains(&i), odd_fi.contains(&i));
         match pi {
             PPlane::XY if in_info != (false, true) => {
-                Err(InconsistentFlowPlane(i))?;
+                Err(InconsistentFlowPPlane {
+                    node: i,
+                    pplane: PPlane::XY,
+                })?;
             }
             PPlane::YZ if in_info != (true, false) => {
-                Err(InconsistentFlowPlane(i))?;
+                Err(InconsistentFlowPPlane {
+                    node: i,
+                    pplane: PPlane::YZ,
+                })?;
             }
             PPlane::XZ if in_info != (true, true) => {
-                Err(InconsistentFlowPlane(i))?;
+                Err(InconsistentFlowPPlane {
+                    node: i,
+                    pplane: PPlane::XZ,
+                })?;
             }
             PPlane::X if !in_info.1 => {
-                Err(InconsistentFlowPlane(i))?;
+                Err(InconsistentFlowPPlane {
+                    node: i,
+                    pplane: PPlane::X,
+                })?;
             }
             PPlane::Y if !(in_info.0 ^ in_info.1) => {
-                Err(InconsistentFlowPlane(i))?;
+                Err(InconsistentFlowPPlane {
+                    node: i,
+                    pplane: PPlane::Y,
+                })?;
             }
             PPlane::Z if !in_info.0 => {
-                Err(InconsistentFlowPlane(i))?;
+                Err(InconsistentFlowPPlane {
+                    node: i,
+                    pplane: PPlane::Z,
+                })?;
             }
             _ => {}
         }
@@ -424,14 +445,9 @@ pub fn verify(
     let f_flatiter = f
         .iter()
         .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
-    validate::check_domain(f_flatiter, &vset, &iset, &oset)
-        .map_err(|e| PyValueError::new_err(e.to_string()))?;
-    if let Err(e) = validate::check_initial(&layer, &oset, false) {
-        return Err(PyValueError::new_err(e.to_string()));
-    }
-    if let Err(e) = check_definition(&f, &layer, &g, &pplanes) {
-        return Err(PyValueError::new_err(e.to_string()));
-    }
+    validate::check_domain(f_flatiter, &vset, &iset, &oset)?;
+    validate::check_initial(&layer, &oset, false)?;
+    check_definition(&f, &layer, &g, &pplanes)?;
     Ok(())
 }
 
