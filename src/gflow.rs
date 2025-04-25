@@ -273,7 +273,7 @@ mod tests {
     #[test_log::test]
     fn test_find_case0() {
         let TestCase { g, iset, oset } = test_utils::CASE0.clone();
-        let planes = measurements! {};
+        let planes = map! {};
         let flen = g.len() - oset.len();
         let (f, layer) = find(g.clone(), iset.clone(), oset.clone(), planes.clone()).unwrap();
         assert_eq!(f.len(), flen);
@@ -284,7 +284,7 @@ mod tests {
     #[test_log::test]
     fn test_find_case1() {
         let TestCase { g, iset, oset } = test_utils::CASE1.clone();
-        let planes = measurements! {
+        let planes = map! {
             0: Plane::XY,
             1: Plane::XY,
             2: Plane::XY,
@@ -304,7 +304,7 @@ mod tests {
     #[test_log::test]
     fn test_find_case2() {
         let TestCase { g, iset, oset } = test_utils::CASE2.clone();
-        let planes = measurements! {
+        let planes = map! {
             0: Plane::XY,
             1: Plane::XY,
             2: Plane::XY,
@@ -324,7 +324,7 @@ mod tests {
     #[test_log::test]
     fn test_find_case3() {
         let TestCase { g, iset, oset } = test_utils::CASE3.clone();
-        let planes = measurements! {
+        let planes = map! {
             0: Plane::XY,
             1: Plane::XY,
             2: Plane::XY
@@ -342,7 +342,7 @@ mod tests {
     #[test_log::test]
     fn test_find_case4() {
         let TestCase { g, iset, oset } = test_utils::CASE4.clone();
-        let planes = measurements! {
+        let planes = map! {
             0: Plane::XY,
             1: Plane::XY,
             2: Plane::XZ,
@@ -362,7 +362,7 @@ mod tests {
     #[test_log::test]
     fn test_find_case5() {
         let TestCase { g, iset, oset } = test_utils::CASE5.clone();
-        let planes = measurements! {
+        let planes = map! {
             0: Plane::XY,
             1: Plane::XY
         };
@@ -372,7 +372,7 @@ mod tests {
     #[test_log::test]
     fn test_find_case6() {
         let TestCase { g, iset, oset } = test_utils::CASE6.clone();
-        let planes = measurements! {
+        let planes = map! {
             0: Plane::XY,
             1: Plane::XY,
             2: Plane::XY,
@@ -384,7 +384,7 @@ mod tests {
     #[test_log::test]
     fn test_find_case7() {
         let TestCase { g, iset, oset } = test_utils::CASE7.clone();
-        let planes = measurements! {
+        let planes = map! {
             0: Plane::YZ,
             1: Plane::XZ,
             2: Plane::XY,
@@ -396,7 +396,7 @@ mod tests {
     #[test_log::test]
     fn test_find_case8() {
         let TestCase { g, iset, oset } = test_utils::CASE8.clone();
-        let planes = measurements! {
+        let planes = map! {
             0: Plane::YZ,
             1: Plane::XZ,
             2: Plane::XY

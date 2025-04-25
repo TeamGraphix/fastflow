@@ -5,13 +5,22 @@ use std::sync::LazyLock;
 use crate::common::{Graph, Nodes};
 
 pub mod exports {
-    pub use hashbrown::HashMap;
+    pub use hashbrown::{HashMap, HashSet};
 }
 
-macro_rules! measurements {
+macro_rules! map {
     ($($u:literal: $v:expr),*) => {
-        $crate::internal::test_utils::exports::HashMap::from_iter([$(($u, ($v).into())),*].iter().copied())
+        // Dirty .expect to handle i32 -> usize conversion
+        $crate::internal::test_utils::exports::HashMap::from_iter([$(($u, ($v).try_into().expect("dynamic coersion"))),*].into_iter())
     };
+    ($($u:literal: $v:expr),*,) => {map! { $($u: $v),* }};
+}
+
+macro_rules! set {
+    ($($u:literal),*) => {
+        $crate::internal::test_utils::exports::HashSet::from_iter([$($u),*].into_iter())
+    };
+    ($($u:literal),*,) => {set! { $($u),* }};
 }
 
 /// Creates a undirected graph from edges.
