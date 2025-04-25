@@ -459,6 +459,95 @@ mod tests {
     use crate::internal::test_utils::{self, TestCase};
 
     #[test_log::test]
+    fn test_check_definition_ng() {
+        // Missing Plane specification
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{1} },
+                &vec![1, 0],
+                &test_utils::graph(&[(0, 1)]),
+                &map! {},
+            ),
+            Err(InvalidMeasurementSpec { node: 0 })
+        );
+        // Violate 0 -> f(0) = 1
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{1} },
+                &vec![0, 0],
+                &test_utils::graph(&[(0, 1)]),
+                &map! { 0: PPlane::XY },
+            ),
+            Err(InconsistentFlowOrder { nodes: (0, 1) })
+        );
+        // Violate 1 in nb(f(0)) = nb(2) => 0 == 1 or 0 -> 1
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{2}, 1: set!{2} },
+                &vec![1, 1, 0],
+                &test_utils::graph(&[(0, 1), (1, 2)]),
+                &map! {
+                    0: PPlane::XY,
+                    1: PPlane::XY
+                },
+            ),
+            Err(InconsistentFlowOrder { nodes: (0, 1) })
+        );
+        // Violate XY: 0 in f(0)
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{0} },
+                &vec![1, 0],
+                &test_utils::graph(&[(0, 1)]),
+                &map! { 0: PPlane::XY },
+            ),
+            Err(InconsistentFlowPPlane {
+                node: 0,
+                pplane: PPlane::XY
+            })
+        );
+        // Violate YZ: 0 in Odd(f(0))
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{1} },
+                &vec![1, 0],
+                &test_utils::graph(&[(0, 1)]),
+                &map! { 0: PPlane::YZ },
+            ),
+            Err(InconsistentFlowPPlane {
+                node: 0,
+                pplane: PPlane::YZ
+            })
+        );
+        // Violate XZ: 0 not in Odd(f(0)) and in f(0)
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{0} },
+                &vec![1, 0],
+                &test_utils::graph(&[(0, 1)]),
+                &map! { 0: PPlane::XZ },
+            ),
+            Err(InconsistentFlowPPlane {
+                node: 0,
+                pplane: PPlane::XZ
+            })
+        );
+        // Violate XZ: 0 in Odd(f(0)) and not in f(0)
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{1} },
+                &vec![1, 0],
+                &test_utils::graph(&[(0, 1)]),
+                &map! { 0: PPlane::XZ },
+            ),
+            Err(InconsistentFlowPPlane {
+                node: 0,
+                pplane: PPlane::XZ
+            })
+        );
+    }
+
+    #[test_log::test]
     fn test_find_case0() {
         let TestCase { g, iset, oset } = test_utils::CASE0.clone();
         let pplanes = map! {};

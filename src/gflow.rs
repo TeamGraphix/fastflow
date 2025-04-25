@@ -344,6 +344,19 @@ mod tests {
                 plane: Plane::XZ
             })
         );
+        // Violate XZ: 0 in Odd(f(0)) and not in f(0)
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{1} },
+                &vec![1, 0],
+                &test_utils::graph(&[(0, 1)]),
+                &map! { 0: Plane::XZ },
+            ),
+            Err(InconsistentFlowPlane {
+                node: 0,
+                plane: Plane::XZ
+            })
+        );
     }
 
     #[test_log::test]
