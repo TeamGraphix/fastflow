@@ -545,6 +545,45 @@ mod tests {
                 pplane: PPlane::XZ
             })
         );
+        // Violate X: 0 not in Odd(f(0))
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{0} },
+                &vec![1, 0],
+                &test_utils::graph(&[(0, 1)]),
+                &map! { 0: PPlane::X },
+            ),
+            Err(InconsistentFlowPPlane {
+                node: 0,
+                pplane: PPlane::X
+            })
+        );
+        // Violate Z: 0 not in f(0)
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{1} },
+                &vec![1, 0],
+                &test_utils::graph(&[(0, 1)]),
+                &map! { 0: PPlane::Z },
+            ),
+            Err(InconsistentFlowPPlane {
+                node: 0,
+                pplane: PPlane::Z
+            })
+        );
+        // Violate Y: 0 in f(0) and 0 in Odd(f(0))
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{0, 1} },
+                &vec![1, 0],
+                &test_utils::graph(&[(0, 1)]),
+                &map! { 0: PPlane::Y },
+            ),
+            Err(InconsistentFlowPPlane {
+                node: 0,
+                pplane: PPlane::Y
+            })
+        );
     }
 
     #[test_log::test]
