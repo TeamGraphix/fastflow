@@ -91,3 +91,7 @@ class TestIndexMap:
     def test_decode_err(self, fx_indexmap: IndexMap[str], emsg: ValueError) -> None:
         e_ = fx_indexmap.decode_err(ValueError(emsg))
         assert isinstance(e_, ValueError)
+
+    def test_encode_layer_missing(self, fx_indexmap: IndexMap[str]) -> None:
+        with pytest.raises(ValueError, match=r"Layers must be specified for all nodes\."):
+            fx_indexmap.encode_layer({"a": 0, "b": 1})

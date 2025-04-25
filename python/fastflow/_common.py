@@ -7,6 +7,7 @@ from collections.abc import Set as AbstractSet
 from typing import Generic
 
 import networkx as nx
+from typing_extensions import TypeGuard
 
 from fastflow._impl import FlowValidationMessage
 from fastflow.common import P, V
@@ -157,6 +158,10 @@ class IndexMap(Generic[V]):
         """
         return {self.encode(i): self.encode_set(si) for i, si in f.items()}
 
+    @staticmethod
+    def _sentinelcheck(x: list[int | None]) -> TypeGuard[list[int]]:
+        return all(x is not None for x in x)
+
     def encode_layer(self, layer: Mapping[V, int]) -> list[int]:
         """Encode layer.
 
@@ -168,12 +173,13 @@ class IndexMap(Generic[V]):
         -----
         `list` is used instead of `dict` here because no missing values are allowed here.
         """
-        # Use -1 as sentinel
-        layer_ = [-1 for _ in range(len(self.__v2i))]
+        # Use None as sentinel
+        layer_: list[int | None] = [None for _ in range(len(self.__v2i))]
         for v, li in layer.items():
             layer_[self.encode(v)] = li
-        if any(li == -1 for li in layer_):
-            raise RuntimeError  # pragma: no cover
+        if not self._sentinelcheck(layer_):
+            msg = "Layers must be specified for all nodes."
+            raise ValueError(msg)
         return layer_
 
     def decode(self, i: int) -> V:
