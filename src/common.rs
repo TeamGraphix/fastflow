@@ -25,7 +25,7 @@ pub(crate) type OrderedNodes = BTreeSet<usize>;
 ///
 /// Python name does not contain `Error` as it is not a subclass of `Exception`.
 #[pyclass(name = "FlowValidationMessage")]
-#[derive(Debug, Error)]
+#[derive(Debug, Error, PartialEq, Eq, Clone, Hash)]
 pub enum FlowValidationError {
     // Keep in sync with Python-side error messages
     #[error("layer-{layer} node {node} inside output nodes")]

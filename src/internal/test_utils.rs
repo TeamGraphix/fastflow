@@ -15,7 +15,7 @@ macro_rules! measurements {
 }
 
 /// Creates a undirected graph from edges.
-fn graph<const N: usize>(edges: &[(usize, usize); N]) -> Graph {
+pub fn graph<const N: usize>(edges: &[(usize, usize); N]) -> Graph {
     let n = edges
         .iter()
         .map(|&(u, v)| u.max(v) + 1)
