@@ -236,8 +236,7 @@ class IndexMap(Generic[V]):
         # Keep in sync with Rust-side error messages
         if isinstance(raw, FlowValidationMessage.ExcessiveNonZeroLayer):
             node = self.decode(raw.node)
-            layer = self.decode(raw.layer)
-            msg = f"Layer-{layer} node {node} inside output nodes."
+            msg = f"Layer-{raw.layer} node {node} inside output nodes."
         elif isinstance(raw, FlowValidationMessage.ExcessiveZeroLayer):
             node = self.decode(raw.node)
             msg = f"Zero-layer node {node} outside output nodes."
