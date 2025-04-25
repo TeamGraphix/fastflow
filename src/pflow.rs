@@ -322,7 +322,7 @@ fn find_impl<const K: BranchKind>(ctx: &mut PFlowContext) -> bool {
 /// - Arguments are **NOT** verified.
 #[pyfunction]
 #[tracing::instrument]
-#[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
+#[allow(clippy::needless_pass_by_value)]
 pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFlow, Layer)> {
     let yset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::Y));
     let xyset = matching_nodes(&pplanes, |pp| matches!(pp, PPlane::X | PPlane::Y));

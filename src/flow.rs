@@ -53,7 +53,7 @@ fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> Result<(), FlowValida
 /// - Arguments are **NOT** verified.
 #[pyfunction]
 #[tracing::instrument]
-#[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
+#[allow(clippy::needless_pass_by_value)]
 pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();
