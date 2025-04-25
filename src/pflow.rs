@@ -51,7 +51,7 @@ fn check_definition(
         let pi = pplanes[&i];
         for &fij in fi {
             match (i != fij, layer[i] <= layer[fij]) {
-                (true, true) if !matches!(pplanes[&fij], PPlane::X | PPlane::Y) => {
+                (true, true) if !matches!(pplanes.get(&fij), Some(&PPlane::X | &PPlane::Y)) => {
                     Err(InconsistentFlowOrder { nodes: (i, fij) })?;
                 }
                 (false, false) => unreachable!("layer[i] == layer[i]"),
@@ -61,7 +61,7 @@ fn check_definition(
         let odd_fi = utils::odd_neighbors(g, fi);
         for &j in &odd_fi {
             match (i != j, layer[i] <= layer[j]) {
-                (true, true) if !matches!(pplanes[&j], PPlane::Y | PPlane::Z) => {
+                (true, true) if !matches!(pplanes.get(&j), Some(&PPlane::Y | &PPlane::Z)) => {
                     Err(InconsistentFlowOrder { nodes: (i, j) })?;
                 }
                 (false, false) => unreachable!("layer[i] == layer[i]"),
