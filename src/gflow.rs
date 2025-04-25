@@ -11,7 +11,7 @@ use crate::{
         FlowValidationError::{
             self, InconsistentFlowOrder, InconsistentFlowPlane, InvalidMeasurementSpec,
         },
-        Graph, Layer, Nodes, OrderedNodes,
+        Graph, Layer, Nodes, OrderedNodes, FATAL_MSG,
     },
     internal::{
         gf2_linalg::GF2Solver,
@@ -220,15 +220,15 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: Planes) -> Option<(GFlow
         tracing::debug!("gflow found");
         tracing::debug!("gflow: {f:?}");
         tracing::debug!("layer: {layer:?}");
-        // TODO: Uncomment once ready
-        // if cfg!(debug_assertions) {
-        let f_flatiter = f
-            .iter()
-            .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
-        validate::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
-        validate::check_initial(&layer, &oset, true).unwrap();
-        check_definition(&f, &layer, &g, &planes).unwrap();
-        // }
+        // TODO: Remove this block once stabilized
+        {
+            let f_flatiter = f
+                .iter()
+                .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
+            validate::check_domain(f_flatiter, &vset, &iset, &oset).expect(FATAL_MSG);
+            validate::check_initial(&layer, &oset, true).expect(FATAL_MSG);
+            check_definition(&f, &layer, &g, &planes).expect(FATAL_MSG);
+        }
         Some((f, layer))
     } else {
         tracing::debug!("gflow not found");

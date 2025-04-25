@@ -51,3 +51,12 @@ impl From<FlowValidationError> for PyErr {
         PyValueError::new_err(e)
     }
 }
+
+// TODO: Remove once stabilized
+pub const FATAL_MSG: &str = "\
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!            POST VERIFICATION FAILED            !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+Please report to the developers via GitHub:
+https://github.com/TeamGraphix/fastflow/issues/new";

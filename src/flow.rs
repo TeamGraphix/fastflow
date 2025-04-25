@@ -6,7 +6,7 @@ use pyo3::prelude::*;
 use crate::{
     common::{
         FlowValidationError::{self, InconsistentFlowOrder},
-        Graph, Layer, Nodes,
+        Graph, Layer, Nodes, FATAL_MSG,
     },
     internal::{utils::InPlaceSetDiff, validate},
 };
@@ -101,12 +101,12 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         tracing::debug!("flow found");
         tracing::debug!("flow : {f:?}");
         tracing::debug!("layer: {layer:?}");
-        // TODO: Uncomment once ready
-        // if cfg!(debug_assertions) {
-        validate::check_domain(f.iter(), &vset, &iset, &oset_orig).unwrap();
-        validate::check_initial(&layer, &oset_orig, true).unwrap();
-        check_definition(&f, &layer, &g).unwrap();
-        // }
+        // TODO: Remove this block once stabilized
+        {
+            validate::check_domain(f.iter(), &vset, &iset, &oset_orig).expect(FATAL_MSG);
+            validate::check_initial(&layer, &oset_orig, true).expect(FATAL_MSG);
+            check_definition(&f, &layer, &g).expect(FATAL_MSG);
+        }
         Some((f, layer))
     } else {
         tracing::debug!("flow not found");

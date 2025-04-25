@@ -11,7 +11,7 @@ use crate::{
         FlowValidationError::{
             self, InconsistentFlowOrder, InconsistentFlowPPlane, InvalidMeasurementSpec,
         },
-        Graph, Layer, Nodes, OrderedNodes,
+        Graph, Layer, Nodes, OrderedNodes, FATAL_MSG,
     },
     internal::{
         gf2_linalg::GF2Solver,
@@ -408,15 +408,15 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, pplanes: PPlanes) -> Option<(PFl
         tracing::debug!("pflow found");
         tracing::debug!("pflow: {f:?}");
         tracing::debug!("layer: {layer:?}");
-        // TODO: Uncomment once ready
-        // if cfg!(debug_assertions) {
-        let f_flatiter = f
-            .iter()
-            .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
-        validate::check_domain(f_flatiter, &vset, &iset, &oset).unwrap();
-        validate::check_initial(&layer, &oset, false).unwrap();
-        check_definition(&f, &layer, &g, &pplanes).unwrap();
-        // }
+        // TODO: Remove this block once stabilized
+        {
+            let f_flatiter = f
+                .iter()
+                .flat_map(|(i, fi)| Iterator::zip(iter::repeat(i), fi.iter()));
+            validate::check_domain(f_flatiter, &vset, &iset, &oset).expect(FATAL_MSG);
+            validate::check_initial(&layer, &oset, false).expect(FATAL_MSG);
+            check_definition(&f, &layer, &g, &pplanes).expect(FATAL_MSG);
+        }
         Some((f, layer))
     } else {
         tracing::debug!("pflow not found");
