@@ -238,7 +238,7 @@ class IndexMap(Generic[V]):
             node = self.decode(raw.node)
             layer = self.decode(raw.layer)
             msg = f"Layer-{layer} node {node} inside output nodes."
-        if isinstance(raw, FlowValidationMessage.ExcessiveZeroLayer):
+        elif isinstance(raw, FlowValidationMessage.ExcessiveZeroLayer):
             node = self.decode(raw.node)
             msg = f"Zero-layer node {node} outside output nodes."
         elif isinstance(raw, FlowValidationMessage.InvalidFlowCodomain):
