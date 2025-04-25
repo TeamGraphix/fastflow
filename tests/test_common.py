@@ -4,7 +4,8 @@ import networkx as nx
 import pytest
 from fastflow import _common
 from fastflow._common import IndexMap
-from fastflow.common import Plane
+from fastflow._impl import FlowValidationMessage
+from fastflow.common import Plane, PPlane
 
 
 def test_check_graph_ng_g() -> None:
@@ -73,3 +74,20 @@ class TestIndexMap:
         assert fx_indexmap.decode(fx_indexmap.encode("a")) == "a"
         assert fx_indexmap.decode(fx_indexmap.encode("b")) == "b"
         assert fx_indexmap.decode(fx_indexmap.encode("c")) == "c"
+
+    @pytest.mark.parametrize(
+        "emsg",
+        [
+            FlowValidationMessage.ExcessiveNonZeroLayer(0, 1),
+            FlowValidationMessage.ExcessiveZeroLayer(0),
+            FlowValidationMessage.InvalidFlowCodomain(0),
+            FlowValidationMessage.InvalidFlowDomain(0),
+            FlowValidationMessage.InvalidMeasurementSpec(0),
+            FlowValidationMessage.InconsistentFlowOrder((0, 1)),
+            FlowValidationMessage.InconsistentFlowPlane(0, Plane.XY),
+            FlowValidationMessage.InconsistentFlowPPlane(0, PPlane.XY),
+        ],
+    )
+    def test_decode_err(self, fx_indexmap: IndexMap[str], emsg: ValueError) -> None:
+        e_ = fx_indexmap.decode_err(ValueError(emsg))
+        assert isinstance(e_, ValueError)
