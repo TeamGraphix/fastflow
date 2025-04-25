@@ -494,11 +494,7 @@ mod tests {
     fn test_move_pivot_impl() {
         for r in 0..3 {
             for c in 0..3 {
-                let mut work = vec![
-                    FixedBitSet::with_capacity_and_blocks(4, vec![0b0000]),
-                    FixedBitSet::with_capacity_and_blocks(4, vec![0b0000]),
-                    FixedBitSet::with_capacity_and_blocks(4, vec![0b0000]),
-                ];
+                let mut work = vec![FixedBitSet::with_capacity_and_blocks(4, vec![0b0000]); 3];
                 work[r].insert(c);
                 let mut sol = GF2Solver::attach(&mut work, 1);
                 sol.move_pivot_impl(0, r, c);
