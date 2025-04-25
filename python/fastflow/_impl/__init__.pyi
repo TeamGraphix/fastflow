@@ -29,7 +29,7 @@ class FlowValidationMessage:
         def __init__(self, node: int) -> None: ...
 
     class InconsistentFlowOrder:
-        edge: tuple[int, int]
+        nodes: tuple[int, int]
 
         def __init__(self, edge: tuple[int, int]) -> None: ...
 

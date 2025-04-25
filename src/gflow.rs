@@ -54,13 +54,13 @@ fn check_definition(
         let pi = planes[&i];
         for &fij in fi {
             if i != fij && layer[i] <= layer[fij] {
-                Err(InconsistentFlowOrder { edge: (i, fij) })?;
+                Err(InconsistentFlowOrder { nodes: (i, fij) })?;
             }
         }
         let odd_fi = utils::odd_neighbors(g, fi);
         for &j in &odd_fi {
             if i != j && layer[i] <= layer[j] {
-                Err(InconsistentFlowOrder { edge: (i, j) })?;
+                Err(InconsistentFlowOrder { nodes: (i, j) })?;
             }
         }
         let in_info = (fi.contains(&i), odd_fi.contains(&i));

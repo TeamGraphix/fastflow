@@ -256,9 +256,9 @@ class IndexMap(Generic[V]):
             node = self.decode(raw.node)
             msg = f"Node {node} has invalid measurement specification."
         elif isinstance(raw, FlowValidationMessage.InconsistentFlowOrder):
-            node1 = self.decode(raw.edge[0])
-            node2 = self.decode(raw.edge[1])
-            msg = f"Flow-order inconsistency on edge ({node1}, {node2})."
+            node1 = self.decode(raw.nodes[0])
+            node2 = self.decode(raw.nodes[1])
+            msg = f"Flow-order inconsistency on nodes ({node1}, {node2})."
         elif isinstance(raw, FlowValidationMessage.InconsistentFlowPlane):
             node = self.decode(raw.node)
             msg = f"Broken {raw.plane} measurement on node {node}."

@@ -38,8 +38,8 @@ pub enum FlowValidationError {
     InvalidFlowDomain { node: usize },
     #[error("node {node} has invalid measurement specification")]
     InvalidMeasurementSpec { node: usize },
-    #[error("flow-order inconsistency on edge ({}, {})",.edge.0, .edge.1)]
-    InconsistentFlowOrder { edge: (usize, usize) },
+    #[error("flow-order inconsistency on nodes ({}, {})",.nodes.0, .nodes.1)]
+    InconsistentFlowOrder { nodes: (usize, usize) },
     #[error("broken {plane:?} measurement on node {node}")]
     InconsistentFlowPlane { node: usize, plane: Plane },
     #[error("broken {pplane:?} measurement on node {node}")]

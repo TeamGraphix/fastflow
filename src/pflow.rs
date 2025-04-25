@@ -52,7 +52,7 @@ fn check_definition(
         for &fij in fi {
             match (i != fij, layer[i] <= layer[fij]) {
                 (true, true) if !matches!(pplanes[&fij], PPlane::X | PPlane::Y) => {
-                    Err(InconsistentFlowOrder { edge: (i, fij) })?;
+                    Err(InconsistentFlowOrder { nodes: (i, fij) })?;
                 }
                 (false, false) => unreachable!("layer[i] == layer[i]"),
                 _ => {}
@@ -62,7 +62,7 @@ fn check_definition(
         for &j in &odd_fi {
             match (i != j, layer[i] <= layer[j]) {
                 (true, true) if !matches!(pplanes[&j], PPlane::Y | PPlane::Z) => {
-                    Err(InconsistentFlowOrder { edge: (i, j) })?;
+                    Err(InconsistentFlowOrder { nodes: (i, j) })?;
                 }
                 (false, false) => unreachable!("layer[i] == layer[i]"),
                 _ => {}

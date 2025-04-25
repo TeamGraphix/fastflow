@@ -21,15 +21,15 @@ type Flow = hashbrown::HashMap<usize, usize>;
 fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> Result<(), FlowValidationError> {
     for (&i, &fi) in f {
         if layer[i] <= layer[fi] {
-            Err(InconsistentFlowOrder { edge: (i, fi) })?;
+            Err(InconsistentFlowOrder { nodes: (i, fi) })?;
         }
         for &j in &g[fi] {
             if i != j && layer[i] <= layer[j] {
-                Err(InconsistentFlowOrder { edge: (i, j) })?;
+                Err(InconsistentFlowOrder { nodes: (i, j) })?;
             }
         }
         if !(g[fi].contains(&i) && g[i].contains(&fi)) {
-            Err(InconsistentFlowOrder { edge: (i, fi) })?;
+            Err(InconsistentFlowOrder { nodes: (i, fi) })?;
         }
     }
     Ok(())
