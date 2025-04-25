@@ -140,6 +140,37 @@ mod tests {
     use crate::internal::test_utils::{self, TestCase};
 
     #[test_log::test]
+    fn test_check_definition_ng() {
+        // Violate 0 -> f(0) = 1
+        assert_eq!(
+            check_definition(
+                &Flow::from([(0, 1)]),
+                &vec![0, 0],
+                &test_utils::graph(&[(0, 1)])
+            ),
+            Err(InconsistentFlowOrder { nodes: (0, 1) })
+        );
+        // Violate 1 in nb(f(0)) = nb(2) => 0 == 1 or 0 -> 1
+        assert_eq!(
+            check_definition(
+                &Flow::from([(0, 2)]),
+                &vec![1, 1, 0],
+                &test_utils::graph(&[(0, 1), (1, 2)])
+            ),
+            Err(InconsistentFlowOrder { nodes: (0, 1) })
+        );
+        // Violate 0 in nb(f(0)) = nb(2)
+        assert_eq!(
+            check_definition(
+                &Flow::from([(0, 2)]),
+                &vec![2, 1, 0],
+                &test_utils::graph(&[(0, 1), (1, 2)])
+            ),
+            Err(InconsistentFlowOrder { nodes: (0, 2) })
+        );
+    }
+
+    #[test_log::test]
     fn test_find_case0() {
         let TestCase { g, iset, oset } = test_utils::CASE0.clone();
         let flen = g.len() - oset.len();
