@@ -493,6 +493,19 @@ mod tests {
             ),
             Err(InconsistentFlowOrder { nodes: (0, 1) })
         );
+        // Violate Y: 0 != 1 and not 0 -> 1 and 1 in f(0) ^ Odd(f(0))
+        assert_eq!(
+            check_definition(
+                &map! { 0: set!{1}, 1: set!{2} },
+                &vec![1, 1, 0],
+                &test_utils::graph(&[(0, 1), (1, 2)]),
+                &map! { 0: PPlane::XY, 1: PPlane::Y },
+            ),
+            Err(InconsistentFlowPPlane {
+                node: 0,
+                pplane: PPlane::Y,
+            })
+        );
         // Violate XY: 0 in f(0)
         assert_eq!(
             check_definition(
