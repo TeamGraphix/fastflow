@@ -442,6 +442,71 @@ mod tests {
         sol.solve_in_place(&mut out, 9);
     }
 
+    #[test]
+    fn test_idempotent() {
+        let mut work = vec![
+            // 101
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b101]),
+            // 110
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b110]),
+        ];
+        let mut sol = GF2Solver::attach(&mut work, 1);
+        assert_eq!(sol.rank, None);
+        let dummy_rank = 99;
+        // Set invalid value
+        sol.rank = Some(dummy_rank);
+        // No-op
+        sol.eliminate();
+        assert_eq!(sol.rank, Some(dummy_rank));
+    }
+
+    #[test]
+    fn test_validate_afterlower_ng() {
+        let mut work = vec![
+            // 001
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b001]),
+            // 010
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b011]),
+        ];
+        let mut sol = GF2Solver::attach(&mut work, 1);
+        // Exact value
+        sol.rank = Some(2);
+        assert!(!sol.validate_afterlower());
+        assert!(!sol.validate_afterupper());
+    }
+
+    #[test]
+    fn test_validate_afterupper_ng() {
+        let mut work = vec![
+            // 001
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b011]),
+            // 010
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b010]),
+        ];
+        let mut sol = GF2Solver::attach(&mut work, 1);
+        // Exact value
+        sol.rank = Some(2);
+        assert!(sol.validate_afterlower());
+        assert!(!sol.validate_afterupper());
+    }
+
+    #[test]
+    fn test_move_pivot_impl() {
+        for r in 0..3 {
+            for c in 0..3 {
+                let mut work = vec![
+                    FixedBitSet::with_capacity_and_blocks(4, vec![0b0000]),
+                    FixedBitSet::with_capacity_and_blocks(4, vec![0b0000]),
+                    FixedBitSet::with_capacity_and_blocks(4, vec![0b0000]),
+                ];
+                work[r].insert(c);
+                let mut sol = GF2Solver::attach(&mut work, 1);
+                sol.move_pivot_impl(0, r, c);
+                assert!(sol.work[0][0]);
+            }
+        }
+    }
+
     #[cfg(not(miri))]
     const REP: usize = 1000;
     #[cfg(miri)]
