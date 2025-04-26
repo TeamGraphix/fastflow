@@ -168,7 +168,11 @@ class IndexMap(Generic[V]):
         -----
         `list` is used instead of `dict` here because no missing values are allowed here.
         """
-        return [layer[v] for v in self.__i2v]
+        try:
+            return [layer[v] for v in self.__i2v]
+        except KeyError:
+            msg = "Layers must be specified for all nodes."
+            raise ValueError(msg) from None
 
     def decode(self, i: int) -> V:
         """Decode the index.
