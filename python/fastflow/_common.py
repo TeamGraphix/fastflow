@@ -174,13 +174,7 @@ class IndexMap(Generic[V]):
         `list` is used instead of `dict` here because no missing values are allowed here.
         """
         # Use None as sentinel
-        layer_: list[int | None] = [None for _ in range(len(self.__v2i))]
-        for v, li in layer.items():
-            layer_[self.encode(v)] = li
-        if not self._sentinelcheck(layer_):
-            msg = "Layers must be specified for all nodes."
-            raise ValueError(msg)
-        return layer_
+        return [layer[v] for v in self.__i2v]
 
     def decode(self, i: int) -> V:
         """Decode the index.
