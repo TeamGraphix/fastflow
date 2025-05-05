@@ -98,18 +98,23 @@ jobs:
             target: x64
           - runner: windows-latest
             target: x86
+        freethreaded: [true, false]
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: 3.x
           architecture: ${{ matrix.platform.target }}
+          freethreaded: ${{ matrix.freethreaded }}
       - name: Build wheels
+        if: ${{ !matrix.freethreaded }}
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
           args: --release --out dist
       - name: Build free-threaded wheels
+        if: ${{ matrix.freethreaded }}
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
