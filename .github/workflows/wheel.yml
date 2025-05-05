@@ -123,7 +123,7 @@ jobs:
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-windows-${{ matrix.platform.target }}
+          name: wheels-windows-${{ matrix.platform.target }}-ft-${{ matrix.freethreaded }}
           path: dist
 
   macos:
