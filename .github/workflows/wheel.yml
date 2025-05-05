@@ -98,6 +98,7 @@ jobs:
             target: x64
           - runner: windows-latest
             target: x86
+        # MEMO: Cannot enable 3.13/3.13t simultaneously on Windows
         freethreaded: [true, false]
 
     steps:
