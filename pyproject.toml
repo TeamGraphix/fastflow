@@ -43,6 +43,7 @@ doc = ["furo", "sphinxcontrib-bibtex", "sphinx"]
 exclude = [
   "Pipfile",
   "docs/**",
+  "examples/**",
   "rustfmt.toml",
   "tests/**",
   ".github/**",
