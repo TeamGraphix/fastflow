@@ -13,260 +13,154 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  windows:
-    runs-on: windows-latest
-
-    strategy:
-      matrix:
-        target: [x64, x86]
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: rustup update
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-          architecture: ${{ matrix.target }}
-
-      - run: |
-          python3 -m pip install -U pip
-
-      - uses: PyO3/maturin-action@v1
-        with:
-          # Need to rely on abbreviation
-          target: ${{ matrix.target }}
-          args: --release --out dist
-
-      - shell: bash
-        run: |
-          pip install dist/fastflow-*.whl --force-reinstall
-          python3 -c "import fastflow"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheel-windows-${{ matrix.target }}
-          path: dist/
-
-  macos:
-    runs-on: macos-13
-
-    strategy:
-      matrix:
-        target: [x86_64, universal2]
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: rustup update
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-          architecture: x64
-
-      - run: |
-          python3 -m pip install -U pip
-
-      - if: matrix.target == 'x86_64'
-        uses: PyO3/maturin-action@v1
-        with:
-          # Needs --sdist
-          target: ${{ matrix.target }}-apple-darwin
-          args: --release --out dist --sdist
-
-      - if: matrix.target != 'x86_64'
-        uses: PyO3/maturin-action@v1
-        with:
-          # No --sdist
-          target: ${{ matrix.target }}-apple-darwin
-          args: --release --out dist
-
-      - run: |
-          pip install dist/fastflow-*.whl --force-reinstall
-          python3 -c "import fastflow"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheel-macos-${{ matrix.target }}
-          path: dist/
-
   linux:
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
-        target: [x86_64, i686]
-      fail-fast: false
-
+        platform:
+          - runner: ubuntu-22.04
+            target: x86_64
+          - runner: ubuntu-22.04
+            target: x86
+          - runner: ubuntu-22.04
+            target: aarch64
+          - runner: ubuntu-22.04
+            target: armv7
+          - runner: ubuntu-22.04
+            target: s390x
+          - runner: ubuntu-22.04
+            target: ppc64le
     steps:
       - uses: actions/checkout@v4
-
-      - run: rustup update
-
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
-          architecture: x64
-
-      - run: |
-          python3 -m pip install -U pip
-
-      - uses: PyO3/maturin-action@v1
+          python-version: 3.x
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
         with:
-          target: ${{ matrix.target }}
-          manylinux: auto
+          target: ${{ matrix.platform.target }}
           args: --release --out dist
-
-      - if: matrix.target == 'x86_64'
-        run: |
-          pip install dist/fastflow-*.whl --force-reinstall
-          python3 -c "import fastflow"
-
-      - uses: actions/upload-artifact@v4
+          manylinux: auto
+      - name: Build free-threaded wheels
+        uses: PyO3/maturin-action@v1
         with:
-          name: wheel-linux-${{ matrix.target }}
-          path: dist/
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.13t
+          manylinux: auto
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-linux-${{ matrix.platform.target }}
+          path: dist
 
   musllinux:
-    runs-on: ubuntu-latest
-
+    runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
-        target: [x86_64, i686]
-      fail-fast: false
-
+        platform:
+          - runner: ubuntu-22.04
+            target: x86_64
+          - runner: ubuntu-22.04
+            target: x86
+          - runner: ubuntu-22.04
+            target: aarch64
+          - runner: ubuntu-22.04
+            target: armv7
     steps:
       - uses: actions/checkout@v4
-
-      - run: rustup update
-
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
-          architecture: x64
-
-      - run: |
-          python3 -m pip install -U pip
-
-      - uses: PyO3/maturin-action@v1
+          python-version: 3.x
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
         with:
-          target: ${{ matrix.target }}-unknown-linux-musl
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist
           manylinux: musllinux_1_2
-          args: --release --out dist
-
-      - name: Install and test with alpine
-        if: matrix.target == 'x86_64'
-        uses: addnab/docker-run-action@v3
+      - name: Build free-threaded wheels
+        uses: PyO3/maturin-action@v1
         with:
-          # MEMO: May need to care about rate limit
-          image: alpine:latest
-          options: --mount type=bind,src=${{ github.workspace }},dst=/io -w /io
-          run: |
-            apk add py3-pip
-            python3 -m venv .venv
-            . .venv/bin/activate
-            pip install -U pip
-            pip install dist/fastflow-*.whl
-            python3 -c "import fastflow"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheel-musllinux-${{ matrix.target }}
-          path: dist/
-
-  linux-cross:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        target: [aarch64, armv7, s390x, ppc64le, ppc64]
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: rustup update
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-
-      - run: |
-          python3 -m pip install -U pip
-
-      - uses: PyO3/maturin-action@v1
-        with:
-          target: ${{ matrix.target }}
-          manylinux: auto
-          args: --release --out dist
-
-      # MEMO: Cannot test on other platforms due to numpy sdist
-      - if: matrix.target == 'aarch64'
-        uses: uraimo/run-on-arch-action@v2
-        with:
-          arch: ${{ matrix.target }}
-          githubToken: ${{ github.token }}
-          distro: ubuntu22.04
-          install: |
-            apt update
-            apt install -y --no-install-recommends python3 python3-pip
-            pip install -U pip
-          run: |
-            pip install dist/fastflow-*.whl --force-reinstall
-            python3 -c "import fastflow"
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheel-linux-${{ matrix.target }}
-          path: dist/
-
-  musllinux-cross:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        target: [aarch64, armv7]
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: rustup update
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-
-      - run: |
-          python3 -m pip install -U pip
-
-      - uses: PyO3/maturin-action@v1
-        with:
-          target: ${{ matrix.target }}
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.13t
           manylinux: musllinux_1_2
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-musllinux-${{ matrix.platform.target }}
+          path: dist
+
+  windows:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: windows-latest
+            target: x64
+          - runner: windows-latest
+            target: x86
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+          architecture: ${{ matrix.platform.target }}
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
           args: --release --out dist
-
-      # MEMO: Cannot test on armv7 due to forced sdist
-      - if: matrix.target != 'armv7'
-        uses: uraimo/run-on-arch-action@v2
+      - name: Build free-threaded wheels
+        uses: PyO3/maturin-action@v1
         with:
-          arch: ${{ matrix.target }}
-          githubToken: ${{ github.token }}
-          distro: alpine_latest
-          install: |
-            apk add py3-pip
-          run: |
-            python3 -m venv .venv
-            . .venv/bin/activate
-            pip install -U pip
-            pip install dist/fastflow-*.whl --force-reinstall
-            python3 -c "import fastflow"
-
-      - uses: actions/upload-artifact@v4
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.13t
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
         with:
-          name: wheel-musllinux-${{ matrix.target }}
-          path: dist/
+          name: wheels-windows-${{ matrix.platform.target }}
+          path: dist
+
+  macos:
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      matrix:
+        platform:
+          - runner: macos-13
+            target: x86_64
+          - runner: macos-14
+            target: aarch64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist
+      - name: Build free-threaded wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.platform.target }}
+          args: --release --out dist -i python3.13t
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos-${{ matrix.platform.target }}
+          path: dist
+
+  sdist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+      - name: Upload sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-sdist
+          path: dist
