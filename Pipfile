@@ -7,4 +7,5 @@ name = "pypi"
 fastflow = {extras = ["dev", "doc"], file = ".", editable = true}
 
 [dev-packages]
+build = "*"
 maturin = "<2"
