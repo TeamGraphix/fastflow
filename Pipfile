@@ -8,4 +8,4 @@ fastflow = {extras = ["dev", "doc"], file = ".", editable = true}
 
 [dev-packages]
 build = "*"
-maturin = "<2"
+maturin = "<2,>=1"
