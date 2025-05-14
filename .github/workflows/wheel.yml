@@ -2,10 +2,8 @@ name: wheel
 
 on:
   push:
-    branches:
-      - master
-    tags:
-      - v*
+    branches: [master]
+    tags: [v*]
   pull_request:
   workflow_dispatch:
 
