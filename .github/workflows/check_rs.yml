@@ -8,44 +8,30 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  rustfmt:
+  lint_rs:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - run: rustup update
+      - run: |
+          rustup update
+          # Use nightly for rustfmt
+          rustup toolchain install --allow-downgrade nightly
+          rustup component add --toolchain nightly rustfmt
 
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.8
-
-      # Necessary for nektos/act
-      # - uses: actions-rust-lang/setup-rust-toolchain@v1
-      #   with:
-      #     components: rustfmt
+          python-version: "3.9"
 
       - name: Run rustfmt
         run: |
-          cargo fmt -- --check
-
-  clippy:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - run: rustup update
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: 3.8
-
-      # Necessary for nektos/act
-      # - uses: actions-rust-lang/setup-rust-toolchain@v1
-      #   with:
-      #     components: clippy
+          cargo +nightly fmt -- --check
 
       - name: Run clippy
         run: |

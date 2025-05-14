@@ -8,13 +8,17 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pytest:
     strategy:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest", "windows-latest", "macos-latest"]
-        python: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     name: "py${{ matrix.python }}_${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
@@ -27,9 +31,6 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-
-      # Necessary for nektos/act
-      # - uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - name: Run Python tests
         # MEMO: DO NOT use `pip install .`

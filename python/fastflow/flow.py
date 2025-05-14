@@ -1,8 +1,7 @@
 """Maximally-delayed flow algorithm.
 
-For given undirected graph, input nodes, and output nodes, compute the causal flow having \
-the minimum number of layers.
-See [Mhalla and Perdrix, Proc. of 35th ICALP, 857 (2008)] for more details.
+This module provides functions to compute and verify maximally-delayed causal flow.
+See :footcite:t:`Mhalla2008` for details.
 """
 
 from __future__ import annotations
@@ -10,9 +9,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from fastflow import _common
-from fastflow._common import IndexMap, V
-from fastflow._impl import flow
-from fastflow.common import FlowResult
+from fastflow._common import IndexMap
+from fastflow._impl import flow as flow_bind
+from fastflow.common import FlowResult, V
 
 if TYPE_CHECKING:
     from collections.abc import Set as AbstractSet
@@ -21,24 +20,23 @@ if TYPE_CHECKING:
 
 
 def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResult[V] | None:
-    """Compute the maximally-delayed causal flow, if any.
+    """Compute causal flow.
+
+    If it returns a flow, it is guaranteed to be maximally-delayed, i.e., the number of layers is minimized.
 
     Parameters
     ----------
-    g : `nx.Graph[V]`
-        Undirected graph representing MBQC pattern.
-        Cannot have self-loops.
-    iset : `AbstractSet[V]`
+    g : `networkx.Graph`
+        Simple graph representing MBQC pattern.
+    iset : `collections.abc.Set`
         Input nodes.
-        Must be a subset of `g.nodes`.
-    oset : `AbstractSet[V]`
+    oset : `collections.abc.Set`
         Output nodes.
-        Must be a subset of `g.nodes`.
 
     Returns
     -------
-    If a flow exists, return a `FlowResult[V]` object.
-    Otherwise, return `None`.
+    `FlowResult` or `None`
+        Return the flow if any, otherwise `None`.
     """
     _common.check_graph(g, iset, oset)
     vset = g.nodes
@@ -46,9 +44,42 @@ def find(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> FlowResu
     g_ = codec.encode_graph(g)
     iset_ = codec.encode_set(iset)
     oset_ = codec.encode_set(oset)
-    if ret_ := flow.find(g_, iset_, oset_):
+    if ret_ := flow_bind.find(g_, iset_, oset_):
         f_, layer_ = ret_
         f = codec.decode_flow(f_)
         layer = codec.decode_layer(layer_)
         return FlowResult(f, layer)
     return None
+
+
+def verify(flow: FlowResult[V], g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> None:
+    """Verify maximally-delayed causal flow.
+
+    Parameters
+    ----------
+    flow : `FlowResult`
+        Flow to verify.
+    g : `networkx.Graph`
+        Simple graph representing MBQC pattern.
+    iset : `collections.abc.Set`
+        Input nodes.
+    oset : `collections.abc.Set`
+        Output nodes.
+
+    Raises
+    ------
+    ValueError
+        If the graph is invalid or verification fails.
+    """
+    _common.check_graph(g, iset, oset)
+    vset = g.nodes
+    codec = IndexMap(vset)
+    g_ = codec.encode_graph(g)
+    iset_ = codec.encode_set(iset)
+    oset_ = codec.encode_set(oset)
+    f_ = codec.encode_flow(flow.f)
+    layer_ = codec.encode_layer(flow.layer)
+    try:
+        flow_bind.verify((f_, layer_), g_, iset_, oset_)
+    except ValueError as e:
+        raise codec.decode_err(e) from None

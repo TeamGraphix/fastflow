@@ -8,8 +8,12 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  ruff_check:
+  ruff:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,7 +23,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: "3.9"
 
       - name: Setup Ruff
         run: |
@@ -31,7 +35,15 @@ jobs:
           pip install ruff
           ruff check
 
-  ruff_format:
+      - name: Run ruff isort
+        run: |
+          ruff check --select I --fix
+
+      - name: Run ruff format
+        run: |
+          ruff format
+
+  staticcheck:
     runs-on: ubuntu-latest
 
     steps:
@@ -41,17 +53,17 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: 3.8
+          python-version: "3.9"
 
-      - name: Setup Ruff
-        run: |
+      - run: |
           python3 -m pip install -U pip
-          pip install ruff
+          # Require -e to pass pyright checks
+          pip install -e .[dev]
 
-      - name: Run ruff format
+      - name: Run mypy
         run: |
-          ruff format
+          mypy
 
-      - name: Run ruff isort
+      - name: Run pyright
         run: |
-          ruff check --select I --fix
+          pyright

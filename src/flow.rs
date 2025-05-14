@@ -4,7 +4,10 @@ use hashbrown;
 use pyo3::prelude::*;
 
 use crate::{
-    common::{Graph, Layer, Nodes},
+    common::{
+        FlowValidationError::{self, InconsistentFlowOrder},
+        Graph, Layer, Nodes, FATAL_MSG,
+    },
     internal::{utils::InPlaceSetDiff, validate},
 };
 
@@ -15,23 +18,18 @@ type Flow = hashbrown::HashMap<usize, usize>;
 /// 1. i -> f(i)
 /// 2. j in neighbors(f(i)) => i == j or i -> j
 /// 3. i in neighbors(f(i))
-fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
+fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> Result<(), FlowValidationError> {
     for (&i, &fi) in f {
         if layer[i] <= layer[fi] {
-            let err = anyhow::anyhow!("layer check failed").context(format!("must be {i} -> {fi}"));
-            return Err(err);
+            Err(InconsistentFlowOrder { nodes: (i, fi) })?;
         }
         for &j in &g[fi] {
             if i != j && layer[i] <= layer[j] {
-                let err = anyhow::anyhow!("layer check failed")
-                    .context(format!("neither {i} == {j} nor {i} -> {j}"));
-                return Err(err);
+                Err(InconsistentFlowOrder { nodes: (i, j) })?;
             }
         }
         if !(g[fi].contains(&i) && g[i].contains(&fi)) {
-            let err = anyhow::anyhow!("graph check failed")
-                .context(format!("{i} and {fi} not connected"));
-            return Err(err);
+            Err(InconsistentFlowOrder { nodes: (i, fi) })?;
         }
     }
     Ok(())
@@ -55,9 +53,8 @@ fn check_definition(f: &Flow, layer: &Layer, g: &Graph) -> anyhow::Result<()> {
 /// - Arguments are **NOT** verified.
 #[pyfunction]
 #[tracing::instrument]
-#[allow(clippy::needless_pass_by_value, clippy::must_use_candidate)]
+#[allow(clippy::needless_pass_by_value)]
 pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
-    validate::check_graph(&g, &iset, &oset).unwrap();
     let n = g.len();
     let vset = (0..n).collect::<Nodes>();
     let mut cset = &oset - &iset;
@@ -104,17 +101,35 @@ pub fn find(g: Graph, iset: Nodes, mut oset: Nodes) -> Option<(Flow, Layer)> {
         tracing::debug!("flow found");
         tracing::debug!("flow : {f:?}");
         tracing::debug!("layer: {layer:?}");
-        // TODO: Uncomment once ready
-        // if cfg!(debug_assertions) {
-        validate::check_domain(f.iter(), &vset, &iset, &oset_orig).unwrap();
-        validate::check_initial(&layer, &oset_orig, true).unwrap();
-        check_definition(&f, &layer, &g).unwrap();
-        // }
+        // TODO: Remove this block once stabilized
+        {
+            validate::check_domain(f.iter(), &vset, &iset, &oset_orig).expect(FATAL_MSG);
+            validate::check_initial(&layer, &oset_orig, true).expect(FATAL_MSG);
+            check_definition(&f, &layer, &g).expect(FATAL_MSG);
+        }
         Some((f, layer))
     } else {
         tracing::debug!("flow not found");
         None
     }
+}
+
+/// Validates flow.
+///
+/// # Errors
+///
+/// - If `flow` is invalid.
+/// - If `flow` is inconsistent with `g`.
+#[pyfunction]
+#[allow(clippy::needless_pass_by_value)]
+pub fn verify(flow: (Flow, Layer), g: Graph, iset: Nodes, oset: Nodes) -> PyResult<()> {
+    let (f, layer) = flow;
+    let n = g.len();
+    let vset = (0..n).collect::<Nodes>();
+    validate::check_domain(f.iter(), &vset, &iset, &oset)?;
+    validate::check_initial(&layer, &oset, true)?;
+    check_definition(&f, &layer, &g)?;
+    Ok(())
 }
 
 #[cfg(test)]
@@ -125,38 +140,68 @@ mod tests {
     use crate::internal::test_utils::{self, TestCase};
 
     #[test_log::test]
+    fn test_check_definition_ng() {
+        // Violate 0 -> f(0) = 1
+        assert_eq!(
+            check_definition(&map! { 0: 1 }, &vec![0, 0], &test_utils::graph(&[(0, 1)])),
+            Err(InconsistentFlowOrder { nodes: (0, 1) })
+        );
+        // Violate 1 in nb(f(0)) = nb(2) => 0 == 1 or 0 -> 1
+        assert_eq!(
+            check_definition(
+                &map! { 0: 2 },
+                &vec![1, 1, 0],
+                &test_utils::graph(&[(0, 1), (1, 2)])
+            ),
+            Err(InconsistentFlowOrder { nodes: (0, 1) })
+        );
+        // Violate 0 in nb(f(0)) = nb(2)
+        assert_eq!(
+            check_definition(
+                &map! { 0: 2 },
+                &vec![2, 1, 0],
+                &test_utils::graph(&[(0, 1), (1, 2)])
+            ),
+            Err(InconsistentFlowOrder { nodes: (0, 2) })
+        );
+    }
+
+    #[test_log::test]
     fn test_find_case0() {
         let TestCase { g, iset, oset } = test_utils::CASE0.clone();
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(layer, vec![0, 0]);
+        verify((f, layer), g, iset, oset).unwrap();
     }
 
     #[test_log::test]
     fn test_find_case1() {
         let TestCase { g, iset, oset } = test_utils::CASE1.clone();
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], 1);
         assert_eq!(f[&1], 2);
         assert_eq!(f[&2], 3);
         assert_eq!(f[&3], 4);
         assert_eq!(layer, vec![4, 3, 2, 1, 0]);
+        verify((f, layer), g, iset, oset).unwrap();
     }
 
     #[test_log::test]
     fn test_find_case2() {
         let TestCase { g, iset, oset } = test_utils::CASE2.clone();
         let flen = g.len() - oset.len();
-        let (f, layer) = find(g, iset, oset).unwrap();
+        let (f, layer) = find(g.clone(), iset.clone(), oset.clone()).unwrap();
         assert_eq!(f.len(), flen);
         assert_eq!(f[&0], 2);
         assert_eq!(f[&1], 3);
         assert_eq!(f[&2], 4);
         assert_eq!(f[&3], 5);
         assert_eq!(layer, vec![2, 2, 1, 1, 0, 0]);
+        verify((f, layer), g, iset, oset).unwrap();
     }
 
     #[test_log::test]

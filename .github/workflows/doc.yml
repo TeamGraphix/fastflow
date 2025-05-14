@@ -1,0 +1,31 @@
+name: doc
+
+on: [pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  build_docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: rustup update
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: |
+          python3 -m pip install -U pip
+          pip install -e .[dev,doc]
+
+      - name: Run examples
+        run: |
+          for file in examples/*.py; do
+            python3 ${file}
+          done
+
+      - run: sphinx-build docs/source docs/build --fail-on-warning

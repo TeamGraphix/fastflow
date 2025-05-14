@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-fastflow = {extras = ["dev"], file = ".", editable = true}
+fastflow = {extras = ["dev", "doc"], file = ".", editable = true}
 
 [dev-packages]
-maturin = "<2,>=1"
+maturin = "<2"
