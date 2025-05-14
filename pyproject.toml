@@ -36,6 +36,7 @@ dependencies = ["networkx"]
 
 [project.optional-dependencies]
 dev = [
+  "maturin>=1,<2",
   "mypy",
   "pyright",
   "pyright",
