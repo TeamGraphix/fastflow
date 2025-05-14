@@ -44,7 +44,7 @@ dev = [
   "ruff",
   "types-networkx",
 ]
-doc = ["furo", "sphinxcontrib-bibtex", "sphinx", "types-networkx"]
+doc = ["furo", "sphinxcontrib-bibtex", "sphinx"]
 
 [tool.maturin]
 exclude = [
