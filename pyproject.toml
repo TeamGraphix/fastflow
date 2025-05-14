@@ -39,7 +39,6 @@ dev = [
   "maturin>=1,<2",
   "mypy",
   "pyright",
-  "pyright",
   "pytest",
   "pytest-cov",
   "ruff",
