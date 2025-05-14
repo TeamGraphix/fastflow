@@ -7,7 +7,7 @@ name = "fastflow"
 # Must be consistent with Cargo.toml
 version = "0.1.0"
 description = "Rust binding of generalized and pauli flow finding algorithms."
-license = { file = "LICENSE" }
+license-files = ["LICENSE"]
 readme = "README.md"
 authors = [
   { name = "S.S.", email = "66886825+EarlMilktea@users.noreply.github.com" },
@@ -21,7 +21,6 @@ classifiers = [
   "Development Status :: 3 - Alpha",
   "Environment :: Console",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved :: Apache Software License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -36,13 +35,22 @@ requires-python = ">=3.9,<3.14"
 dependencies = ["networkx"]
 
 [project.optional-dependencies]
-dev = ["mypy", "pyright", "pytest", "pytest-cov", "ruff", "types-networkx"]
+dev = [
+  "maturin>=1,<2",
+  "mypy",
+  "pyright",
+  "pytest",
+  "pytest-cov",
+  "ruff",
+  "types-networkx",
+]
 doc = ["furo", "sphinxcontrib-bibtex", "sphinx"]
 
 [tool.maturin]
 exclude = [
   "Pipfile",
   "docs/**",
+  "examples/**",
   "rustfmt.toml",
   "tests/**",
   ".github/**",

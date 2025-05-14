@@ -2,7 +2,6 @@ name: test_py
 
 on:
   pull_request:
-    branches: ["master"]
   workflow_dispatch:
 
 permissions:
@@ -32,12 +31,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
 
+      - uses: astral-sh/setup-uv@v5
+
       - name: Run Python tests
-        # MEMO: DO NOT use `pip install .`
-        #  We need to test with debug build
         run: |
-          python3 -m pip install -U pip
-          pip install pipenv
-          pipenv install maturin pytest
-          pipenv run maturin develop
-          pipenv run pytest
+          uv sync --extra dev
+          uv run pytest

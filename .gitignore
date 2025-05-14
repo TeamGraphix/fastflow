@@ -186,3 +186,4 @@ cython_debug/
 cobertura.xml
 docs/build
 !docs/build/.nojekyll
+uv.lock
