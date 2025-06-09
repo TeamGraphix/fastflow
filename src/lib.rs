@@ -24,6 +24,7 @@ use solver::Solver;
 /// Solve linear equations on GF(2).
 #[pyfunction]
 #[allow(clippy::must_use_candidate, clippy::needless_pass_by_value)]
+#[cfg(not(tarpaulin_include))]
 pub fn solve<'py>(
     py: Python<'py>,
     a: PyReadonlyArray2<'py, bool>,
@@ -42,6 +43,7 @@ pub fn solve<'py>(
 #[pymodule]
 #[pyo3(name = "_impl")]
 #[allow(clippy::similar_names)]
+#[cfg(not(tarpaulin_include))]
 fn entrypoint(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Remapped to fastflow._impl.FlowValidationMessage
     m.add_class::<FlowValidationError>()?;
