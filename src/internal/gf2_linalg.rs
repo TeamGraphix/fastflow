@@ -687,4 +687,19 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_solve_wrapped() {
+        let mut work = vec![
+            // 110
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b011]),
+            // 011
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b110]),
+        ];
+        let mut sol = GF2Solver::attach(work.as_mut_slice(), 1);
+        let x = sol.solve(0).unwrap();
+        assert_eq!(x.len(), 2);
+        assert!(x[0]);
+        assert!(x[1]);
+    }
 }
