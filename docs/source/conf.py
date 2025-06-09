@@ -43,6 +43,7 @@ html_theme = "furo"
 
 intersphinx_mapping = {
     "networkx": ("https://networkx.org/documentation/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
     "python": ("https://docs.python.org/3", None),
 }
 

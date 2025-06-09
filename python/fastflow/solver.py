@@ -24,19 +24,19 @@ def _arraycheck(x: npt.ArrayLike) -> npt.NDArray[np.bool_]:
 
 
 def solve(a: npt.ArrayLike, b: npt.ArrayLike) -> list[npt.NDArray[np.bool_] | None]:
-    """Solve the linear equations :math:`Ax = b` over GF(2).
+    r"""Solve the linear equations :math:`Ax = b` over GF(2).
 
     Parameters
     ----------
     a : `numpy.typing.ArrayLike`
-        Coefficient matrix of shape `(rows, cols)`.
+        Coefficient matrix of shape :code:`(rows, cols)`.
     b : `numpy.typing.ArrayLike`
-        Right-hand side matrix/vector of shape `(rows, neqs)` or `(rows,)`.
+        Right-hand side matrix/vector of shape :code:`(rows, neqs)` or :code:`(rows,)`.
 
     Returns
     -------
-    `list[numpy.ndarray | None]`
-        List of solutions for each equation in `b`. If an equation has no solution, `None` is returned.
+    `list`
+        `numpy.ndarray` (if solvable) or `None` (otherwise) for each equation in :code:`b`.
     """
     a = _arraycheck(a)
     b = _arraycheck(b)
