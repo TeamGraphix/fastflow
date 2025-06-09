@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import itertools
+
 import numpy as np
 import pytest
 from fastflow import solver
+
+from tests import utils
 
 
 def test_1d() -> None:
@@ -58,3 +62,19 @@ def test_bad_type() -> None:
     b = np.asarray([1, 2])
     with pytest.raises(ValueError, match=r".*not equivalent.*"):
         solver.solve(a, b)
+
+
+@pytest.mark.parametrize(
+    ("m", "n"), [(m, n) for m, n in itertools.product(range(1, 11), repeat=2) if (m + 1) * n <= 12]
+)
+def test_all(m: int, n: int) -> None:
+    for a in utils.iter_bmatrix(m, n):
+        b = np.stack(list(utils.iter_bvector(m)), axis=-1)
+        x = solver.solve(a, b)
+        neqs = len(x)
+        assert b.shape == (m, neqs)
+        x_ = np.stack([xi for xi in x if xi is not None], axis=-1)
+        b_ = np.stack([b[:, i] for i in range(neqs) if x[i] is not None], axis=-1)
+        lhs = a.astype(np.int64) @ x_.astype(np.int64)
+        lhs = (lhs % 2).astype(np.bool_)
+        np.testing.assert_array_equal(lhs, b_)
