@@ -12,16 +12,16 @@ def test_check_graph_ng_g() -> None:
     with pytest.raises(TypeError):
         _common.check_graph("hoge", set(), set())  # type: ignore[arg-type]
 
-    with pytest.raises(ValueError, match="Graph is empty."):
+    with pytest.raises(ValueError, match=r"Graph is empty\."):
         _common.check_graph(nx.Graph(), set(), set())
 
-    with pytest.raises(ValueError, match="Self-loop detected."):
+    with pytest.raises(ValueError, match=r"Self-loop detected\."):
         _common.check_graph(nx.Graph([("a", "a"), ("a", "b")]), set(), set())
 
-    with pytest.raises(ValueError, match="iset must be a subset of the nodes."):
+    with pytest.raises(ValueError, match=r"iset must be a subset of the nodes\."):
         _common.check_graph(nx.Graph([("a", "b")]), {"x"}, set())
 
-    with pytest.raises(ValueError, match="oset must be a subset of the nodes."):
+    with pytest.raises(ValueError, match=r"oset must be a subset of the nodes\."):
         _common.check_graph(nx.Graph([("a", "b")]), set(), {"x"})
 
 
@@ -37,7 +37,7 @@ def test_check_planelike_ng() -> None:
     with pytest.raises(TypeError):
         _common.check_planelike(set(), set(), "hoge")  # type: ignore[arg-type]
 
-    with pytest.raises(ValueError, match="Cannot find corresponding nodes in the graph."):
+    with pytest.raises(ValueError, match=r"Cannot find corresponding nodes in the graph\."):
         _common.check_planelike({"a"}, set(), {"x": Plane.XY})
 
     with pytest.raises(ValueError, match=r"Measurement planes should be specified for all u in V\\O."):
@@ -57,7 +57,7 @@ class TestIndexMap:
             fx_indexmap.encode("c"),
         } == {0, 1, 2}
 
-        with pytest.raises(ValueError, match="x not found."):
+        with pytest.raises(ValueError, match=r"x not found\."):
             fx_indexmap.encode("x")
 
     def test_decode(self, fx_indexmap: IndexMap[str]) -> None:
@@ -67,7 +67,7 @@ class TestIndexMap:
             fx_indexmap.decode(2),
         } == {"a", "b", "c"}
 
-        with pytest.raises(ValueError, match="3 not found."):
+        with pytest.raises(ValueError, match=r"3 not found\."):
             fx_indexmap.decode(3)
 
     def test_encdec(self, fx_indexmap: IndexMap[str]) -> None:

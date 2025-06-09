@@ -73,6 +73,7 @@ line-length = 120
 docstring-code-format = true
 
 [tool.ruff.lint]
+preview = true
 select = ["ALL"]
 ignore = [
   # Conflicts with ruff format
@@ -99,8 +100,8 @@ ignore = [
 
   # Manually-disabled (lints)
   "CPY",
+  "DOC",
   "ERA",
-  "FBT",
   "FIX",
 
   # Manually-disabled (rules)
@@ -124,7 +125,9 @@ convention = "numpy"
 ]
 "tests/*.py" = [
   "D1",      # undocumented-XXX
+  "PLC2701", # import-private-name
   "PLR2004", # magic-value-comparison
+  "PLR6301", # no-self-use
   "S101",    # assert
 ]
 
