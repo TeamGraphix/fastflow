@@ -702,4 +702,17 @@ mod tests {
         assert!(x[0]);
         assert!(x[1]);
     }
+
+    #[test]
+    fn test_solve_wrapped_none() {
+        let mut work = vec![
+            // 100
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b100]),
+            // 100
+            FixedBitSet::with_capacity_and_blocks(3, vec![0b100]),
+        ];
+        let mut sol = GF2Solver::attach(work.as_mut_slice(), 1);
+        let x = sol.solve(0);
+        assert!(x.is_none());
+    }
 }
