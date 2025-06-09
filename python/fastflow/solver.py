@@ -24,7 +24,7 @@ def _arraycheck(x: npt.ArrayLike) -> npt.NDArray[np.bool_]:
 
 
 def solve(a: npt.ArrayLike, b: npt.ArrayLike) -> list[npt.NDArray[np.bool_] | None]:
-    r"""Solve the linear equations :math:`Ax = b` over GF(2).
+    """Solve the linear equations :math:`Ax = b` over GF(2).
 
     Parameters
     ----------
@@ -37,6 +37,11 @@ def solve(a: npt.ArrayLike, b: npt.ArrayLike) -> list[npt.NDArray[np.bool_] | No
     -------
     `list`
         `numpy.ndarray` (if solvable) or `None` (otherwise) for each equation in :code:`b`.
+
+    Notes
+    -----
+    While this function is deterministic even when :code:`a` is singular, solution picking \
+    algorithm is unspecified and subject to change.
     """
     a = _arraycheck(a)
     b = _arraycheck(b)
