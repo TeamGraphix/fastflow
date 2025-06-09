@@ -6,6 +6,7 @@ from fastflow import _common
 from fastflow._common import IndexMap
 from fastflow._impl import FlowValidationMessage
 from fastflow.common import Plane, PPlane
+from typing_extensions import Never
 
 
 def test_check_graph_ng_g() -> None:
@@ -95,3 +96,14 @@ class TestIndexMap:
     def test_encode_layer_missing(self, fx_indexmap: IndexMap[str]) -> None:
         with pytest.raises(ValueError, match=r"Layers must be specified for all nodes\."):
             fx_indexmap.encode_layer({"a": 0, "b": 1})
+
+    def test_ecatch(self, fx_indexmap: IndexMap[str]) -> None:
+        def dummy_ok(x: int) -> int:
+            return x
+
+        def dummy_ng(_: int) -> Never:
+            raise ValueError(FlowValidationMessage.ExcessiveZeroLayer(0))
+
+        assert fx_indexmap.ecatch(dummy_ok, 1) == 1
+        with pytest.raises(ValueError, match=rf"Zero-layer node {fx_indexmap.decode(0)} outside output nodes\."):
+            fx_indexmap.ecatch(dummy_ng, 1)

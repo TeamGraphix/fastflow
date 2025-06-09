@@ -6,16 +6,17 @@ import dataclasses
 from collections.abc import Hashable
 from typing import Generic, TypeVar
 
+from typing_extensions import ParamSpec
+
 from fastflow._impl import gflow, pflow
 
 Plane = gflow.Plane
-
 PPlane = pflow.PPlane
 
-V = TypeVar("V", bound=Hashable)  #: Node type.
-
-
-P = TypeVar("P", Plane, PPlane)  #: Measurement plane or Pauli index.
+T = TypeVar("T")
+V = TypeVar("V", bound=Hashable)
+P = TypeVar("P", Plane, PPlane)
+S = ParamSpec("S")
 
 
 @dataclasses.dataclass(frozen=True)
