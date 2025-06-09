@@ -128,8 +128,6 @@ convention = "numpy"
   "S101",    # assert
 ]
 
-[tool.pytest.ini_options]
-addopts = ["--cov=./python", "--cov-report=term"]
-
 [tool.coverage.report]
+omit = ["tests/*"]
 exclude_also = ["if TYPE_CHECKING:"]
