@@ -52,29 +52,32 @@ def fx_indexmap() -> IndexMap[str]:
 
 class TestIndexMap:
     def test_encode(self, fx_indexmap: IndexMap[str]) -> None:
-        assert {
-            fx_indexmap.encode("a"),
-            fx_indexmap.encode("b"),
-            fx_indexmap.encode("c"),
-        } == {0, 1, 2}
+        # Order guaranteed
+        assert fx_indexmap.encode("a") == 0
+        assert fx_indexmap.encode("b") == 1
+        assert fx_indexmap.encode("c") == 2
 
         with pytest.raises(ValueError, match=r"x not found\."):
             fx_indexmap.encode("x")
 
     def test_decode(self, fx_indexmap: IndexMap[str]) -> None:
-        assert {
-            fx_indexmap.decode(0),
-            fx_indexmap.decode(1),
-            fx_indexmap.decode(2),
-        } == {"a", "b", "c"}
+        assert fx_indexmap.decode(0) == "a"
+        assert fx_indexmap.decode(1) == "b"
+        assert fx_indexmap.decode(2) == "c"
 
         with pytest.raises(ValueError, match=r"3 not found\."):
             fx_indexmap.decode(3)
 
-    def test_encdec(self, fx_indexmap: IndexMap[str]) -> None:
-        assert fx_indexmap.decode(fx_indexmap.encode("a")) == "a"
-        assert fx_indexmap.decode(fx_indexmap.encode("b")) == "b"
-        assert fx_indexmap.decode(fx_indexmap.encode("c")) == "c"
+    def test_encdec(self) -> None:
+        # Hash by id
+        a = object()
+        b = object()
+        c = object()
+        codec = IndexMap({a, b, c})
+        # Not deterministic but consistent
+        assert codec.decode(codec.encode(a)) == a
+        assert codec.decode(codec.encode(b)) == b
+        assert codec.decode(codec.encode(c)) == c
 
     @pytest.mark.parametrize(
         "emsg",
@@ -105,5 +108,5 @@ class TestIndexMap:
             raise ValueError(FlowValidationMessage.ExcessiveZeroLayer(0))
 
         assert fx_indexmap.ecatch(dummy_ok, 1) == 1
-        with pytest.raises(ValueError, match=rf"Zero-layer node {fx_indexmap.decode(0)} outside output nodes\."):
+        with pytest.raises(ValueError, match=r"Zero-layer node a outside output nodes\."):
             fx_indexmap.ecatch(dummy_ng, 1)
