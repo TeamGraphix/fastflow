@@ -488,7 +488,7 @@ mod tests {
     #[test]
     fn test_validate_afterupper_ng() {
         let mut work = vec![
-            // 001
+            // 011
             FixedBitSet::with_capacity_and_blocks(3, vec![0b011]),
             // 010
             FixedBitSet::with_capacity_and_blocks(3, vec![0b010]),
