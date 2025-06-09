@@ -9,6 +9,12 @@ from fastflow import solver
 from tests import utils
 
 
+@pytest.fixture
+def rng() -> np.random.Generator:
+    """Return a fresh RNG."""
+    return np.random.default_rng(42)
+
+
 def test_1d() -> None:
     a = np.asarray([[1, 1], [0, 1]])
     b = np.asarray([0, 1])
@@ -78,3 +84,18 @@ def test_all(m: int, n: int) -> None:
         lhs = a.astype(np.int64) @ x_.astype(np.int64)
         lhs = (lhs % 2).astype(np.bool_)
         np.testing.assert_array_equal(lhs, b_)
+
+
+def test_big(rng: np.random.Generator) -> None:
+    rows = 500
+    cols = 500
+    neqs = 500
+    a = rng.integers(0, 2, size=(rows, cols)).astype(np.bool_)
+    b = rng.integers(0, 2, size=(rows, neqs)).astype(np.bool_)
+    x = solver.solve(a, b)
+    for i, xi in enumerate(x):
+        if xi is None:
+            continue
+        lhs = a.astype(np.int64) @ xi.astype(np.int64)
+        lhs = (lhs % 2).astype(np.bool_)
+        np.testing.assert_array_equal(lhs, b[:, i])
