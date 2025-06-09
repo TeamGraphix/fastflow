@@ -1,3 +1,5 @@
+import numpy as np
+import numpy.typing as npt
 from fastflow._impl.gflow import Plane
 from fastflow._impl.pflow import PPlane
 
@@ -44,3 +46,5 @@ class FlowValidationMessage:
         pplane: PPlane
 
         def __init__(self, node: int, pplane: PPlane) -> None: ...
+
+def solve(a: npt.NDArray[np.bool_], b: npt.NDArray[np.bool_]) -> list[npt.NDArray[np.bool_] | None]: ...
