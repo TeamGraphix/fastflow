@@ -69,6 +69,13 @@ fastflow.pflow module
    :members:
    :undoc-members:
 
+fastflow.solver module
+----------------------
+
+.. automodule:: fastflow.solver
+   :members:
+   :undoc-members:
+
 References
 ----------
 
