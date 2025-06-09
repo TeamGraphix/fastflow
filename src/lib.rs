@@ -10,13 +10,33 @@ pub mod common;
 pub mod flow;
 pub mod gflow;
 pub mod pflow;
+pub mod solver;
 
 use common::FlowValidationError;
 use gflow::Plane;
+use numpy::{IntoPyArray, PyArray1, PyReadonlyArray2};
 use pflow::PPlane;
-use pyo3::prelude::*;
+use pyo3::{prelude::*, Bound, Python};
+use solver::Solver;
 
 // MEMO: Data verification is done in the Python layer
+
+/// Solve linear equations on GF(2).
+#[pyfunction]
+#[allow(clippy::must_use_candidate, clippy::needless_pass_by_value)]
+pub fn solve<'py>(
+    py: Python<'py>,
+    a: PyReadonlyArray2<'py, bool>,
+    b: PyReadonlyArray2<'py, bool>,
+) -> Vec<Option<Bound<'py, PyArray1<bool>>>> {
+    let a = a.as_array();
+    let b = b.as_array();
+    let mut solver = Solver::from_eq(&a, &b);
+    let (_, neqs) = b.dim();
+    (0..neqs)
+        .map(|i| solver.solve(i).map(|x| x.into_pyarray(py)))
+        .collect()
+}
 
 // fastflow._impl
 #[pymodule]
@@ -25,6 +45,8 @@ use pyo3::prelude::*;
 fn entrypoint(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Remapped to fastflow._impl.FlowValidationMessage
     m.add_class::<FlowValidationError>()?;
+    // fastflow._impl.solve
+    m.add_function(wrap_pyfunction!(solve, m)?)?;
     // fastflow._impl.flow
     let mod_flow = PyModule::new(m.py(), "flow")?;
     mod_flow.add_function(wrap_pyfunction!(flow::find, &mod_flow)?)?;

@@ -246,6 +246,16 @@ impl<W: DerefMut<Target = [FixedBitSet]>> GF2Solver<W> {
         }
         true
     }
+
+    /// Solves the equation indexed by `ieq` and returns the result, if solvable.
+    pub fn solve(&mut self, ieq: usize) -> Option<FixedBitSet> {
+        let mut out = FixedBitSet::with_capacity(self.cols);
+        if self.solve_in_place(&mut out, ieq) {
+            Some(out)
+        } else {
+            None
+        }
+    }
 }
 
 impl<W: DerefMut<Target = [FixedBitSet]>> Debug for GF2Solver<W> {
