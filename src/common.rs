@@ -60,3 +60,13 @@ pub const FATAL_MSG: &str = "\
 
 Please report to the developers via GitHub:
 https://github.com/TeamGraphix/fastflow/issues/new";
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_err_from() {
+        let _ = PyErr::from(FlowValidationError::ExcessiveNonZeroLayer { node: 1, layer: 2 });
+    }
+}
