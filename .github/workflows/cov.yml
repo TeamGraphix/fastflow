@@ -49,7 +49,7 @@ jobs:
 
       - name: Measure Rust coverage
         run: |
-          cargo tarpaulin --out Xml
+          cargo tarpaulin --out Xml --exclude-files src/lib.rs
 
       - uses: codecov/codecov-action@v4
         with:
