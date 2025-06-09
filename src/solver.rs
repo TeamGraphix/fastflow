@@ -47,3 +47,18 @@ impl Solver {
             .map(|x| Array1::from_iter((0..x.len()).map(|i| x[i])))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use numpy::ndarray::array;
+
+    use super::*;
+
+    #[test]
+    fn test_solver() {
+        let a = array![[true, true], [false, true]];
+        let b = array![[false], [true]];
+        let mut solver = Solver::from_eq(&a.view(), &b.view());
+        assert_eq!(solver.solve(0), Some(array![true, true]));
+    }
+}
