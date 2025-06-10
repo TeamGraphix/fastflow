@@ -19,7 +19,7 @@ crate-type = ["cdylib"]
 fixedbitset = "0.5"
 hashbrown = "0.15"
 itertools = "0.14"
-pyo3 = { version = "0.24", features = ["abi3-py39", "hashbrown"] }
+pyo3 = { version = "0.25", features = ["abi3-py39", "hashbrown"] }
 thiserror = "2"
 tracing = "0.1"
 
@@ -28,3 +28,6 @@ rand = "0.9"
 rstest = "0.25"
 rstest_reuse = "0.7"
 test-log = { version = "0.2", features = ["trace"] }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tarpaulin_include)'] }

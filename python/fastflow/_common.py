@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from collections.abc import Set as AbstractSet
 from typing import Generic
 
 import networkx as nx
 
 from fastflow._impl import FlowValidationMessage
-from fastflow.common import P, V
+from fastflow.common import P, S, T, V
 
 
 def check_graph(g: nx.Graph[V], iset: AbstractSet[V], oset: AbstractSet[V]) -> None:
@@ -94,8 +94,15 @@ class IndexMap(Generic[V]):
         vset : `collections.abc.Set`
             Set of nodes.
             Can be any hashable type.
+
+        Notes
+        -----
+        If `vset` is ordered, the indices will be assigned in the sorted order.
         """
-        self.__i2v = list(vset)
+        try:
+            self.__i2v = sorted(vset)  # type: ignore[type-var]
+        except Exception:  # noqa: BLE001
+            self.__i2v = list(vset)
         self.__v2i = {v: i for i, v in enumerate(self.__i2v)}
 
     def encode(self, v: V) -> int:
@@ -260,3 +267,10 @@ class IndexMap(Generic[V]):
         else:
             raise TypeError  # pragma: no cover
         return ValueError(msg)
+
+    def ecatch(self, f: Callable[S, T], *args: S.args, **kwargs: S.kwargs) -> T:
+        """Wrap binding call to decode raw error messages."""
+        try:
+            return f(*args, **kwargs)
+        except ValueError as e:
+            raise self.decode_err(e) from None

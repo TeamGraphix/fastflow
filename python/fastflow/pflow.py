@@ -112,7 +112,4 @@ def verify(
     pplane_ = codec.encode_dictkey(pplane)
     f_ = codec.encode_gflow(pflow.f)
     layer_ = codec.encode_layer(pflow.layer)
-    try:
-        pflow_bind.verify((f_, layer_), g_, iset_, oset_, pplane_)
-    except ValueError as e:
-        raise codec.decode_err(e) from None
+    codec.ecatch(pflow_bind.verify, (f_, layer_), g_, iset_, oset_, pplane_)

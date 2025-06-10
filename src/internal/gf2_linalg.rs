@@ -3,16 +3,15 @@
 use std::{
     collections::BTreeMap,
     fmt::{self, Debug, Formatter},
+    ops::DerefMut,
 };
 
 use fixedbitset::FixedBitSet;
 use itertools::Itertools;
 
-type GF2Matrix = [FixedBitSet];
-
 /// Solver for GF(2) linear equations.
 #[derive(PartialEq, Eq)]
-pub struct GF2Solver<'a> {
+pub struct GF2Solver<W: DerefMut<Target = [FixedBitSet]>> {
     /// Number of rows in the coefficient matrix.
     rows: usize,
     /// Number of columns in the coefficient matrix.
@@ -24,12 +23,13 @@ pub struct GF2Solver<'a> {
     /// Permutation of columns.
     perm: Vec<usize>,
     /// Working storage for the Gauss-Jordan elimination.
-    work: &'a mut GF2Matrix,
+    /// Compatible with both owned and borrowed storage.
+    work: W,
 }
 
-impl<'a> GF2Solver<'a> {
+impl<W: DerefMut<Target = [FixedBitSet]>> GF2Solver<W> {
     /// Checks the arguments of `attach`.
-    fn attach_check(work: &GF2Matrix, neqs: usize) {
+    fn attach_check(work: &[FixedBitSet], neqs: usize) {
         assert!(neqs > 0, "neqs is zero");
         let rows = work.len();
         assert!(rows > 0, "work is empty");
@@ -56,8 +56,8 @@ impl<'a> GF2Solver<'a> {
     /// - If `work` is jagged, i.e., the number of columns is not uniform.
     /// - If `work[...]` is empty (no columns).
     /// - If `neqs` is so large that there is no room for the coefficient matrix.
-    pub fn attach(work: &'a mut GF2Matrix, neqs: usize) -> Self {
-        Self::attach_check(work, neqs);
+    pub fn attach(work: W, neqs: usize) -> Self {
+        Self::attach_check(&work, neqs);
         let rows = work.len();
         let width = work[0].len();
         let cols = width - neqs;
@@ -248,7 +248,7 @@ impl<'a> GF2Solver<'a> {
     }
 }
 
-impl Debug for GF2Solver<'_> {
+impl<W: DerefMut<Target = [FixedBitSet]>> Debug for GF2Solver<W> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut ret = f.debug_struct("GF2Solver");
         ret.field("rows", &self.rows)
@@ -297,7 +297,7 @@ mod tests {
             // 0010001
             FixedBitSet::with_capacity_and_blocks(7, vec![0b100_0100]),
         ];
-        let sol = GF2Solver::attach(&mut work, 3);
+        let sol = GF2Solver::attach(work.as_mut_slice(), 3);
         assert_eq!(sol.rows, 3);
         assert_eq!(sol.cols, 4);
         assert_eq!(sol.neqs, 3);
@@ -312,7 +312,7 @@ mod tests {
     }
 
     /// Helper function to create a solver storage from the coefficient matrix and the right-hand side.
-    fn new_from(co: &GF2Matrix, rhs: &[FixedBitSet]) -> Vec<FixedBitSet> {
+    fn new_from(co: &[FixedBitSet], rhs: &[FixedBitSet]) -> Vec<FixedBitSet> {
         let rows = co.len();
         assert!(rows > 0);
         let neqs = rhs.len();
@@ -380,34 +380,34 @@ mod tests {
     #[test]
     #[should_panic = "neqs is zero"]
     fn test_attach_noeq() {
-        GF2Solver::attach(&mut [], 0);
+        GF2Solver::attach([].as_mut_slice(), 0);
     }
 
     #[test]
     #[should_panic = "work is empty"]
     fn test_attach_empty_rows() {
-        GF2Solver::attach(&mut [], 1);
+        GF2Solver::attach([].as_mut_slice(), 1);
     }
 
     #[test]
     #[should_panic = "zero-length columns"]
     fn test_attach_empty_cols() {
         let mut work = vec![FixedBitSet::with_capacity(0); 3];
-        GF2Solver::attach(&mut work, 1);
+        GF2Solver::attach(work.as_mut_slice(), 1);
     }
 
     #[test]
     #[should_panic = "work is jagged"]
     fn test_attach_empty_jagged() {
         let mut work = vec![FixedBitSet::with_capacity(3), FixedBitSet::with_capacity(4)];
-        GF2Solver::attach(&mut work, 1);
+        GF2Solver::attach(work.as_mut_slice(), 1);
     }
 
     #[test]
     #[should_panic = "neqs too large"]
     fn test_attach_neqs_large() {
         let mut work = vec![FixedBitSet::with_capacity(3); 3];
-        GF2Solver::attach(&mut work, 4);
+        GF2Solver::attach(work.as_mut_slice(), 4);
     }
 
     #[test]
@@ -421,7 +421,7 @@ mod tests {
             // 0010001
             FixedBitSet::with_capacity_and_blocks(7, vec![0b100_0100]),
         ];
-        let mut sol = GF2Solver::attach(&mut work, 3);
+        let mut sol = GF2Solver::attach(work.as_mut_slice(), 3);
         let mut out = FixedBitSet::with_capacity(5);
         sol.solve_in_place(&mut out, 0);
     }
@@ -437,7 +437,7 @@ mod tests {
             // 0010001
             FixedBitSet::with_capacity_and_blocks(7, vec![0b100_0100]),
         ];
-        let mut sol = GF2Solver::attach(&mut work, 3);
+        let mut sol = GF2Solver::attach(work.as_mut_slice(), 3);
         let mut out = FixedBitSet::with_capacity(4);
         sol.solve_in_place(&mut out, 9);
     }
@@ -450,7 +450,7 @@ mod tests {
             // 110
             FixedBitSet::with_capacity_and_blocks(3, vec![0b110]),
         ];
-        let mut sol = GF2Solver::attach(&mut work, 1);
+        let mut sol = GF2Solver::attach(work.as_mut_slice(), 1);
         assert_eq!(sol.rank, None);
         let dummy_rank = 99;
         // Set invalid value
@@ -468,7 +468,7 @@ mod tests {
             // 010
             FixedBitSet::with_capacity_and_blocks(3, vec![0b011]),
         ];
-        let mut sol = GF2Solver::attach(&mut work, 1);
+        let mut sol = GF2Solver::attach(work.as_mut_slice(), 1);
         // Exact value
         sol.rank = Some(2);
         assert!(!sol.validate_afterlower());
@@ -478,12 +478,12 @@ mod tests {
     #[test]
     fn test_validate_afterupper_ng() {
         let mut work = vec![
-            // 001
+            // 011
             FixedBitSet::with_capacity_and_blocks(3, vec![0b011]),
             // 010
             FixedBitSet::with_capacity_and_blocks(3, vec![0b010]),
         ];
-        let mut sol = GF2Solver::attach(&mut work, 1);
+        let mut sol = GF2Solver::attach(work.as_mut_slice(), 1);
         // Exact value
         sol.rank = Some(2);
         assert!(sol.validate_afterlower());
@@ -496,7 +496,7 @@ mod tests {
             for c in 0..3 {
                 let mut work = vec![FixedBitSet::with_capacity_and_blocks(4, vec![0b0000]); 3];
                 work[r].insert(c);
-                let mut sol = GF2Solver::attach(&mut work, 1);
+                let mut sol = GF2Solver::attach(work.as_mut_slice(), 1);
                 sol.move_pivot_impl(0, r, c);
                 assert!(sol.work[0][0]);
             }
@@ -538,7 +538,7 @@ mod tests {
             // 0000
             FixedBitSet::with_capacity_and_blocks(4, vec![0b0000]),
         ];
-        let mut sol = GF2Solver::attach(&mut work, 1);
+        let mut sol = GF2Solver::attach(work.as_mut_slice(), 1);
         let mut x = FixedBitSet::with_capacity(3);
         assert_eq!(sol.rank, None);
         assert!(sol.solve_in_place(&mut x, 0));
@@ -562,7 +562,7 @@ mod tests {
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
             let mut work = new_from(&co, &rhs);
-            let mut sol = GF2Solver::attach(&mut work, neqs);
+            let mut sol = GF2Solver::attach(work.as_mut_slice(), neqs);
             sol.eliminate_lower();
             assert!(sol.validate_afterlower());
         }
@@ -576,7 +576,7 @@ mod tests {
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, 0.5));
             let mut work = new_from(&co, &rhs);
-            let mut sol = GF2Solver::attach(&mut work, neqs);
+            let mut sol = GF2Solver::attach(work.as_mut_slice(), neqs);
             sol.eliminate_lower();
             assert!(sol.validate_afterlower());
         }
@@ -593,7 +593,7 @@ mod tests {
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
             let mut work = new_from(&co, &rhs);
-            let mut sol = GF2Solver::attach(&mut work, neqs);
+            let mut sol = GF2Solver::attach(work.as_mut_slice(), neqs);
             sol.eliminate();
             assert!(sol.validate_afterupper());
         }
@@ -607,7 +607,7 @@ mod tests {
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, 0.5));
             let mut work = new_from(&co, &rhs);
-            let mut sol = GF2Solver::attach(&mut work, neqs);
+            let mut sol = GF2Solver::attach(work.as_mut_slice(), neqs);
             sol.eliminate();
             assert!(sol.validate_afterupper());
         }
@@ -624,7 +624,7 @@ mod tests {
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
             let mut work = new_from(&co, &rhs);
-            let mut sol = GF2Solver::attach(&mut work, neqs);
+            let mut sol = GF2Solver::attach(work.as_mut_slice(), neqs);
             sol.eliminate();
             for (ieq, rhsi) in rhs.iter().enumerate() {
                 let mut x = FixedBitSet::with_capacity(cols);
@@ -655,7 +655,7 @@ mod tests {
             let mut rhs = Vec::with_capacity(neqs);
             rhs.resize_with(neqs, || rand_rhs(rows, p2));
             let mut work = new_from(&co, &rhs);
-            let mut sol = GF2Solver::attach(&mut work, neqs);
+            let mut sol = GF2Solver::attach(work.as_mut_slice(), neqs);
             sol.eliminate();
             for (ieq, rhsi) in rhs.iter().enumerate() {
                 let mut x = FixedBitSet::with_capacity(cols);

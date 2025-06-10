@@ -27,6 +27,8 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: Free Threading :: 1 - Unstable",
+  "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Rust",
   "Topic :: Scientific/Engineering :: Physics",
   "Typing :: Typed",
@@ -73,6 +75,7 @@ line-length = 120
 docstring-code-format = true
 
 [tool.ruff.lint]
+preview = true
 select = ["ALL"]
 ignore = [
   # Conflicts with ruff format
@@ -99,8 +102,8 @@ ignore = [
 
   # Manually-disabled (lints)
   "CPY",
+  "DOC",
   "ERA",
-  "FBT",
   "FIX",
 
   # Manually-disabled (rules)
@@ -124,12 +127,12 @@ convention = "numpy"
 ]
 "tests/*.py" = [
   "D1",      # undocumented-XXX
+  "PLC2701", # import-private-name
   "PLR2004", # magic-value-comparison
+  "PLR6301", # no-self-use
   "S101",    # assert
 ]
 
-[tool.pytest.ini_options]
-addopts = ["--cov=./python", "--cov-report=term"]
-
 [tool.coverage.report]
+omit = ["tests/*"]
 exclude_also = ["if TYPE_CHECKING:"]

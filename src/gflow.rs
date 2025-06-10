@@ -186,7 +186,7 @@ pub fn find(g: Graph, iset: Nodes, oset: Nodes, planes: Planes) -> Option<(GFlow
             ocset.iter().map(|&u| planes[&u]).collect::<Vec<_>>()
         );
         init_work(&mut work, &g, &planes, &ocset, &omiset);
-        let mut solver = GF2Solver::attach(&mut work, neqs);
+        let mut solver = GF2Solver::attach(work.as_mut_slice(), neqs);
         let mut x = FixedBitSet::with_capacity(ncols);
         tracing::debug!("{solver:?}");
         for (ieq, &u) in ocset.iter().enumerate() {
