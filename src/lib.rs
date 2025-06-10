@@ -22,6 +22,7 @@ use pyo3::prelude::*;
 #[pymodule]
 #[pyo3(name = "_impl")]
 #[allow(clippy::similar_names)]
+#[cfg(not(tarpaulin_include))]
 fn entrypoint(m: &Bound<'_, PyModule>) -> PyResult<()> {
     // Remapped to fastflow._impl.FlowValidationMessage
     m.add_class::<FlowValidationError>()?;
