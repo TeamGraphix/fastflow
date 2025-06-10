@@ -94,8 +94,15 @@ class IndexMap(Generic[V]):
         vset : `collections.abc.Set`
             Set of nodes.
             Can be any hashable type.
+
+        Notes
+        -----
+        If `vset` is ordered, the indices will be assigned in the sorted order.
         """
-        self.__i2v = list(vset)
+        try:
+            self.__i2v = sorted(vset)  # type: ignore[type-var]
+        except Exception:  # noqa: BLE001
+            self.__i2v = list(vset)
         self.__v2i = {v: i for i, v in enumerate(self.__i2v)}
 
     def encode(self, v: V) -> int:
