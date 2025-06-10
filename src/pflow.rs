@@ -263,7 +263,7 @@ fn decode_solution<const K: BranchKind>(u: usize, x: &FixedBitSet, colset: &Orde
 
 #[derive(Debug)]
 struct PFlowContext<'a> {
-    work: &'a mut [FixedBitSet],
+    work: &'a mut Vec<FixedBitSet>,
     g: &'a Graph,
     u: usize,
     rowset_upper: &'a OrderedNodes,
@@ -291,7 +291,7 @@ fn find_impl<const K: BranchKind>(ctx: &mut PFlowContext) -> bool {
         ctx.rowset_lower,
         ctx.colset,
     );
-    let mut solver = GF2Solver::attach(ctx.work, 1);
+    let mut solver = GF2Solver::attach(ctx.work.as_mut_slice(), 1);
     tracing::debug!("{solver:?}");
     if solver.solve_in_place(ctx.x, 0) {
         tracing::debug!("solution found for {u}");
